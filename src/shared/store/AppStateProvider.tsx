@@ -1,0 +1,293 @@
+'use client';
+
+import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import { AI_CANDIDATES, DEX_ENTRIES, DexEntry } from '@/shared/data/dex';
+import { BadgeId } from '@/shared/ui/atoms/EquippedBadge';
+import { MadeCard, MadeDexId, MadeParticipant } from '@/features/made/types';
+import { ChallengeData, RewardBadge } from '@/features/challenge/types';
+import { INITIAL_CHALLENGES } from '@/features/challenge/data';
+
+export type RegistrationSource = 'basic' | 'made' | 'challenge';
+
+type InviteCode = {dexId: MadeDexId;expiresAt: number;};
+export type JoinResult = 'success' | 'invalid' | 'expired' | 'already';
+
+const WEEK = 7 * 24 * 60 * 60 * 1000;
+
+const MADE_DEX_TITLE: Record<MadeDexId, string> = {
+  date: '우리의 데이트 도감',
+  lunch: '회사 점심 도감',
+};
+const MADE_DEX_CODE: Record<MadeDexId, string> = { date: 'DATE26', lunch: 'LUNCH7' };
+
+/**
+ * 라우트를 건너 공유되는 앱 상태.
+ * 페이지(컨테이너)는 이 훅에서 값과 액션을 받아 프레젠테이셔널 컴포넌트에 props로 내려준다 (§3.1).
+ *
+ * 목업 단계라 메모리에만 두며, 새로고침하면 초기화된다.
+ * 실제 API 연동 시 이 파일의 액션 본문만 교체하면 화면 코드는 손댈 필요 없다.
+ */
+interface AppStore {
+  // 도감
+  entries: DexEntry[];
+  collectedIds: number[];
+  collectedEntries: DexEntry[];
+  newlyUnlockedId: number | null;
+  findEntry: (id: number) => DexEntry | undefined;
+
+  // 프로필
+  equippedBadge: BadgeId;
+  setEquippedBadge: (badge: BadgeId) => void;
+  profilePhoto: string;
+  setProfilePhoto: (photo: string) => void;
+
+  // 온보딩
+  onboardingSeen: boolean;
+  completeOnboarding: () => void;
+
+  // 제작 도감
+  madeParticipants: Record<MadeDexId, MadeParticipant[]>;
+  madeDexTitle: (dexId: MadeDexId) => string;
+  madeDexCode: (dexId: MadeDexId) => string;
+  removeParticipant: (dexId: MadeDexId, participantId: string) => void;
+  joinWithCode: (code: string) => {result: JoinResult;dexId?: MadeDexId;};
+  recentMadeCard: MadeCard | null;
+
+  // 챌린지
+  challenges: ChallengeData[];
+  createdThisMonth: number;
+  findChallenge: (id: string) => ChallengeData | undefined;
+  createChallenge: (challenge: ChallengeData) => void;
+  customBadge: RewardBadge | null;
+  setCustomBadge: (badge: RewardBadge | null) => void;
+
+  // 등록 플로우
+  registrationSource: RegistrationSource;
+  registrationChallengeId: string | null;
+  registrationMadeDexId: MadeDexId | null;
+  startRegistration: (source: RegistrationSource, contextId?: string) => void;
+  hasUpload: boolean;
+  setHasUpload: (value: boolean) => void;
+  selectedFood: DexEntry;
+  setSelectedFoodId: (id: number) => void;
+  recordDraft: {memo: string;location: string;};
+  setRecordDraft: (draft: {memo: string;location: string;}) => void;
+  selectedTags: string[];
+  setSelectedTags: (tags: string[]) => void;
+  finishRegistration: (tags?: string[], draft?: {memo: string;location: string;}) => void;
+}
+
+const AppStateContext = createContext<AppStore | null>(null);
+
+export function AppStateProvider({ children }: {children: React.ReactNode;}) {
+  const [entries, setEntries] = useState<DexEntry[]>(DEX_ENTRIES);
+  const [collectedIds, setCollectedIds] = useState<number[]>([1, 2, 3]);
+  const [newlyUnlockedId, setNewlyUnlockedId] = useState<number | null>(null);
+  const [equippedBadge, setEquippedBadge] = useState<BadgeId>('silver-spoon');
+  const [profilePhoto, setProfilePhoto] = useState('신');
+  const [onboardingSeen, setOnboardingSeen] = useState(false);
+
+  const [madeParticipants, setMadeParticipants] = useState<Record<MadeDexId, MadeParticipant[]>>({
+    date: [{ id: 'me', name: '신' }, { id: 'yoon', name: '윤' }],
+    lunch: [{ id: 'me', name: '신' }, { id: 'yoon', name: '윤' }, { id: 'min', name: '민' }, { id: 'jay', name: 'J' }],
+  });
+  const [inviteCodes] = useState<Record<string, InviteCode>>({
+    DATE26: { dexId: 'date', expiresAt: Date.now() + WEEK },
+    LUNCH7: { dexId: 'lunch', expiresAt: Date.now() + WEEK },
+    OLD999: { dexId: 'date', expiresAt: Date.now() - 1 },
+  });
+  const [recentMadeCard, setRecentMadeCard] = useState<MadeCard | null>(null);
+
+  const [challenges, setChallenges] = useState<ChallengeData[]>(INITIAL_CHALLENGES);
+  const [customBadge, setCustomBadge] = useState<RewardBadge | null>(null);
+
+  const [registrationSource, setRegistrationSource] = useState<RegistrationSource>('basic');
+  const [registrationChallengeId, setRegistrationChallengeId] = useState<string | null>(null);
+  const [registrationMadeDexId, setRegistrationMadeDexId] = useState<MadeDexId | null>(null);
+  const [hasUpload, setHasUpload] = useState(false);
+  const [selectedFoodId, setSelectedFoodId] = useState(16);
+  const [recordDraft, setRecordDraft] = useState({ memo: '', location: '' });
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+
+  const collectedEntries = useMemo(
+    () => entries.filter((entry) => collectedIds.includes(entry.id)),
+    [entries, collectedIds]
+  );
+
+  // AI 후보로만 존재하고 아직 도감에 없는 음식도 등록 대상이 될 수 있음
+  const selectedFood = useMemo<DexEntry>(() => {
+    const known = entries.find((entry) => entry.id === selectedFoodId);
+    if (known) return known;
+    const candidate = AI_CANDIDATES.find((item) => item.id === selectedFoodId);
+    return {
+      id: selectedFoodId,
+      name: candidate?.name ?? '칼국수',
+      emoji: candidate?.emoji ?? '🍜',
+      category: '면' as const,
+      collected: false,
+    };
+  }, [entries, selectedFoodId]);
+
+  const createdThisMonth = challenges.filter((challenge) => challenge.isCreator).length;
+
+  const findEntry = useCallback((id: number) => entries.find((entry) => entry.id === id), [entries]);
+  const findChallenge = useCallback(
+    (id: string) => challenges.find((challenge) => challenge.id === id),
+    [challenges]
+  );
+
+  const startRegistration = useCallback((source: RegistrationSource, contextId?: string) => {
+    setRegistrationSource(source);
+    setRegistrationChallengeId(source === 'challenge' ? contextId ?? null : null);
+    setRegistrationMadeDexId(source === 'made' ? (contextId as MadeDexId) ?? null : null);
+    setSelectedTags([]);
+    setRecordDraft({ memo: '', location: '' });
+    setHasUpload(false);
+  }, []);
+
+  const removeParticipant = useCallback((dexId: MadeDexId, participantId: string) => {
+    setMadeParticipants((current) => ({
+      ...current,
+      [dexId]: current[dexId].filter((person) => person.id !== participantId),
+    }));
+  }, []);
+
+  const joinWithCode = useCallback(
+    (code: string): {result: JoinResult;dexId?: MadeDexId;} => {
+      const invite = inviteCodes[code];
+      if (!invite) return { result: 'invalid' };
+      if (invite.expiresAt < Date.now()) return { result: 'expired' };
+      if (madeParticipants[invite.dexId].some((participant) => participant.id === 'guest')) {
+        return { result: 'already' };
+      }
+      setMadeParticipants((current) => ({
+        ...current,
+        [invite.dexId]: [...current[invite.dexId], { id: 'guest', name: '현' }],
+      }));
+      return { result: 'success', dexId: invite.dexId };
+    },
+    [inviteCodes, madeParticipants]
+  );
+
+  const createChallenge = useCallback((challenge: ChallengeData) => {
+    setChallenges((current) => [challenge, ...current]);
+    setCustomBadge(null);
+  }, []);
+
+  const finishRegistration = useCallback(
+    (tags: string[] = selectedTags, draft = recordDraft) => {
+      const location = draft.location || '현재 위치 근처';
+      const memo = draft.memo || 'AI로 찾은 오늘의 음식';
+
+      // 챌린지 등록이면 지정 식당과 대조해 목표 하나를 해금 (§6)
+      if (registrationSource === 'challenge' && registrationChallengeId) {
+        setChallenges((current) =>
+          current.map((challenge) => {
+            if (challenge.id !== registrationChallengeId) return challenge;
+            const matched = challenge.targetRestaurants?.find(
+              (target) =>
+                (location.includes(target.name) || target.name.includes(location)) &&
+                !challenge.completedTargetIds?.includes(target.id)
+            );
+            if (!matched) return challenge;
+            const nextIds = [...(challenge.completedTargetIds ?? []), matched.id];
+            const total = challenge.targetRestaurants?.length ?? 1;
+            return {
+              ...challenge,
+              completedTargetIds: nextIds,
+              mine: `나 ${nextIds.length}/${total}`,
+              progress: nextIds.length / total,
+            };
+          })
+        );
+      }
+
+      const savedEntry: DexEntry = {
+        ...selectedFood,
+        collected: true,
+        stars: 1,
+        firstDate: '2026.07.22',
+        cards: [{ photos: [selectedFood.emoji], memo, location, date: '2026.07.22', tags }],
+      };
+
+      if (registrationSource === 'made') {
+        setRecentMadeCard({
+          name: selectedFood.name,
+          emoji: selectedFood.emoji,
+          by: '신',
+          location,
+          tags: tags.length ? tags : ['새 기록'],
+        });
+      }
+
+      setEntries((current) =>
+        current.some((entry) => entry.id === savedEntry.id) ?
+          current.map((entry) => (entry.id === savedEntry.id ? savedEntry : entry)) :
+          [...current, savedEntry]
+      );
+      setCollectedIds((current) =>
+        current.includes(savedEntry.id) ? current : [...current, savedEntry.id]
+      );
+      setNewlyUnlockedId(savedEntry.id);
+    },
+    [recordDraft, registrationChallengeId, registrationSource, selectedFood, selectedTags]
+  );
+
+  const value = useMemo<AppStore>(
+    () => ({
+      entries,
+      collectedIds,
+      collectedEntries,
+      newlyUnlockedId,
+      findEntry,
+      equippedBadge,
+      setEquippedBadge,
+      profilePhoto,
+      setProfilePhoto,
+      onboardingSeen,
+      completeOnboarding: () => setOnboardingSeen(true),
+      madeParticipants,
+      madeDexTitle: (dexId) => MADE_DEX_TITLE[dexId],
+      madeDexCode: (dexId) => MADE_DEX_CODE[dexId],
+      removeParticipant,
+      joinWithCode,
+      recentMadeCard,
+      challenges,
+      createdThisMonth,
+      findChallenge,
+      createChallenge,
+      customBadge,
+      setCustomBadge,
+      registrationSource,
+      registrationChallengeId,
+      registrationMadeDexId,
+      startRegistration,
+      hasUpload,
+      setHasUpload,
+      selectedFood,
+      setSelectedFoodId,
+      recordDraft,
+      setRecordDraft,
+      selectedTags,
+      setSelectedTags,
+      finishRegistration,
+    }),
+    [
+      entries, collectedIds, collectedEntries, newlyUnlockedId, findEntry,
+      equippedBadge, profilePhoto, onboardingSeen, madeParticipants,
+      removeParticipant, joinWithCode, recentMadeCard, challenges,
+      createdThisMonth, findChallenge, createChallenge, customBadge,
+      registrationSource, registrationChallengeId, registrationMadeDexId,
+      startRegistration, hasUpload, selectedFood, recordDraft, selectedTags,
+      finishRegistration,
+    ]
+  );
+
+  return <AppStateContext.Provider value={value}>{children}</AppStateContext.Provider>;
+}
+
+export function useAppState() {
+  const store = useContext(AppStateContext);
+  if (!store) throw new Error('useAppState는 AppStateProvider 안에서만 쓸 수 있어요.');
+  return store;
+}
