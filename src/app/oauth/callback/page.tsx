@@ -1,5 +1,6 @@
 'use client';
 
+import { useAuth } from '@/features/auth/AuthContext';
 import { ROUTES } from '@/shared/lib/routes';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
@@ -13,6 +14,7 @@ import { useEffect } from 'react';
 export default function OAuthCallbackPage() {
   const router = useRouter();
   const params = useSearchParams();
+ const { refresh } = useAuth();
 
   useEffect(() => {
     const error = params.get('error');
@@ -21,9 +23,9 @@ export default function OAuthCallbackPage() {
       router.replace(`${ROUTES.login}?error=${encodeURIComponent(error)}`);
       return;
     }
-    // 성공: 홈으로. replace로 콜백 URL을 히스토리에 남기지 않는다.
-    router.replace(ROUTES.home);
-  }, [params, router]);
+    // 로그인 성공 → me를 불러와 상태를 채운 뒤 홈으로
+    refresh().finally(() => router.replace(ROUTES.home));
+  }, [params, router, refresh]);
 
   // 리다이렉트 직전 잠깐 보이는 로딩 화면
   return (
