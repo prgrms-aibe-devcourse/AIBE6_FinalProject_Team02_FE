@@ -1,16 +1,18 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useAuth } from '@/features/auth/AuthContext';
 import { DexGrid } from '@/features/dex/DexGrid';
-import { useAppState } from '@/shared/store/AppStateProvider';
 import { ROUTES, TAB_HREF } from '@/shared/lib/routes';
+import { useAppState } from '@/shared/store/AppStateProvider';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 /** `/` 기본 도감 */
 export default function DexHomePage() {
   const router = useRouter();
   const { collectedIds, newlyUnlockedId, onboardingSeen, startRegistration } = useAppState();
-
+  const { me, loading, isAuthenticated } = useAuth();
+  console.log('[auth]', { loading, isAuthenticated, me });
   // 첫 방문이면 온보딩부터
   useEffect(() => {
     if (!onboardingSeen) router.replace(ROUTES.onboarding);
