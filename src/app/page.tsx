@@ -1,6 +1,5 @@
 'use client';
 
-import { useAuth } from '@/features/auth/AuthContext';
 import { DexGrid } from '@/features/dex/DexGrid';
 import { ROUTES, TAB_HREF } from '@/shared/lib/routes';
 import { useAppState } from '@/shared/store/AppStateProvider';
@@ -11,8 +10,7 @@ import { useEffect } from 'react';
 export default function DexHomePage() {
   const router = useRouter();
   const { collectedIds, newlyUnlockedId, onboardingSeen, startRegistration } = useAppState();
-  const { me, loading, isAuthenticated } = useAuth();
-  console.log('[auth]', { loading, isAuthenticated, me });
+  
   // 첫 방문이면 온보딩부터
   useEffect(() => {
     if (!onboardingSeen) router.replace(ROUTES.onboarding);
