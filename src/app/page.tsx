@@ -13,7 +13,7 @@ export default function DexHomePage() {
 
   // 첫 방문이면 온보딩부터
   useEffect(() => {
-    if (!onboardingSeen) router.replace(ROUTES.onboarding);
+    if (onboardingSeen === false) router.replace(ROUTES.onboarding);
   }, [onboardingSeen, router]);
 
   return (
