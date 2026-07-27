@@ -1,23 +1,38 @@
 'use client';
 
 import { useAuth } from '@/features/auth/AuthContext';
-import { withdrawAccount } from '@/features/my/api';
+import { getMyBadges, withdrawAccount } from '@/features/my/api';
 import { MyPage } from '@/features/my/MyPage';
 import { WithdrawConfirmSheet } from '@/features/my/WithdrawConfirmSheet';
 import { ROUTES, TAB_HREF } from '@/shared/lib/routes';
 import { useAppState } from '@/shared/store/AppStateProvider';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 /** `/my` 마이페이지 */
 export default function MyPageRoute() {
   const router = useRouter();
   const { me, logout } = useAuth();
-  const { collectedIds, profilePhoto, equippedBadge } = useAppState();
+  const { collectedIds, profilePhoto } = useAppState();
+
+  // 대표(장착) 뱃지 — 서버 획득 목록에서 equipped 항목을 찾아 표시
+  const [equippedBadge, setEquippedBadge] = useState<{
+    name: string;
+    imageUrl: string | null;
+  } | null>(null);
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [withdrawing, setWithdrawing] = useState(false);
   const [withdrawError, setWithdrawError] = useState<string | null>(null);
+
+  useEffect(() => {
+    getMyBadges()
+      .then((list) => {
+        const eq = list.find((b) => b.equipped);
+        setEquippedBadge(eq ? { name: eq.name, imageUrl: eq.imageUrl } : null);
+      })
+      .catch(() => setEquippedBadge(null));
+  }, []);
 
   const handleLogout = async () => {
     await logout();

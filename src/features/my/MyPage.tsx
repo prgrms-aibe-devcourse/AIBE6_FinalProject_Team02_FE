@@ -1,8 +1,4 @@
-import {
-  BadgeId,
-  EquippedBadge,
-  badgeLabel,
-} from "@/shared/ui/atoms/EquippedBadge";
+import { ServerBadge } from "@/shared/ui/atoms/ServerBadge";
 import { BottomNav, NavTab } from "@/shared/ui/molecules/BottomNav";
 import {
   AwardIcon,
@@ -18,7 +14,7 @@ interface Props {
   nickname: string;
   collectedCount: number;
   profilePhoto: string;
-  equippedBadge: BadgeId;
+  equippedBadge: { name: string; imageUrl: string | null } | null;
   onChangePhoto: () => void;
   onEditNickname: () => void;
   onReplayOnboarding: () => void;
@@ -68,7 +64,12 @@ export function MyPage({
           </button>
           <button onClick={onOpenProfile} className="min-w-0 text-left">
             <span className="flex items-center gap-2">
-              <EquippedBadge badge={equippedBadge} />
+              {equippedBadge && (
+                <ServerBadge
+                  imageUrl={equippedBadge.imageUrl}
+                  name={equippedBadge.name}
+                />
+              )}
               <span className="font-display text-lg text-brown">
                 {nickname}
               </span>
@@ -104,10 +105,20 @@ export function MyPage({
           </div>
           <div className="mt-3 flex items-center gap-2">
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-50">
-              <EquippedBadge badge={equippedBadge} size={24} />
+              {equippedBadge ? (
+                <ServerBadge
+                  imageUrl={equippedBadge.imageUrl}
+                  name={equippedBadge.name}
+                  size={24}
+                />
+              ) : (
+                <AwardIcon size={20} className="text-brown-muted" />
+              )}
             </span>
             <span className="text-sm text-brown-soft">
-              대표 뱃지 · {badgeLabel(equippedBadge)}
+              {equippedBadge
+                ? `대표 뱃지 · ${equippedBadge.name}`
+                : "대표 뱃지 없음"}
             </span>
           </div>
         </button>

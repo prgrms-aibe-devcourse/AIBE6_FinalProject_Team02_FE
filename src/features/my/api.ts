@@ -35,3 +35,25 @@ export function patchNickname(nickname: string): Promise<void> {
 export function withdrawAccount(): Promise<void> {
   return apiFetch<void>("/api/v1/my", { method: "DELETE" });
 }
+
+// GET /api/v1/my/badges 항목 (BE MyBadgeResponse와 일치)
+export interface MyBadge {
+  id: number;
+  name: string;
+  imageUrl: string | null; // null이면 프론트가 아이콘으로 대체
+  acquiredAt: string; // ISO
+  equipped: boolean; // 현재 대표 뱃지 여부
+}
+
+// GET /api/v1/my/badges — 내가 획득한 뱃지 목록(장착 표시 포함)
+export function getMyBadges(): Promise<MyBadge[]> {
+  return apiFetch<MyBadge[]>("/api/v1/my/badges");
+}
+
+// PATCH /api/v1/my/badges/equip — 대표 뱃지 장착/해제 (badgeId=null이면 해제)
+export function equipBadge(badgeId: number | null): Promise<void> {
+  return apiFetch<void>("/api/v1/my/badges/equip", {
+    method: "PATCH",
+    body: JSON.stringify({ badgeId }),
+  });
+}
