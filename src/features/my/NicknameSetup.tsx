@@ -1,9 +1,7 @@
 'use client';
 
+import { NICKNAME_HINT, NICKNAME_MAX, NICKNAME_RE } from '@/features/my/nickname';
 import { useState } from 'react';
-
-// BE와 동일 규칙 — 2~8자, 한글/영문/숫자/밑줄
-const NICKNAME_RE = /^[가-힣a-zA-Z0-9_]{2,8}$/;
 
 interface Props {
   /** 검증 통과한 닉네임 제출. 실제 저장/이동은 컨테이너가 담당 */
@@ -39,7 +37,7 @@ export function NicknameSetup({ onSubmit, submitting, error }: Props) {
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && submit()}
-          maxLength={8}
+          maxLength={NICKNAME_MAX}
           placeholder="예) 먹킷냥이"
           autoFocus
           aria-label="닉네임"
@@ -48,9 +46,7 @@ export function NicknameSetup({ onSubmit, submitting, error }: Props) {
 
         {/* 클라 형식 안내 → 서버 에러 순으로 노출 (한 줄만) */}
         <p className="mt-2 min-h-[1.25rem] text-sm text-orange-600">
-          {showHint
-            ? '2~8자, 한글·영문·숫자·밑줄만 쓸 수 있어요.'
-            : error ?? ''}
+          {showHint ? NICKNAME_HINT : error ?? ''}
         </p>
       </div>
 

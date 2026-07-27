@@ -27,6 +27,7 @@ export const ROUTES = {
 
   my: '/my',
   myProfile: '/my/profile',
+  myNickname: '/my/nickname',
   myBadges: '/my/badges',
   myPhoto: '/my/photo',
 
