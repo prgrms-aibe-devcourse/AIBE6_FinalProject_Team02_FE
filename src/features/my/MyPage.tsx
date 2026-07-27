@@ -9,6 +9,7 @@ import {
   BookOpenIcon,
   CameraIcon,
   ChevronRightIcon,
+  LogOutIcon,
   PencilIcon,
 } from "lucide-react";
 import React from "react";
@@ -23,6 +24,8 @@ interface Props {
   onReplayOnboarding: () => void;
   onOpenProfile: () => void;
   onOpenBadges: () => void;
+  onLogout: () => void;
+  onWithdraw: () => void;
   onTab: (tab: NavTab) => void;
 }
 
@@ -36,6 +39,8 @@ export function MyPage({
   onReplayOnboarding,
   onOpenProfile,
   onOpenBadges,
+  onLogout,
+  onWithdraw,
   onTab,
 }: Props) {
   return (
@@ -118,8 +123,16 @@ export function MyPage({
             label="닉네임 수정"
             hint="1개월에 1회 가능"
           />
+          <MenuItem
+            onClick={onLogout}
+            icon={<LogOutIcon size={18} className="text-brown-soft" />}
+            label="로그아웃"
+          />
         </div>
-        <button className="mt-6 min-h-touch w-full text-center text-xs text-brown-soft">
+        <button
+          onClick={onWithdraw}
+          className="mt-6 min-h-touch w-full text-center text-xs text-brown-soft"
+        >
           회원 탈퇴
         </button>
       </main>

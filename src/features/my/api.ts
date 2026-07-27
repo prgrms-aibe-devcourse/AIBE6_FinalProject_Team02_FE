@@ -29,3 +29,9 @@ export function patchNickname(nickname: string): Promise<void> {
     body: JSON.stringify({ nickname }),
   });
 }
+
+// DELETE /api/v1/my — 회원 탈퇴(소프트 삭제)
+// 세션 정리는 호출부에서 이어서 logout()으로 처리
+export function withdrawAccount(): Promise<void> {
+  return apiFetch<void>("/api/v1/my", { method: "DELETE" });
+}
