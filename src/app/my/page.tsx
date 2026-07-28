@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@/features/auth/AuthContext';
-import { getMyBadges, withdrawAccount } from '@/features/my/api';
+import { getMyBadges, getMyProfile, withdrawAccount } from '@/features/my/api';
 import { MyPage } from '@/features/my/MyPage';
 import { WithdrawConfirmSheet } from '@/features/my/WithdrawConfirmSheet';
 import { ROUTES, TAB_HREF } from '@/shared/lib/routes';
@@ -13,8 +13,10 @@ import { useEffect, useState } from 'react';
 export default function MyPageRoute() {
   const router = useRouter();
   const { me, logout } = useAuth();
-  const { collectedIds, profilePhoto } = useAppState();
+  const { collectedIds } = useAppState();
 
+  // 프로필 사진(표시용 URL) — 없으면 MyPage가 닉네임 첫 글자로 대체
+  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
   // 대표(장착) 뱃지 — 서버 획득 목록에서 equipped 항목을 찾아 표시
   const [equippedBadge, setEquippedBadge] = useState<{
     name: string;
@@ -26,6 +28,9 @@ export default function MyPageRoute() {
   const [withdrawError, setWithdrawError] = useState<string | null>(null);
 
   useEffect(() => {
+    getMyProfile()
+      .then((p) => setProfileImageUrl(p.profileImageUrl))
+      .catch(() => setProfileImageUrl(null));
     getMyBadges()
       .then((list) => {
         const eq = list.find((b) => b.equipped);
@@ -59,7 +64,7 @@ export default function MyPageRoute() {
       <MyPage
         nickname={me?.nickname ?? ''}
         collectedCount={collectedIds.length}
-        profilePhoto={profilePhoto}
+        profileImageUrl={profileImageUrl}
         equippedBadge={equippedBadge}
         onChangePhoto={() => router.push(ROUTES.myPhoto)}
         onEditNickname={() => router.push(ROUTES.myNickname)}

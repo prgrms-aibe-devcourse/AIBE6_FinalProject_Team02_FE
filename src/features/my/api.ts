@@ -5,6 +5,20 @@ export interface MyProfile {
   nickname: string;
   nicknameChangeable: boolean; // 지금 닉네임 변경 가능한지 (1개월 제한 통과 여부)
   nicknameChangeableAt: string | null; // 다음 변경 가능 시각. null이면 즉시 가능
+  profileImageUrl: string | null; // 표시용 이미지 URL. null이면 사진 없음(닉네임 첫 글자)
+}
+
+// PATCH /api/v1/my/profile-image — 프로필 사진 설정 (업로드된 S3 key 저장)
+export function patchProfileImage(key: string): Promise<void> {
+  return apiFetch<void>("/api/v1/my/profile-image", {
+    method: "PATCH",
+    body: JSON.stringify({ key }),
+  });
+}
+
+// DELETE /api/v1/my/profile-image — 프로필 사진 제거 (닉네임 첫 글자로 복귀)
+export function removeProfileImage(): Promise<void> {
+  return apiFetch<void>("/api/v1/my/profile-image", { method: "DELETE" });
 }
 
 // POST /api/v1/my/nickname — 최초 닉네임 세팅 (온보딩 전)

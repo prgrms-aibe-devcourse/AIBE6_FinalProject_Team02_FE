@@ -13,7 +13,7 @@ import React from "react";
 interface Props {
   nickname: string;
   collectedCount: number;
-  profilePhoto: string;
+  profileImageUrl: string | null;
   equippedBadge: { name: string; imageUrl: string | null } | null;
   onChangePhoto: () => void;
   onEditNickname: () => void;
@@ -28,7 +28,7 @@ interface Props {
 export function MyPage({
   nickname,
   collectedCount,
-  profilePhoto,
+  profileImageUrl,
   equippedBadge,
   onChangePhoto,
   onEditNickname,
@@ -57,7 +57,16 @@ export function MyPage({
             aria-label="프로필 사진 변경"
             className="group relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-orange-200 font-display text-2xl text-orange-700"
           >
-            <span>{profilePhoto}</span>
+            {profileImageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={profileImageUrl}
+                alt=""
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <span>{nickname.charAt(0) || '?'}</span>
+            )}
             <span className="absolute inset-0 flex items-center justify-center bg-black/35 text-white opacity-0 transition group-active:opacity-100">
               <CameraIcon size={19} />
             </span>
