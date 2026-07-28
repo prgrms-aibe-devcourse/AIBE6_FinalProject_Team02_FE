@@ -1,5 +1,6 @@
-'use client';
+"use client";
 
+import { DexEntry } from "@/shared/data/dex";
 import React, {
   createContext,
   useCallback,
@@ -8,22 +9,21 @@ import React, {
   useMemo,
   useRef,
   useState,
-} from 'react';
-import { DexEntry } from '@/shared/data/dex';
-import { DexAliasMap, fetchDexAliases } from './api';
-import { SlotVerdict } from './verificationApi';
-import { ConfirmResult } from './confirmApi';
+} from "react";
+import { DexAliasMap, fetchDexAliases } from "./api";
+import { ConfirmResult } from "./confirmApi";
 import {
   MAX_PHOTOS,
   requestUploadTargets,
   uploadPhotoToS3,
   validatePhotoFile,
-} from './uploadApi';
+} from "./uploadApi";
+import { SlotVerdict } from "./verificationApi";
 
-/** 한 상 사진은 이름을 여러 개 보낸다. 상한 5개 (AGENTS.md §5.2) */
+/** 한 상 사진은 이름을 여러 개 보낸다. 상한 5개 */
 export const MAX_FOOD_NAMES = 5;
 
-export type PhotoStatus = 'uploading' | 'uploaded' | 'failed';
+export type PhotoStatus = "uploading" | "uploaded" | "failed";
 
 export interface RegisterPhoto {
   /** 클라이언트 전용 식별자. S3 key는 업로드가 끝나야 생긴다 */
@@ -55,7 +55,7 @@ interface RegisterFlowStore {
   /** 업로드가 전부 끝났는지 — 하나라도 진행 중이면 다음 단계로 못 넘어간다 */
   photosReady: boolean;
 
-  /** AI에 보낼 단 한 장 (§5.2 분석 사진). 지정하지 않으면 첫 장 */
+  /** AI에 보낼 단 한 장. 지정하지 않으면 첫 장 */
   analysisPhotoId: string | null;
   setAnalysisPhotoId: (photoId: string) => void;
   analysisPhoto: RegisterPhoto | null;
@@ -79,12 +79,16 @@ interface RegisterFlowStore {
 const RegisterFlowContext = createContext<RegisterFlowStore | null>(null);
 
 /**
- * 등록 플로우 진행 상태 (AGENTS.md §4 — Context는 등록 플로우 진행 상태에 사용).
+ * 등록 플로우 진행 상태 (Context는 등록 플로우 진행 상태에 사용).
  *
  * 전역 AppStateProvider가 아니라 /register 하위에만 붙인다.
  * 등록을 벗어나면 초기화되는 것이 옳은 동작이고, 전역 상태를 등록 전용 필드로 불리지 않는다.
  */
-export function RegisterFlowProvider({ children }: { children: React.ReactNode }) {
+export function RegisterFlowProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [selectedSlots, setSelectedSlots] = useState<DexEntry[]>([]);
   const [aliases, setAliases] = useState<DexAliasMap>({});
   const [photos, setPhotos] = useState<RegisterPhoto[]>([]);
@@ -119,38 +123,47 @@ export function RegisterFlowProvider({ children }: { children: React.ReactNode }
   // 미리보기 URL은 브라우저가 자동으로 놓아주지 않는다. 화면을 뜰 때 정리한다.
   useEffect(
     () => () => {
-      photosRef.current.forEach((photo) => URL.revokeObjectURL(photo.previewUrl));
+      photosRef.current.forEach((photo) =>
+        URL.revokeObjectURL(photo.previewUrl),
+      );
     },
     [],
   );
 
-  const markPhoto = useCallback((photoId: string, patch: Partial<RegisterPhoto>) => {
-    setPhotos((current) =>
-      current.map((photo) => (photo.id === photoId ? { ...photo, ...patch } : photo)),
-    );
-  }, []);
+  const markPhoto = useCallback(
+    (photoId: string, patch: Partial<RegisterPhoto>) => {
+      setPhotos((current) =>
+        current.map((photo) =>
+          photo.id === photoId ? { ...photo, ...patch } : photo,
+        ),
+      );
+    },
+    [],
+  );
 
   /** 한 장씩 올린다. 한 장이 실패해도 나머지는 살린다 — 전부 다시 고르게 하면 이탈한다. */
   const uploadPhotos = useCallback(
     async (targets: RegisterPhoto[]) => {
       try {
-        const uploadTargets = await requestUploadTargets(targets.map((photo) => photo.file));
+        const uploadTargets = await requestUploadTargets(
+          targets.map((photo) => photo.file),
+        );
 
         await Promise.all(
           targets.map(async (photo, index) => {
             const target = uploadTargets[index];
             try {
               await uploadPhotoToS3(photo.file, target);
-              markPhoto(photo.id, { status: 'uploaded', key: target.key });
+              markPhoto(photo.id, { status: "uploaded", key: target.key });
             } catch {
-              markPhoto(photo.id, { status: 'failed' });
+              markPhoto(photo.id, { status: "failed" });
             }
           }),
         );
       } catch {
         // presigned 발급 자체가 실패하면 이번에 고른 사진 전부가 실패다
-        targets.forEach((photo) => markPhoto(photo.id, { status: 'failed' }));
-        setPhotoError('사진을 올리지 못했어요. 잠시 후 다시 시도해 주세요');
+        targets.forEach((photo) => markPhoto(photo.id, { status: "failed" }));
+        setPhotoError("사진을 올리지 못했어요. 잠시 후 다시 시도해 주세요");
       }
     },
     [markPhoto],
@@ -177,14 +190,16 @@ export function RegisterFlowProvider({ children }: { children: React.ReactNode }
       }
 
       if (valid.length > room) {
-        setPhotoError(`사진은 최대 ${MAX_PHOTOS}장까지예요. ${room}장만 담았어요`);
+        setPhotoError(
+          `사진은 최대 ${MAX_PHOTOS}장까지예요. ${room}장만 담았어요`,
+        );
       }
 
       const accepted: RegisterPhoto[] = valid.slice(0, room).map((file) => ({
         id: crypto.randomUUID(),
         file,
         previewUrl: URL.createObjectURL(file),
-        status: 'uploading',
+        status: "uploading",
       }));
 
       if (accepted.length === 0) return;
@@ -210,7 +225,7 @@ export function RegisterFlowProvider({ children }: { children: React.ReactNode }
       const target = photosRef.current.find((photo) => photo.id === photoId);
       if (!target) return;
       setPhotoError(null);
-      markPhoto(photoId, { status: 'uploading' });
+      markPhoto(photoId, { status: "uploading" });
       void uploadPhotos([target]);
     },
     [markPhoto, uploadPhotos],
@@ -230,15 +245,19 @@ export function RegisterFlowProvider({ children }: { children: React.ReactNode }
 
   const clearSlots = useCallback(() => setSelectedSlots([]), []);
 
-  // 지정이 없으면 첫 장이 분석 사진이다 (§5.2 — 1장만 올렸으면 자동 지정)
+  // 지정이 없으면 첫 장이 분석 사진이다 (1장만 올렸으면 자동 지정)
   const analysisPhoto = useMemo(
-    () => photos.find((photo) => photo.id === analysisPhotoId) ?? photos[0] ?? null,
+    () =>
+      photos.find((photo) => photo.id === analysisPhotoId) ?? photos[0] ?? null,
     [photos, analysisPhotoId],
   );
 
   // 업로드가 끝난 사진만 서버로 보낸다. key는 업로드 완료 시점에 생긴다
   const uploadedPhotos = useMemo(
-    () => photos.filter((photo): photo is RegisterPhoto & { key: string } => Boolean(photo.key)),
+    () =>
+      photos.filter((photo): photo is RegisterPhoto & { key: string } =>
+        Boolean(photo.key),
+      ),
     [photos],
   );
   const uploadedPhotoKeys = useMemo(
@@ -246,7 +265,9 @@ export function RegisterFlowProvider({ children }: { children: React.ReactNode }
     [uploadedPhotos],
   );
   const analysisPhotoIndex = useMemo(() => {
-    const index = uploadedPhotos.findIndex((photo) => photo.id === analysisPhoto?.id);
+    const index = uploadedPhotos.findIndex(
+      (photo) => photo.id === analysisPhoto?.id,
+    );
     return index >= 0 ? index : 0;
   }, [uploadedPhotos, analysisPhoto]);
 
@@ -264,7 +285,9 @@ export function RegisterFlowProvider({ children }: { children: React.ReactNode }
       retryPhoto,
       photoError,
       clearPhotoError: () => setPhotoError(null),
-      photosReady: photos.length > 0 && photos.every((photo) => photo.status === 'uploaded'),
+      photosReady:
+        photos.length > 0 &&
+        photos.every((photo) => photo.status === "uploaded"),
       analysisPhotoId,
       setAnalysisPhotoId,
       analysisPhoto,
@@ -298,13 +321,19 @@ export function RegisterFlowProvider({ children }: { children: React.ReactNode }
     ],
   );
 
-  return <RegisterFlowContext.Provider value={value}>{children}</RegisterFlowContext.Provider>;
+  return (
+    <RegisterFlowContext.Provider value={value}>
+      {children}
+    </RegisterFlowContext.Provider>
+  );
 }
 
 export function useRegisterFlow() {
   const store = useContext(RegisterFlowContext);
   if (!store) {
-    throw new Error('useRegisterFlow는 RegisterFlowProvider 안에서만 쓸 수 있어요.');
+    throw new Error(
+      "useRegisterFlow는 RegisterFlowProvider 안에서만 쓸 수 있어요.",
+    );
   }
   return store;
 }

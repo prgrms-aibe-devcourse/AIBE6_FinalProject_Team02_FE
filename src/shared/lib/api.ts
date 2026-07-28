@@ -23,7 +23,7 @@ export class UnauthorizedError extends Error {
 }
 
 /**
- * 서버가 준 에러. message는 사용자 노출용, code는 분기용이다 (AGENTS.md §6).
+ * 서버가 준 에러. message는 사용자 노출용, code는 분기용이다.
  *
  * Error를 상속하므로 `catch (e) { e.message }`로 쓰던 기존 호출부는 그대로 동작한다.
  * 코드로 갈라야 할 때만(예: RETRY_LIMIT_EXCEEDED → 수동 폴백 안내) code를 본다.

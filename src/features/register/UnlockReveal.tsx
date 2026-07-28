@@ -1,8 +1,7 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
-import { ClockIcon } from 'lucide-react';
+import { motion, useReducedMotion } from "framer-motion";
+import { ClockIcon } from "lucide-react";
 
 export interface RevealCard {
   slotId: number;
@@ -55,17 +54,18 @@ export function UnlockReveal({
     ? `+${cards.length} 수집`
     : firstUnlocks.length > 1
       ? `${firstUnlocks.length}종 동시 수집!`
-      : '새로운 음식을 수집했습니다!';
+      : "새로운 음식을 수집했습니다!";
 
   const subline = !celebrate
-    ? '이미 열린 칸에 기록을 더했어요'
+    ? "이미 열린 칸에 기록을 더했어요"
     : `도감 ${collectedCount} / ${totalSlots}칸`;
 
   return (
     <div
       className={`relative flex h-full flex-col items-center justify-center overflow-hidden px-8 text-center ${
-        celebrate ? 'bg-orange-500' : 'bg-cream-100'
-      }`}>
+        celebrate ? "bg-orange-500" : "bg-cream-100"
+      }`}
+    >
       {/* 반짝임은 첫 해금에만, 1회만 재생 (무한 루프 장식 금지) */}
       {celebrate &&
         !reduceMotion &&
@@ -77,18 +77,25 @@ export function UnlockReveal({
             initial={{ opacity: 0, y: 0, scale: 0 }}
             animate={{ opacity: [0, 1, 0], y: [-10, -80], scale: [0, 1, 0.6] }}
             transition={{ delay: 0.3 + index * 0.06, duration: 1.4 }}
-            style={{ left: `${(8 + index * 6.4) % 84}%`, top: `${20 + (index % 5) * 12}%` }}>
-            {['✨', '🎉', '⭐'][index % 3]}
+            style={{
+              left: `${(8 + index * 6.4) % 84}%`,
+              top: `${20 + (index % 5) * 12}%`,
+            }}
+          >
+            {["✨", "🎉", "⭐"][index % 3]}
           </motion.span>
         ))}
 
       <motion.h1
         initial={reduceMotion ? false : { opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className={`mb-2 font-display text-xl ${celebrate ? 'text-white' : 'text-content-primary'}`}>
+        className={`mb-2 font-display text-xl ${celebrate ? "text-white" : "text-content-primary"}`}
+      >
         {headline}
       </motion.h1>
-      <p className={`mb-8 text-sm ${celebrate ? 'text-white/80' : 'text-content-secondary'}`}>
+      <p
+        className={`mb-8 text-sm ${celebrate ? "text-white/80" : "text-content-secondary"}`}
+      >
         {subline}
       </p>
 
@@ -107,33 +114,46 @@ export function UnlockReveal({
             transition={
               reduceMotion
                 ? { duration: 0 }
-                : { delay: 0.25 + index * 0.18, duration: 0.4, ease: 'easeOut' }
+                : { delay: 0.25 + index * 0.18, duration: 0.4, ease: "easeOut" }
             }
             className={`flex flex-col items-center justify-center rounded-3xl bg-surface-card shadow-modal ${
-              cards.length > 1 ? 'h-40 w-32' : 'h-52 w-44'
-            }`}>
+              cards.length > 1 ? "h-40 w-32" : "h-52 w-44"
+            }`}
+          >
             {card.illustrationUrl ? (
               // eslint-disable-next-line @next/next/no-img-element -- presigned URL이라 next/image 최적화 대상이 아니다
               <img
                 src={card.illustrationUrl}
                 alt=""
-                className={cards.length > 1 ? 'h-16 w-16 object-contain' : 'h-24 w-24 object-contain'} />
+                className={
+                  cards.length > 1
+                    ? "h-16 w-16 object-contain"
+                    : "h-24 w-24 object-contain"
+                }
+              />
             ) : (
-              <span aria-hidden className={cards.length > 1 ? 'text-5xl' : 'text-7xl'}>
+              <span
+                aria-hidden
+                className={cards.length > 1 ? "text-5xl" : "text-7xl"}
+              >
                 {card.emoji}
               </span>
             )}
 
             <span
               className={`mt-3 font-display text-content-primary ${
-                cards.length > 1 ? 'text-base' : 'text-xl'
-              }`}>
+                cards.length > 1 ? "text-base" : "text-xl"
+              }`}
+            >
               {card.name}
             </span>
 
-            <span aria-label={`별 ${card.rank}개`} className="mt-1 text-action-primary">
-              {'★'.repeat(card.rank)}
-              {'☆'.repeat(Math.max(0, 3 - card.rank))}
+            <span
+              aria-label={`별 ${card.rank}개`}
+              className="mt-1 text-action-primary"
+            >
+              {"★".repeat(card.rank)}
+              {"☆".repeat(Math.max(0, 3 - card.rank))}
             </span>
 
             {!card.firstUnlock && (
@@ -148,9 +168,13 @@ export function UnlockReveal({
       {awaitingReview.length > 0 && (
         <p
           className={`mt-6 rounded-2xl px-4 py-3 text-xs leading-5 ${
-            celebrate ? 'bg-white/15 text-white' : 'bg-surface-accent text-content-secondary'
-          }`}>
-          {awaitingReview.join(', ')}은(는) 확인되지 않아 검토를 요청했어요. 통과하면 도감이 열려요.
+            celebrate
+              ? "bg-white/15 text-white"
+              : "bg-surface-accent text-content-secondary"
+          }`}
+        >
+          {awaitingReview.join(", ")}은(는) 확인되지 않아 검토를 요청했어요.
+          통과하면 도감이 열려요.
         </p>
       )}
 
@@ -158,26 +182,38 @@ export function UnlockReveal({
         type="button"
         initial={reduceMotion ? false : { opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={reduceMotion ? { duration: 0 } : { delay: 0.5 + cards.length * 0.18 }}
+        transition={
+          reduceMotion ? { duration: 0 } : { delay: 0.5 + cards.length * 0.18 }
+        }
         onClick={onGoDex}
         className={`mt-10 h-cta rounded-full border-2 px-10 font-display text-lg ${
-          celebrate ? 'border-white text-white' : 'border-orange-400 text-orange-600'
-        }`}>
+          celebrate
+            ? "border-white text-white"
+            : "border-orange-400 text-orange-600"
+        }`}
+      >
         도감 보러 가기
       </motion.button>
-    </div>);
-
+    </div>
+  );
 }
 
 /**
  * 전부 검토 대기인 경우. 해금 연출을 쓰지 않는다 —
- * 아직 아무 칸도 열리지 않았는데 축하하면 유저가 열린 줄 안다.
  */
-function ReviewRequested({ names, onGoDex }: { names: string[]; onGoDex: () => void }) {
+function ReviewRequested({
+  names,
+  onGoDex,
+}: {
+  names: string[];
+  onGoDex: () => void;
+}) {
   return (
     <div className="flex h-full flex-col items-center justify-center bg-cream-100 px-8 text-center">
       <ClockIcon size={44} aria-hidden className="text-content-link" />
-      <h1 className="mt-4 font-display text-xl text-content-primary">검토를 요청했어요</h1>
+      <h1 className="mt-4 font-display text-xl text-content-primary">
+        검토를 요청했어요
+      </h1>
       <p className="mt-2 text-sm leading-6 text-content-secondary">
         사진이 증빙으로 함께 전달됐어요.
         <br />
@@ -185,11 +221,15 @@ function ReviewRequested({ names, onGoDex }: { names: string[]; onGoDex: () => v
       </p>
 
       {names.length > 0 && (
-        <ul className="mt-6 flex flex-wrap justify-center gap-2" aria-label="검토 대기 중인 음식">
+        <ul
+          className="mt-6 flex flex-wrap justify-center gap-2"
+          aria-label="검토 대기 중인 음식"
+        >
           {names.map((name) => (
             <li
               key={name}
-              className="rounded-full border border-edge-default bg-surface-card px-3 py-1.5 text-sm text-content-primary">
+              className="rounded-full border border-edge-default bg-surface-card px-3 py-1.5 text-sm text-content-primary"
+            >
               {name}
             </li>
           ))}
@@ -199,9 +239,10 @@ function ReviewRequested({ names, onGoDex }: { names: string[]; onGoDex: () => v
       <button
         type="button"
         onClick={onGoDex}
-        className="mt-10 h-cta rounded-full border-2 border-orange-400 px-10 font-display text-lg text-orange-600">
+        className="mt-10 h-cta rounded-full border-2 border-orange-400 px-10 font-display text-lg text-orange-600"
+      >
         도감 보러 가기
       </button>
-    </div>);
-
+    </div>
+  );
 }

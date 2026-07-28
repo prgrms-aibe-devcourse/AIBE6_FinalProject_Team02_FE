@@ -1,18 +1,23 @@
-/**
- * 도감 칸 이름 검색 — 초성·별칭 매칭.
- *
- * 서버에 검색 API를 두지 않고 여기서 도는 이유:
- * 도감 200칸은 마이그레이션으로만 바뀌는 마스터 데이터이고 전체가 gzip 4KB다.
- * 이미 `AppStateProvider`가 200칸을 들고 있으므로, 타이핑마다 왕복하는 것보다
- * 메모리에서 거르는 쪽이 빠르고 싸다. (식당에서 셀룰러로 쓰는 화면이다)
- *
- * 신뢰 경계는 검색이 아니라 등록에 있다 — 서버는 등록 확정 시 slotId가 실제 칸인지,
- * 그 칸의 AI 검증이 통과했는지 다시 확인한다.
- */
-
 const CHOSUNG = [
-  'ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ',
-  'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ',
+  "ㄱ",
+  "ㄲ",
+  "ㄴ",
+  "ㄷ",
+  "ㄸ",
+  "ㄹ",
+  "ㅁ",
+  "ㅂ",
+  "ㅃ",
+  "ㅅ",
+  "ㅆ",
+  "ㅇ",
+  "ㅈ",
+  "ㅉ",
+  "ㅊ",
+  "ㅋ",
+  "ㅌ",
+  "ㅍ",
+  "ㅎ",
 ] as const;
 
 const CHOSUNG_SET = new Set<string>(CHOSUNG);
@@ -27,11 +32,12 @@ const SYLLABLES_PER_CHOSUNG = 21 * 28;
  * "LA갈비" → "LAㄱㅂ" 처럼 섞인 이름도 초성으로 찾을 수 있어야 한다.
  */
 export function toChosung(value: string): string {
-  let result = '';
+  let result = "";
   for (const char of value) {
     const code = char.charCodeAt(0);
     if (code >= SYLLABLE_FIRST && code <= SYLLABLE_LAST) {
-      result += CHOSUNG[Math.floor((code - SYLLABLE_FIRST) / SYLLABLES_PER_CHOSUNG)];
+      result +=
+        CHOSUNG[Math.floor((code - SYLLABLE_FIRST) / SYLLABLES_PER_CHOSUNG)];
     } else {
       result += char;
     }
@@ -50,7 +56,7 @@ export function isChosungOnly(value: string): boolean {
 
 /** 공백·가운뎃점·하이픈은 표기 흔들림일 뿐이라 검색에서 무시한다. */
 export function normalizeQuery(value: string): string {
-  return value.replace(/[\s·\-_]/g, '').toLowerCase();
+  return value.replace(/[\s·\-_]/g, "").toLowerCase();
 }
 
 /** 검색 대상이 갖춰야 할 최소 형태. 호출부의 구체 타입(DexEntry 등)은 그대로 보존된다. */
@@ -84,7 +90,9 @@ export function buildDexSearchIndex<T extends DexSearchable>(
   return {
     slots: slots.map((slot) => {
       const normalizedName = normalizeQuery(slot.name);
-      const normalizedAliases = (aliasesBySlotId[String(slot.id)] ?? []).map(normalizeQuery);
+      const normalizedAliases = (aliasesBySlotId[String(slot.id)] ?? []).map(
+        normalizeQuery,
+      );
 
       return {
         slot,
@@ -106,7 +114,10 @@ function scoreText(entry: IndexedSlot<DexSearchable>, query: string): number {
   return NO_MATCH;
 }
 
-function scoreChosung(entry: IndexedSlot<DexSearchable>, query: string): number {
+function scoreChosung(
+  entry: IndexedSlot<DexSearchable>,
+  query: string,
+): number {
   if (entry.chosungName === query) return 0;
   if (entry.chosungName.startsWith(query)) return 1;
   if (entry.chosungName.includes(query)) return 2;
@@ -125,7 +136,7 @@ export function searchDex<T extends DexSearchable>(
   rawQuery: string,
   limit = 10,
 ): T[] {
-  const query = normalizeQuery(rawQuery ?? '');
+  const query = normalizeQuery(rawQuery ?? "");
   if (!query) return [];
 
   // 초성 질의는 비교 대상이 이름이 아니라 이름의 초성이라 먼저 갈라야 한다.
