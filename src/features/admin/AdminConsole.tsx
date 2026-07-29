@@ -112,7 +112,8 @@ export function AdminConsole() {
                 {reports.map((r) => (
                   <li key={r.id} className="rounded-2xl bg-white p-4 shadow-soft">
                     <p className="font-medium text-brown">{r.description}</p>
-                    <p className="mt-0.5 text-xs text-brown-muted">{formatDate(r.createdAt)}</p>
+                    <p className="mt-0.5 text-xs text-brown-muted">
+                        {r.reporterName ?? '알 수 없음'} · {formatDate(r.createdAt)}</p>
                     <div className="mt-3 flex gap-2">
                       <PrimaryBtn onClick={() => run(
                         () => acceptReport(r.id),
