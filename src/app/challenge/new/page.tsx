@@ -1,14 +1,26 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { ChallengeCreate } from '@/features/challenge/ChallengeCreate';
-import { useAppState } from '@/shared/store/AppStateProvider';
+import { createChallenge, fetchCreationTickets } from '@/features/challenge/api';
 import { ROUTES } from '@/shared/lib/routes';
+import { useAppState } from '@/shared/store/AppStateProvider';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+
+const MONTHLY_LIMIT = 3;
 
 /** `/challenge/new` 챌린지 개설 (월 3회 제한, §6) */
 export default function ChallengeCreatePage() {
   const router = useRouter();
-  const { createdThisMonth, customBadge, setCustomBadge, createChallenge } = useAppState();
+  const { customBadge, setCustomBadge } = useAppState();
+
+  // 이번 달 개설 횟수 = 3 - 남은 개설권 (서버 기준)
+  const [createdThisMonth, setCreatedThisMonth] = useState(0);
+  useEffect(() => {
+    fetchCreationTickets()
+      .then((t) => setCreatedThisMonth(MONTHLY_LIMIT - t.remaining))
+      .catch(() => {});
+  }, []);
 
   return (
     <ChallengeCreate
@@ -18,11 +30,21 @@ export default function ChallengeCreatePage() {
         setCustomBadge(null);
         router.push(ROUTES.challenge);
       }}
-      onCreate={(challenge) => {
-        createChallenge(challenge);
-        router.push(ROUTES.challengeDetail(challenge.id));
+      onCreate={async (challenge) => {
+        try {
+          await createChallenge({
+            name: challenge.title,
+            challengeType: 'COLLECTION',   // 유형 UI 붙기 전 기본값
+            periodType: 'PERMANENT',       // 기한 UI 붙기 전 기본값(상시)
+            rewardBadgeId: null,           // 뱃지 시스템 연동 전
+            slots: (challenge.targetRestaurants ?? []).map((t) => ({ foodName: t.name })),
+          });
+          setCustomBadge(null);
+          router.push(ROUTES.challenge);   // 목록/상세는 아직 mock → 우선 목록으로
+        } catch (e) {
+          alert(e instanceof Error ? e.message : '챌린지 개설에 실패했어요');
+        }
       }}
       onCustomBadge={() => router.push(ROUTES.challengeNewBadge)}
       onUsePreset={() => setCustomBadge(null)} />);
-
 }
