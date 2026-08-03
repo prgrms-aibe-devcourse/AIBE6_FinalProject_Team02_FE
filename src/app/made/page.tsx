@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { MadeDexList } from '@/features/made/MadeDexList';
 import { createMadeDex, fetchMyMadeDexes } from '@/features/made/api';
 import type { MadeDexSummary, MadeDexVisibility } from '@/features/made/types';
-import { ROUTES, TAB_HREF } from '@/shared/lib/routes';
+import { getTabHref, ROUTES } from '@/shared/lib/routes';
 
 /** `/made` 제작 도감 목록 */
 export default function MadeDexListPage() {
@@ -47,7 +47,7 @@ export default function MadeDexListPage() {
       onCreate={create}
       onOpenDex={(dexId) => router.push(ROUTES.madeDex(dexId))}
       onJoinWithCode={() => router.push(ROUTES.madeJoin)}
-      onTab={(tab) => router.push(TAB_HREF[tab])}
+      onTab={(tab) => router.push(getTabHref(tab))}
     />
   );
 }
