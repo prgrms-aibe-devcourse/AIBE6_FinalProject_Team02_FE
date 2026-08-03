@@ -15,7 +15,7 @@ export interface ChallengeTarget {
   /** 상세 도감 표시용 목표 음식 사진 (미해금이면 흑백) */
   imageUrl?: string;
   /** 개설 화면에서만 사용 — 업로드 전 로컬 파일 */
-  file?: File;
+  file?: File | null;
 }
 
 export interface ChallengeData {
