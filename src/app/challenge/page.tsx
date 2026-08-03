@@ -28,7 +28,8 @@ function ddayLabel(endsAt: string): string {
   return days >= 0 ? `D-${days}` : '종료';
 }
 
-/** `/challenge` 챌린지 도감 홈 */
+
+/** \/challenge\ 챌린지 도감 홈 */
 export default function ChallengeHomePage() {
   const router = useRouter();
   const [challenges, setChallenges] = useState<ChallengeData[]>([]);
