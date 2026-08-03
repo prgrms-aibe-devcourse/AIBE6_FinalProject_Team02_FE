@@ -133,3 +133,15 @@ export function createRewardBadge(payload: {
     body: JSON.stringify(payload),
   });
 }
+
+export interface RewardBadgeInfo {
+  id: number;
+  name: string;
+  code: string | null;
+  imageUrl: string | null; // 제작=프리사인 URL, 프리셋=null(code로 매핑)
+}
+
+/** 보상 뱃지 표시 정보(상세 미리보기·완료 팝업) */
+export function fetchRewardBadge(badgeId: number | string) {
+  return apiFetch<RewardBadgeInfo>(`/api/v1/challenges/reward-badges/${badgeId}`);
+}
