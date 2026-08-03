@@ -2,8 +2,8 @@
 
 import { ChallengeCreate } from '@/features/challenge/ChallengeCreate';
 import { createChallenge, fetchCreationTickets } from '@/features/challenge/api';
-import { uploadImageToS3 } from '@/shared/lib/upload';
 import { ROUTES } from '@/shared/lib/routes';
+import { uploadImageToS3 } from '@/shared/lib/upload';
 import { useAppState } from '@/shared/store/AppStateProvider';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -13,7 +13,7 @@ const MONTHLY_LIMIT = 3;
 /** `/challenge/new` 챌린지 개설 (월 3회 제한, §6) */
 export default function ChallengeCreatePage() {
   const router = useRouter();
-  const { customBadge, setCustomBadge } = useAppState();
+  const { customBadge, setCustomBadge, resetChallengeDraft } = useAppState();
 
   // 이번 달 개설 횟수 = 3 - 남은 개설권 (서버 기준)
   const [createdThisMonth, setCreatedThisMonth] = useState(0);
@@ -29,6 +29,7 @@ export default function ChallengeCreatePage() {
       customBadge={customBadge}
       onBack={() => {
         setCustomBadge(null);
+        resetChallengeDraft();
         router.push(ROUTES.challenge);
       }}
       onCreate={async (challenge) => {
@@ -50,7 +51,8 @@ export default function ChallengeCreatePage() {
             slots,
           });
           setCustomBadge(null);
-          router.push(ROUTES.challenge);   // 목록/상세는 아직 mock → 우선 목록으로
+          resetChallengeDraft();
+          router.push(ROUTES.challenge);   // 목록/상세는 아직 mock → 우선 목록으로   // 목록/상세는 아직 mock → 우선 목록으로
         } catch (e) {
           alert(e instanceof Error ? e.message : '챌린지 개설에 실패했어요');
         }

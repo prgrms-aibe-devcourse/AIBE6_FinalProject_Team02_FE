@@ -2,7 +2,11 @@
 
 import { useAuth } from "@/features/auth/AuthContext";
 import { INITIAL_CHALLENGES } from "@/features/challenge/data";
-import { ChallengeData, RewardBadge } from "@/features/challenge/types";
+import {
+  ChallengeData,
+  ChallengeTarget,
+  RewardBadge,
+} from "@/features/challenge/types";
 import {
   fetchBasicDexEntries,
   fetchMyBasicDexEntries,
@@ -19,6 +23,7 @@ import {
 } from "@/features/onboarding/api";
 import { AI_CANDIDATES, DEX_ENTRIES, DexEntry } from "@/shared/data/dex";
 import { BadgeId } from "@/shared/ui/atoms/EquippedBadge";
+
 import React, {
   createContext,
   useCallback,
@@ -93,6 +98,9 @@ interface AppStore {
   createChallenge: (challenge: ChallengeData) => void;
   customBadge: RewardBadge | null;
   setCustomBadge: (badge: RewardBadge | null) => void;
+  challengeDraft: { title: string; targets: ChallengeTarget[] };
+  setChallengeDraft: (draft: { title: string; targets: ChallengeTarget[] }) => void;
+  resetChallengeDraft: () => void
 
   // 등록 플로우
   registrationSource: RegistrationSource;
@@ -180,7 +188,15 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
   const [challenges, setChallenges] =
     useState<ChallengeData[]>(INITIAL_CHALLENGES);
-  const [customBadge, setCustomBadge] = useState<RewardBadge | null>(null);
+    const [customBadge, setCustomBadge] = useState<RewardBadge | null>(null);
+  const [challengeDraft, setChallengeDraft] = useState<{
+    title: string;
+    targets: ChallengeTarget[];
+  }>({ title: "", targets: [] });
+  const resetChallengeDraft = useCallback(
+    () => setChallengeDraft({ title: "", targets: [] }),
+    [],
+  );
 
   const [registrationSource, setRegistrationSource] =
     useState<RegistrationSource>("basic");
@@ -411,6 +427,9 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       createChallenge,
       customBadge,
       setCustomBadge,
+      challengeDraft,
+      setChallengeDraft,
+      resetChallengeDraft,
       registrationSource,
       registrationChallengeId,
       registrationMadeDexId,

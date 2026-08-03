@@ -1,8 +1,8 @@
-import React, { useRef, useState } from 'react';
-import { ArrowLeftIcon, BadgeIcon, CameraIcon, PlusIcon, Trash2Icon } from 'lucide-react';
+import { useAppState } from '@/shared/store/AppStateProvider';
 import { Badge } from '@/shared/ui/atoms/Badge';
+import { ArrowLeftIcon, BadgeIcon, CameraIcon, PlusIcon, Trash2Icon } from 'lucide-react';
+import React, { useRef, useState } from 'react';
 import { ChallengeData, ChallengeTarget, RewardBadge } from './types';
-
 interface Props {
   createdThisMonth: number;
   customBadge: RewardBadge | null;
@@ -27,11 +27,27 @@ export function ChallengeCreate({
   onCustomBadge,
   onUsePreset,
 }: Props) {
-  const [title, setTitle] = useState('');
+  
+    const { challengeDraft, setChallengeDraft } = useAppState();
+  const title = challengeDraft.title;
+  const setTitle = (value: string) =>
+    setChallengeDraft({ ...challengeDraft, title: value });
   const [targetName, setTargetName] = useState('');
   const [targetFile, setTargetFile] = useState<File | null>(null);
   const [targetPreview, setTargetPreview] = useState('');
-  const [targets, setTargets] = useState<ChallengeTarget[]>([]);
+  const targets = challengeDraft.targets;
+  const setTargets = (
+    updater:
+      | ChallengeTarget[]
+      | ((current: ChallengeTarget[]) => ChallengeTarget[]),
+  ) =>
+    setChallengeDraft({
+      ...challengeDraft,
+      targets:
+        typeof updater === 'function'
+          ? updater(challengeDraft.targets)
+          : updater,
+    });
   const [presetIndex, setPresetIndex] = useState(0);
   const canCreate = createdThisMonth < 3;
   const reward = customBadge ?? presets[presetIndex];
