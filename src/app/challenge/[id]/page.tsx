@@ -56,7 +56,15 @@ function toChallengeData(d: ChallengeDetailData): ChallengeData {
     mine: `나 ${unlocked}/${total}`,
     progress: total ? Math.round((unlocked / total) * 100) : 0,
     target: total,
-    targetRestaurants: d.slots.map((s) => ({ id: String(s.id), name: s.foodName, emoji: '🍽️', imageUrl: s.imageUrl ?? undefined })),
+    targetRestaurants: d.slots.map((s) => ({
+      id: String(s.id),
+      name: s.foodName,
+      emoji: '🍽️',
+      imageUrl: s.imageUrl ?? undefined,
+      placeName: s.placeName,
+      myImageUrl: s.myImageUrl,
+      unlockedAt: s.unlockedAt,
+    })),
     completedTargetIds: d.slots.filter((s) => s.unlocked).map((s) => String(s.id)),
   };
 }

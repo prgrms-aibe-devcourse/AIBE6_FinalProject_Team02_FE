@@ -1,10 +1,10 @@
 import React, { useRef, useState } from 'react';
-import { ArrowLeftIcon, CrownIcon, MapPinIcon, PlusIcon } from 'lucide-react';
+import { ArrowLeftIcon, CrownIcon, MapPinIcon, PlusIcon, XIcon } from 'lucide-react';
 import { ProgressBar } from '@/shared/ui/atoms/ProgressBar';
 import { Badge } from '@/shared/ui/atoms/Badge';
 import { FoodCard } from '@/shared/ui/molecules/FoodCard';
 import { TabBar } from '@/shared/ui/molecules/TabBar';
-import { ChallengeData } from './types';
+import { ChallengeData, ChallengeTarget } from './types';
 
 type DetailTab = '기록 도감' | '랭킹';
 interface Props {
@@ -38,6 +38,7 @@ export function ChallengeDetail({ challenge, onBack, onRegister, onJoin, onUnloc
   const badge = challenge.rewardBadge;
   const fileRef = useRef<HTMLInputElement>(null);
   const [pendingSlotId, setPendingSlotId] = useState<string | null>(null);
+  const [record, setRecord] = useState<ChallengeTarget | null>(null); // 해금 슬롯 기록 모달
   const pickPhoto = (slotId: string) => {
     setPendingSlotId(slotId);
     fileRef.current?.click();
@@ -128,7 +129,20 @@ export function ChallengeDetail({ challenge, onBack, onRegister, onJoin, onUnloc
                       }
                     />
                   );
-                  return joined && !unlocked ? (
+                  // 해금됨 → 내 기록 보기, 미해금 & 참여중 → 인증(사진), 그 외 → 정적
+                  if (unlocked) {
+                    return (
+                      <button
+                        key={target.id}
+                        type="button"
+                        onClick={() => setRecord(target)}
+                        className="text-left"
+                      >
+                        {card}
+                      </button>
+                    );
+                  }
+                  return joined ? (
                     <button
                       key={target.id}
                       type="button"
@@ -201,6 +215,45 @@ export function ChallengeDetail({ challenge, onBack, onRegister, onJoin, onUnloc
           </button>
         )}
       </div>
+      {record && (
+        <div
+          className="absolute inset-0 z-20 flex items-end justify-center bg-black/40 p-4"
+          onClick={() => setRecord(null)}
+        >
+          <div
+            className="w-full max-w-md rounded-3xl bg-white p-5 shadow-pop"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="font-display text-lg text-brown">{record.name}</h3>
+              <button onClick={() => setRecord(null)} aria-label="닫기">
+                <XIcon size={20} className="text-brown-muted" />
+              </button>
+            </div>
+            {record.myImageUrl ? (
+              <img
+                src={record.myImageUrl}
+                alt={`${record.name} 인증 사진`}
+                className="mb-3 aspect-square w-full rounded-2xl object-cover"
+              />
+            ) : (
+              <div className="mb-3 flex aspect-square w-full items-center justify-center rounded-2xl bg-cream-100 text-sm text-brown-muted">
+                인증 사진이 없어요
+              </div>
+            )}
+            {record.placeName && (
+              <p className="flex items-center gap-1 text-sm text-brown-soft">
+                <MapPinIcon size={15} /> {record.placeName}
+              </p>
+            )}
+            {record.unlockedAt && (
+              <p className="mt-1 text-xs text-brown-muted">
+                {new Date(record.unlockedAt).toLocaleString('ko-KR')} 인증
+              </p>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

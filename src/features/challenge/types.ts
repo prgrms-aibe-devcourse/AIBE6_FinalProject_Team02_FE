@@ -22,6 +22,9 @@ export interface ChallengeTarget {
   placeName?: string | null;
   lat?: number | null;
   lng?: number | null;
+  /** 상세 기록 뷰 — 내가 인증한 사진/시각 (해금 시) */
+  myImageUrl?: string | null;
+  unlockedAt?: string | null;
 }
 
 export interface ChallengeData {
