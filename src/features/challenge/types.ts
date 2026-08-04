@@ -35,6 +35,8 @@ export interface ChallengeData {
   joined?: boolean;
   completed?: boolean;
   isCreator?: boolean;
+  /** 인증 방식 — 위치 인증이면 해금 시 현재 좌표 필요 */
+  verifyType?: 'FOOD' | 'LOCATION';
   target?: number;
   targetRestaurants?: ChallengeTarget[];
   completedTargetIds?: string[];

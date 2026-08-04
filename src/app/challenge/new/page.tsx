@@ -40,7 +40,13 @@ export default function ChallengeCreatePage() {
               const imageKey = t.file
                 ? (await uploadImageToS3(t.file, t.file.name)).key
                 : null;
-              return { foodName: t.name, imageKey };
+              return {
+                foodName: t.name,
+                imageKey,
+                placeName: t.placeName ?? null,
+                lat: t.lat ?? null,
+                lng: t.lng ?? null,
+              };
             }),
           );
           await createChallenge({

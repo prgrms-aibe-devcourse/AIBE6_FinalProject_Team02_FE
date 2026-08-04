@@ -14,6 +14,21 @@ function ddayLabel(endsAt: string) {
   return days >= 0 ? `D-${days}` : '종료';
 }
 
+/** 위치 인증용 현재 좌표 취득 (권한 필요) */
+function getCurrentCoords(): Promise<{ lat: number; lng: number }> {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject(new Error('이 브라우저에서는 위치를 사용할 수 없어요'));
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      () => reject(new Error('위치 권한을 허용해 주세요')),
+      { enableHighAccuracy: true, timeout: 10_000 },
+    );
+  });
+}
+
 /** BE 상세 → 화면용 ChallengeData */
 function toChallengeData(d: ChallengeDetailData): ChallengeData {
   const total = d.slots.length;
@@ -28,6 +43,7 @@ function toChallengeData(d: ChallengeDetailData): ChallengeData {
     owner: '',
     joined: d.joined,
     completed: d.completed,
+    verifyType: d.verifyType,
     mine: `나 ${unlocked}/${total}`,
     progress: total ? Math.round((unlocked / total) * 100) : 0,
     target: total,
@@ -75,8 +91,13 @@ export default function ChallengeDetailPage() {
       }}
       onUnlock={async (slotId, file) => {
         try {
+          // 위치 인증 챌린지면 현재 좌표를 먼저 확보(권한 필요)
+          let coords: { lat: number; lng: number } | null = null;
+          if (challenge.verifyType === 'LOCATION') {
+            coords = await getCurrentCoords();
+          }
           const { key } = await uploadImageToS3(file, file.name);   // S3 업로드 → key
-          await unlockSlot(id, slotId, key);                        // 인증(해금)
+          await unlockSlot(id, slotId, key, coords?.lat ?? null, coords?.lng ?? null); // 인증(해금)
           load();                                                   // 진행도 갱신
         } catch (e) {
           alert(e instanceof Error ? e.message : '인증에 실패했어요');

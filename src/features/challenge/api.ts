@@ -72,6 +72,7 @@ export interface ChallengeDetailData {
   description: string | null;
   challengeType: ChallengeType;
   periodType: PeriodType;
+  verifyType: VerifyType;
   startsAt: string;
   endsAt: string | null;
   rewardBadgeId: number | null;
@@ -100,9 +101,15 @@ export interface UnlockResult {
 }
 
 /** 슬롯 인증(해금). imageKey는 사전에 S3에 올린 인증 사진 key. */
-export function unlockSlot(id: string | number, slotId: string | number, imageKey: string) {
+export function unlockSlot(
+  id: string | number,
+  slotId: string | number,
+  imageKey: string,
+  lat: number | null = null,   // 위치 인증 챌린지면 현재 위치
+  lng: number | null = null,
+) {
   return apiFetch<UnlockResult>(`/api/v1/challenges/${id}/unlocks`, {
     method: 'POST',
-    body: JSON.stringify({ slotId: Number(slotId), imageKey }),
+    body: JSON.stringify({ slotId: Number(slotId), imageKey, lat, lng }),
   });
 }

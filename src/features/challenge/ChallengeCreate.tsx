@@ -3,6 +3,8 @@ import { Badge } from '@/shared/ui/atoms/Badge';
 import { ArrowLeftIcon, BadgeIcon, CameraIcon, PlusIcon, Trash2Icon } from 'lucide-react';
 import React, { useRef, useState } from 'react';
 import { ChallengeData, ChallengeTarget, RewardBadge } from './types';
+import { PlacePicker } from '@/features/register/PlacePicker';
+import { LocationInput } from '@/features/register/confirmApi';
 interface Props {
   createdThisMonth: number;
   customBadge: RewardBadge | null;
@@ -35,6 +37,7 @@ export function ChallengeCreate({
   const [targetName, setTargetName] = useState('');
   const [targetFile, setTargetFile] = useState<File | null>(null);
   const [targetPreview, setTargetPreview] = useState('');
+  const [targetPlace, setTargetPlace] = useState<LocationInput | null>(null);
   const targets = challengeDraft.targets;
   const setTargets = (
     updater:
@@ -69,6 +72,7 @@ export function ChallengeCreate({
   };
   const addTarget = () => {
     if (!targetName.trim()) return;
+    if (verifyType === 'LOCATION' && !targetPlace) return; // 위치 인증은 장소 필수
     setTargets((current) => [
       ...current,
       {
@@ -76,11 +80,15 @@ export function ChallengeCreate({
         name: targetName.trim(),
         file: targetFile,
         imageUrl: targetPreview || '/images/default_food.png',
+        placeName: targetPlace?.name ?? null,
+        lat: targetPlace?.lat ?? null,
+        lng: targetPlace?.lng ?? null,
       },
     ]);
     setTargetName('');
     setTargetFile(null);
     setTargetPreview('');
+    setTargetPlace(null);
   };
   const create = () => {
     if (!title.trim() || !enough || !periodOk || !canCreate) return;
@@ -227,7 +235,7 @@ export function ChallengeCreate({
               />
               <button
                 onClick={addTarget}
-                disabled={!targetName.trim()}
+                disabled={!targetName.trim() || (verifyType === 'LOCATION' && !targetPlace)}
                 className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-orange-500 text-white disabled:bg-action-disabled-bg disabled:text-action-disabled-text"
                 aria-label="목표 음식 추가"
               >
@@ -238,6 +246,14 @@ export function ChallengeCreate({
               음식 이름과 사진을 함께 등록하세요. 사진은 상세 도감에서 흑백으로 보이다가, 참가자가
               인증하면 컬러로 바뀌어요.
             </p>
+            {verifyType === 'LOCATION' && (
+              <div className="mt-3 border-t border-cream-200 pt-3">
+                <span className="mb-1.5 block text-xs font-bold text-brown-soft">
+                  인증 장소 (위치 인증 필수)
+                </span>
+                <PlacePicker value={targetPlace} onChange={setTargetPlace} />
+              </div>
+            )}
           </div>
           <div className="mt-3 space-y-2">
             {targets.map((target, index) => (
@@ -255,6 +271,11 @@ export function ChallengeCreate({
                 <span className="flex-1 text-sm font-bold text-brown">
                   <small className="mr-1 text-brown-muted">{index + 1}.</small>
                   {target.name}
+                  {target.placeName && (
+                    <small className="mt-0.5 block text-xs font-normal text-brown-muted">
+                      📍 {target.placeName}
+                    </small>
+                  )}
                 </span>
                 <button
                   onClick={() =>
