@@ -52,6 +52,13 @@ export function ChallengeCreate({
   const canCreate = createdThisMonth < 3;
   const reward = customBadge ?? presets[presetIndex];
   const enough = targets.length >= MIN_TARGETS; // 최소 5개 이상이어야 개설 가능
+  const verifyType = challengeDraft.verifyType;
+  const periodType = challengeDraft.periodType;
+  const endsAt = challengeDraft.endsAt;
+  const patchDraft = (patch: Partial<typeof challengeDraft>) =>
+    setChallengeDraft({ ...challengeDraft, ...patch });
+  // 기간 한정이면 종료일이 있어야 개설 가능
+  const periodOk = periodType === 'PERMANENT' || endsAt.trim().length > 0;
   const fileRef = useRef<HTMLInputElement>(null);
   const onPickFile = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -76,7 +83,7 @@ export function ChallengeCreate({
     setTargetPreview('');
   };
   const create = () => {
-    if (!title.trim() || !enough || !canCreate) return;
+    if (!title.trim() || !enough || !periodOk || !canCreate) return;
     onCreate({
       id: `created-${Date.now()}`,
       title: title.trim(),
@@ -123,6 +130,56 @@ export function ChallengeCreate({
             className="w-full rounded-2xl border border-cream-300 bg-white px-4 py-3 text-sm outline-none focus:border-orange-400"
           />
         </label>
+        <section className="mt-5">
+          <h2 className="font-display text-lg text-brown">인증 방식</h2>
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => patchDraft({ verifyType: 'FOOD' })}
+              className={`rounded-2xl border-2 p-3 text-left text-sm font-bold ${verifyType === 'FOOD' ? 'border-orange-500 bg-orange-50 text-orange-600' : 'border-transparent bg-white text-brown shadow-soft'}`}
+            >
+              📸 음식 사진
+              <span className="mt-0.5 block text-xs font-normal text-brown-muted">사진으로 인증</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => patchDraft({ verifyType: 'LOCATION' })}
+              className={`rounded-2xl border-2 p-3 text-left text-sm font-bold ${verifyType === 'LOCATION' ? 'border-orange-500 bg-orange-50 text-orange-600' : 'border-transparent bg-white text-brown shadow-soft'}`}
+            >
+              📍 위치 인증
+              <span className="mt-0.5 block text-xs font-normal text-brown-muted">지정 위치에서 인증</span>
+            </button>
+          </div>
+
+          <h2 className="mt-5 font-display text-lg text-brown">기한</h2>
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => patchDraft({ periodType: 'PERMANENT', endsAt: '' })}
+              className={`rounded-2xl border-2 p-3 text-sm font-bold ${periodType === 'PERMANENT' ? 'border-orange-500 bg-orange-50 text-orange-600' : 'border-transparent bg-white text-brown shadow-soft'}`}
+            >
+              상시
+            </button>
+            <button
+              type="button"
+              onClick={() => patchDraft({ periodType: 'LIMITED' })}
+              className={`rounded-2xl border-2 p-3 text-sm font-bold ${periodType === 'LIMITED' ? 'border-orange-500 bg-orange-50 text-orange-600' : 'border-transparent bg-white text-brown shadow-soft'}`}
+            >
+              기간 한정
+            </button>
+          </div>
+          {periodType === 'LIMITED' && (
+            <label className="mt-2 block">
+              <span className="mb-1 block text-xs font-bold text-brown-soft">종료일</span>
+              <input
+                type="date"
+                value={endsAt}
+                onChange={(event) => patchDraft({ endsAt: event.target.value })}
+                className="w-full rounded-2xl border border-cream-300 bg-white px-4 py-3 text-sm outline-none focus:border-orange-400"
+              />
+            </label>
+          )}
+        </section>
         <section className="mt-5">
           <div className="flex items-end justify-between">
             <div>
@@ -288,8 +345,13 @@ export function ChallengeCreate({
             {MIN_TARGETS - targets.length}개 더 필요)
           </p>
         )}
+        {canCreate && enough && !periodOk && (
+          <p className="mb-2 text-center text-xs font-medium text-brown-soft">
+            기간 한정 챌린지는 종료일을 선택해 주세요.
+          </p>
+        )}
         <button
-          disabled={!canCreate || !title.trim() || !enough}
+          disabled={!canCreate || !title.trim() || !enough || !periodOk}
           onClick={create}
           className="h-cta w-full rounded-full bg-orange-500 font-display text-lg text-white shadow-card disabled:bg-action-disabled-bg disabled:text-action-disabled-text disabled:shadow-none"
         >

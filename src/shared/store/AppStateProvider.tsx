@@ -98,8 +98,20 @@ interface AppStore {
   createChallenge: (challenge: ChallengeData) => void;
   customBadge: RewardBadge | null;
   setCustomBadge: (badge: RewardBadge | null) => void;
-  challengeDraft: { title: string; targets: ChallengeTarget[] };
-  setChallengeDraft: (draft: { title: string; targets: ChallengeTarget[] }) => void;
+  challengeDraft: {
+    title: string;
+    targets: ChallengeTarget[];
+    verifyType: "FOOD" | "LOCATION";
+    periodType: "PERMANENT" | "LIMITED";
+    endsAt: string;
+  };
+  setChallengeDraft: (draft: {
+    title: string;
+    targets: ChallengeTarget[];
+    verifyType: "FOOD" | "LOCATION";
+    periodType: "PERMANENT" | "LIMITED";
+    endsAt: string;
+  }) => void;
   resetChallengeDraft: () => void
 
   // 등록 플로우
@@ -192,9 +204,19 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [challengeDraft, setChallengeDraft] = useState<{
     title: string;
     targets: ChallengeTarget[];
-  }>({ title: "", targets: [] });
+    verifyType: "FOOD" | "LOCATION";
+    periodType: "PERMANENT" | "LIMITED";
+    endsAt: string;
+  }>({ title: "", targets: [], verifyType: "FOOD", periodType: "PERMANENT", endsAt: "" });
   const resetChallengeDraft = useCallback(
-    () => setChallengeDraft({ title: "", targets: [] }),
+    () =>
+      setChallengeDraft({
+        title: "",
+        targets: [],
+        verifyType: "FOOD",
+        periodType: "PERMANENT",
+        endsAt: "",
+      }),
     [],
   );
 

@@ -13,7 +13,7 @@ const MONTHLY_LIMIT = 3;
 /** `/challenge/new` 챌린지 개설 (월 3회 제한, §6) */
 export default function ChallengeCreatePage() {
   const router = useRouter();
-  const { customBadge, setCustomBadge, resetChallengeDraft } = useAppState();
+  const { customBadge, setCustomBadge, resetChallengeDraft, challengeDraft } = useAppState();
 
   // 이번 달 개설 횟수 = 3 - 남은 개설권 (서버 기준)
   const [createdThisMonth, setCreatedThisMonth] = useState(0);
@@ -45,8 +45,14 @@ export default function ChallengeCreatePage() {
           );
           await createChallenge({
             name: challenge.title,
-            challengeType: 'COLLECTION',   // 유형 UI 붙기 전 기본값
-            periodType: 'PERMANENT',       // 기한 UI 붙기 전 기본값(상시)
+            challengeType: 'COLLECTION',
+            verifyType: challengeDraft.verifyType,   // 음식 사진 / 위치 인증
+            periodType: challengeDraft.periodType,   // 상시 / 기간 한정
+            startsAt: null,
+            endsAt:
+              challengeDraft.periodType === 'LIMITED' && challengeDraft.endsAt
+                ? new Date(challengeDraft.endsAt).toISOString()
+                : null,
             rewardBadgeId: null,           // 뱃지 시스템 연동 전
             slots,
           });

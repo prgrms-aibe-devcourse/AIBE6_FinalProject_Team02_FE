@@ -16,6 +16,10 @@ export interface ChallengeTarget {
   imageUrl?: string;
   /** 개설 화면에서만 사용 — 업로드 전 로컬 파일 */
   file?: File | null;
+  /** 위치 인증 챌린지 — 목표 장소 */
+  placeName?: string | null;
+  lat?: number | null;
+  lng?: number | null;
 }
 
 export interface ChallengeData {
