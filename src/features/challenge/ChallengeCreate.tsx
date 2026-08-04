@@ -14,7 +14,7 @@ interface Props {
   createdThisMonth: number;
   customBadge: RewardBadge | null;
   onBack: () => void;
-  onCreate: (challenge: ChallengeData) => void;
+  onCreate: (challenge: ChallengeData) => void | Promise<void>;
   onCustomBadge: () => void;
   onUsePreset: () => void;
 }
@@ -42,6 +42,7 @@ export function ChallengeCreate({
   const [targets, setTargets] = useState<ChallengeTarget[]>([]);
   const [selectedCode, setSelectedCode] = useState(PRESETS[0].code);
   const [presetName, setPresetName] = useState(PRESETS[0].name); // 프리셋 기본 이름(편집 가능)
+  const [submitting, setSubmitting] = useState(false); // 개설 중복 제출 방지
   const canCreate = createdThisMonth < 3;
   const selectedPreset =
     PRESETS.find((p) => p.code === selectedCode) ?? PRESETS[0];
@@ -75,9 +76,11 @@ export function ChallengeCreate({
     setTargetFile(null);
     setTargetPreview("");
   };
-  const create = () => {
-    if (!title.trim() || !enough || !canCreate) return;
-    onCreate({
+  const create = async () => {
+    if (submitting || !title.trim() || !enough || !canCreate) return;
+    setSubmitting(true);
+    try {
+      await onCreate({
       id: `created-${Date.now()}`,
       title: title.trim(),
       emoji: "🏆",
@@ -99,7 +102,10 @@ export function ChallengeCreate({
         tone: "bg-orange-100 text-orange-700",
         code: selectedPreset.code,
       },
-    });
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
   return (
     <div className="flex h-full flex-col bg-cream-100">
@@ -339,13 +345,15 @@ export function ChallengeCreate({
           </p>
         )}
         <button
-          disabled={!canCreate || !title.trim() || !enough}
+          disabled={submitting || !canCreate || !title.trim() || !enough}
           onClick={create}
           className="h-cta w-full rounded-full bg-orange-500 font-display text-lg text-white shadow-card disabled:bg-action-disabled-bg disabled:text-action-disabled-text disabled:shadow-none"
         >
-          {enough
-            ? `목표 ${targets.length}개로 챌린지 개설하기`
-            : `목표 음식 ${targets.length}/${MIN_TARGETS}`}
+          {submitting
+            ? '개설 중…'
+            : enough
+              ? `목표 ${targets.length}개로 챌린지 개설하기`
+              : `목표 음식 ${targets.length}/${MIN_TARGETS}`}
         </button>
       </div>
     </div>

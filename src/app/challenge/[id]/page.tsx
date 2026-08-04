@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { notFound, useParams, useRouter } from 'next/navigation';
 import { ChallengeDetail } from '@/features/challenge/ChallengeDetail';
 import { RewardModal } from '@/features/challenge/RewardModal';
@@ -55,19 +55,24 @@ export default function ChallengeDetailPage() {
   const [missing, setMissing] = useState(false);
   const [rewardBadge, setRewardBadge] = useState<RewardBadgeInfo | null>(null);
   const [showReward, setShowReward] = useState(false);
+  const reqRef = useRef(0); // 최신 요청만 반영 — 다른 챌린지 응답이 늦게 도착해 덮는 것 방지
 
   const load = useCallback(() => {
+    const token = ++reqRef.current;
     fetchChallengeDetail(id)
       .then((d) => {
+        if (token !== reqRef.current) return; // 더 최신 요청이 있으면 무시
         setChallenge(toChallengeData(d));
         // 완료 팝업/미리보기용 보상 뱃지 정보
         if (d.rewardBadgeId) {
-          fetchRewardBadge(d.rewardBadgeId).then(setRewardBadge).catch(() => {});
+          fetchRewardBadge(d.rewardBadgeId)
+            .then((rb) => { if (token === reqRef.current) setRewardBadge(rb); })
+            .catch(() => {});
         } else {
           setRewardBadge(null);
         }
       })
-      .catch(() => setMissing(true));
+      .catch(() => { if (token === reqRef.current) setMissing(true); });
   }, [id]);
 
   useEffect(() => { load(); }, [load]);
