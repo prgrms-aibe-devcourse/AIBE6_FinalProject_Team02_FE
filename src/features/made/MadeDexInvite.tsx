@@ -24,12 +24,16 @@ interface Props {
   /** 그룹장만 코드를 보고 발급할 수 있다 */
   canManage: boolean;
   loading: boolean;
+  /** 조회가 실패했다 — "코드가 없다"와 구분해야 한다 */
+  loadFailed: boolean;
   issuing: boolean;
   error: string | null;
   participants: MadeParticipant[];
   onBack: () => void;
   onIssue: () => void;
-  onCopy: (text: string) => void;
+  onRetry: () => void;
+  /** 실제로 클립보드에 들어갔는지 돌려준다 */
+  onCopy: (text: string) => Promise<boolean>;
   onRemove: (id: string) => void;
 }
 
@@ -40,22 +44,28 @@ export function MadeDexInvite({
   inviteLink,
   canManage,
   loading,
+  loadFailed,
   issuing,
   error,
   participants,
   onBack,
   onIssue,
+  onRetry,
   onCopy,
   onRemove,
 }: Props) {
   // 어느 버튼을 눌렀는지까지 기억해야 "복사했어요"가 그 버튼에만 뜬다
   const [copied, setCopied] = useState<'code' | 'link' | null>(null);
+  const [copyFailed, setCopyFailed] = useState(false);
   const [removing, setRemoving] = useState<MadeParticipant | null>(null);
 
-  const copy = (kind: 'code' | 'link', text: string) => {
-    onCopy(text);
-    setCopied(kind);
-    window.setTimeout(() => setCopied(null), 1800);
+  // 클립보드 API는 https나 localhost가 아니면 아예 없다.
+  // 결과를 확인하지 않으면 복사되지 않았는데 "복사했어요"가 뜬다.
+  const copy = async (kind: 'code' | 'link', text: string) => {
+    const copiedOk = await onCopy(text);
+    setCopyFailed(!copiedOk);
+    setCopied(copiedOk ? kind : null);
+    if (copiedOk) window.setTimeout(() => setCopied(null), 1800);
   };
 
   const daysLeft = expiresAt ? inviteDaysLeft(expiresAt) : 0;
@@ -77,6 +87,13 @@ export function MadeDexInvite({
 
           {loading ? (
             <p className="mt-4 text-sm text-orange-50">코드를 불러오는 중…</p>
+          ) : loadFailed ? (
+            // 코드가 있는지 모르는 상태다. 여기서 발급을 권하면 살아 있는 코드를 죽일 수 있다
+            <p className="mt-4 text-sm leading-5 text-orange-50">
+              코드를 불러오지 못했어요.
+              <br />
+              연결을 확인하고 다시 시도해 주세요.
+            </p>
           ) : !canManage ? (
             <p className="mt-4 text-sm leading-5 text-orange-50">
               초대 코드는 그룹장이 관리해요.
@@ -90,14 +107,14 @@ export function MadeDexInvite({
               </p>
               <div className="mt-4 flex flex-wrap justify-center gap-2">
                 <button
-                  onClick={() => copy('code', code)}
+                  onClick={() => void copy('code', code)}
                   className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-bold text-orange-600">
                   {copied === 'code' ? <CheckIcon size={16} /> : <CopyIcon size={16} />}
                   {copied === 'code' ? '복사했어요' : '코드 복사'}
                 </button>
                 {inviteLink && (
                   <button
-                    onClick={() => copy('link', inviteLink)}
+                    onClick={() => void copy('link', inviteLink)}
                     className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-bold text-orange-600">
                     {copied === 'link' ? <CheckIcon size={16} /> : <LinkIcon size={16} />}
                     {copied === 'link' ? '복사했어요' : '링크 복사'}
@@ -116,8 +133,18 @@ export function MadeDexInvite({
             </p>
           )}
 
+          {/* 조회에 실패했으면 발급이 아니라 재조회만 준다 */}
+          {!loading && loadFailed && (
+            <button
+              onClick={onRetry}
+              className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/60 px-4 py-2 text-sm font-bold text-white">
+              <RefreshCwIcon size={16} />
+              다시 시도
+            </button>
+          )}
+
           {/* 멤버에게는 눌러도 403이 나는 버튼을 보여주지 않는다 */}
-          {canManage && (
+          {canManage && !loadFailed && (
             <>
               <button
                 onClick={onIssue}
@@ -132,6 +159,11 @@ export function MadeDexInvite({
                 </p>
               )}
             </>
+          )}
+          {copyFailed && (
+            <p className="mt-3 text-sm text-orange-50">
+              복사하지 못했어요. 코드를 길게 눌러 복사해 주세요.
+            </p>
           )}
           {error && <p className="mt-3 text-sm font-bold text-red-100">{error}</p>}
         </section>

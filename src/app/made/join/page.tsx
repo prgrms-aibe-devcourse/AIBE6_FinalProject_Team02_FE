@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useCallback, useEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { MadeDexCodeEntry } from '@/features/made/MadeDexInvite';
 import { fetchInvitePreview, joinMadeDex } from '@/features/made/api';
@@ -38,19 +38,34 @@ function JoinContent() {
   const [groupName, setGroupName] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // 미리보기 응답이 늦게 도착했을 때 "지금 입력된 코드"와 대조하려고 들고 있는다
+  const codeRef = useRef('');
+
+  const changeCode = useCallback((value: string) => {
+    const next = normalizeInviteCode(value);
+    codeRef.current = next;
+    setCode(next);
+    setGroupName(null);
+    setError(null);
+  }, []);
 
   // 미리보기는 링크로 들어온 경우에만 부른다.
   // 입력할 때마다 부르면 코드를 넣어보며 남의 그룹 이름을 캐낼 수 있다.
   useEffect(() => {
     if (!linkedCode || !me) return;
     const prefilled = normalizeInviteCode(linkedCode);
+    codeRef.current = prefilled;
     setCode(prefilled);
     if (prefilled.length !== INVITE_CODE_LENGTH) return;
 
     let alive = true;
+    // 응답이 도는 사이 사용자가 다른 코드를 입력했다면 그 결과는 버린다.
+    // 그러지 않으면 입력창의 코드와 화면의 그룹 이름이 어긋난다
+    const isStale = () => !alive || codeRef.current !== prefilled;
+
     fetchInvitePreview(prefilled).
       then((preview) => {
-        if (!alive) return;
+        if (isStale()) return;
         // 이미 멤버면 참여 버튼을 보여줄 이유가 없다
         if (preview.alreadyMember) {
           router.replace(ROUTES.madeDex(preview.madeDexId));
@@ -59,7 +74,7 @@ function JoinContent() {
         setGroupName(preview.name);
       }).
       catch((failure) => {
-        if (alive) setError(messageOf(failure));
+        if (!isStale()) setError(messageOf(failure));
       });
     return () => {
       alive = false;
@@ -100,10 +115,7 @@ function JoinContent() {
   return (
     <MadeDexCodeEntry
       code={code}
-      onCodeChange={(value) => {
-        setCode(normalizeInviteCode(value));
-        setError(null);
-      }}
+      onCodeChange={changeCode}
       groupName={groupName}
       submitting={submitting}
       error={error}

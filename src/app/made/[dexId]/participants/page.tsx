@@ -29,6 +29,20 @@ function messageOf(failure: unknown): string {
   return '초대 코드를 처리하지 못했어요.';
 }
 
+/**
+ * 클립보드 API는 https나 localhost에서만 존재하고, 있어도 거부될 수 있다.
+ * 성공 여부를 돌려줘야 화면이 "복사했어요"를 거짓으로 띄우지 않는다.
+ */
+async function copyToClipboard(text: string): Promise<boolean> {
+  if (!navigator.clipboard) return false;
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /** `/made/[dexId]/participants` 초대 코드 + 참여자 관리 */
 export default function MadeDexParticipantsPage() {
   const router = useRouter();
@@ -44,16 +58,22 @@ export default function MadeDexParticipantsPage() {
   const [error, setError] = useState<string | null>(null);
   // 그룹장이 아니면 조회 자체가 403이다. 이건 실패가 아니라 "권한 없음" 화면이다
   const [canManage, setCanManage] = useState(true);
+  // 조회가 깨진 것과 코드가 없는 것은 다르다. 섞으면 살아 있는 코드를 죽이는 발급을 권하게 된다
+  const [loadFailed, setLoadFailed] = useState(false);
 
   const load = useCallback(async (madeDexId: number) => {
+    setLoading(true);
     try {
       setInvite(await fetchActiveInvite(madeDexId));
+      setLoadFailed(false);
       setError(null);
     } catch (failure) {
       if (isNotOwner(failure)) {
         setCanManage(false);
+        setLoadFailed(false);
         setError(null);
       } else {
+        setLoadFailed(true);
         setError(messageOf(failure));
       }
     } finally {
@@ -95,14 +115,14 @@ export default function MadeDexParticipantsPage() {
       inviteLink={inviteLink}
       canManage={canManage}
       loading={loading}
+      loadFailed={loadFailed}
       issuing={issuing}
       error={error}
       participants={madeParticipants[dexId] ?? []}
       onBack={() => router.push(ROUTES.madeDex(dexId))}
       onIssue={() => void issue()}
-      onCopy={(text) => {
-        if (navigator.clipboard) void navigator.clipboard.writeText(text);
-      }}
+      onRetry={() => void load(dexId)}
+      onCopy={copyToClipboard}
       onRemove={(participantId) => removeParticipant(dexId, participantId)} />);
 
 }
