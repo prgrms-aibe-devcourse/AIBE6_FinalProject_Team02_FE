@@ -1,13 +1,22 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { notFound, useParams, useRouter } from 'next/navigation';
 import { ChallengeDetail } from '@/features/challenge/ChallengeDetail';
-import { fetchChallengeDetail, joinChallenge, unlockSlot, ChallengeDetailData } from '@/features/challenge/api';
-import { uploadImageToS3 } from '@/shared/lib/upload';
+import { RewardModal } from '@/features/challenge/RewardModal';
+import {
+  ChallengeDetailData,
+  fetchChallengeDetail,
+  fetchRewardBadge,
+  joinChallenge,
+  RewardBadgeInfo,
+  unlockSlot,
+} from '@/features/challenge/api';
 import { ChallengeData } from '@/features/challenge/types';
-import { useAppState } from '@/shared/store/AppStateProvider';
+import { resolveBadgeImage } from '@/shared/data/badgeAssets';
 import { ROUTES } from '@/shared/lib/routes';
+import { uploadImageToS3 } from '@/shared/lib/upload';
+import { useAppState } from '@/shared/store/AppStateProvider';
+import { notFound, useParams, useRouter } from 'next/navigation';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 function ddayLabel(endsAt: string) {
   const days = Math.ceil((new Date(endsAt).getTime() - Date.now()) / 86_400_000);
@@ -60,11 +69,26 @@ export default function ChallengeDetailPage() {
 
   const [challenge, setChallenge] = useState<ChallengeData | null>(null);
   const [missing, setMissing] = useState(false);
+  const [rewardBadge, setRewardBadge] = useState<RewardBadgeInfo | null>(null);
+  const [showReward, setShowReward] = useState(false);
+  const reqRef = useRef(0); // 최신 요청만 반영 — 다른 챌린지 응답이 늦게 도착해 덮는 것 방지
 
   const load = useCallback(() => {
+    const token = ++reqRef.current;
     fetchChallengeDetail(id)
-      .then((d) => setChallenge(toChallengeData(d)))
-      .catch(() => setMissing(true));
+      .then((d) => {
+        if (token !== reqRef.current) return; // 더 최신 요청이 있으면 무시
+        setChallenge(toChallengeData(d));
+        // 완료 팝업/미리보기용 보상 뱃지 정보
+        if (d.rewardBadgeId) {
+          fetchRewardBadge(d.rewardBadgeId)
+            .then((rb) => { if (token === reqRef.current) setRewardBadge(rb); })
+            .catch(() => {});
+        } else {
+          setRewardBadge(null);
+        }
+      })
+      .catch(() => { if (token === reqRef.current) setMissing(true); });
   }, [id]);
 
   useEffect(() => { load(); }, [load]);
@@ -77,9 +101,24 @@ export default function ChallengeDetailPage() {
       </div>);
   }
 
+  // 상세의 "완주 보상 뱃지" 섹션용 — 받아둔 보상 뱃지를 rewardBadge로 흘려보냄
+  const challengeWithReward: ChallengeData = rewardBadge
+    ? {
+        ...challenge,
+        rewardBadge: {
+          emoji: '🏆',
+          name: rewardBadge.name,
+          tone: 'bg-orange-100 text-orange-700',
+          code: rewardBadge.code ?? undefined,
+          customImage: resolveBadgeImage(rewardBadge.code, rewardBadge.imageUrl) ?? undefined,
+        },
+      }
+    : challenge;
+
   return (
+    <>
     <ChallengeDetail
-      challenge={challenge}
+      challenge={challengeWithReward}
       onBack={() => router.push(ROUTES.challenge)}
       onJoin={async () => {
         try {
@@ -97,7 +136,9 @@ export default function ChallengeDetailPage() {
             coords = await getCurrentCoords();
           }
           const { key } = await uploadImageToS3(file, file.name);   // S3 업로드 → key
-          await unlockSlot(id, slotId, key, coords?.lat ?? null, coords?.lng ?? null); // 인증(해금)
+          const res = await unlockSlot(id, slotId, key);            // 인증(해금)
+          // 이번 해금으로 막 완주했으면 축하 팝업
+          if (res.completed && !challenge?.completed) setShowReward(true);
           load();                                                   // 진행도 갱신
         } catch (e) {
           alert(e instanceof Error ? e.message : '인증에 실패했어요');
@@ -106,5 +147,13 @@ export default function ChallengeDetailPage() {
       onRegister={() => {
         startRegistration('challenge', challenge.id);
         router.push(ROUTES.register);
-      }} />);
+      }} />
+    {showReward && rewardBadge && (
+      <RewardModal
+        badge={rewardBadge}
+        onClose={() => setShowReward(false)}
+        onGoToBadges={() => router.push(ROUTES.myBadges)}
+      />
+    )}
+    </>);
 }

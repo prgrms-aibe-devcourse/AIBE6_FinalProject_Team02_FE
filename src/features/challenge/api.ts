@@ -1,4 +1,4 @@
-import { apiFetch } from '@/shared/lib/api';
+import { apiFetch } from "@/shared/lib/api";
 
 export type ChallengeType = 'FIRST_COME' | 'COLLECTION';
 export type PeriodType = 'PERMANENT' | 'LIMITED';
@@ -9,7 +9,7 @@ export interface CreateSlotInput {
   placeName?: string | null;
   lat?: number | null;
   lng?: number | null;
-  imageKey?: string | null;   // 개설자가 등록한 목표 음식 사진(S3 key)
+  imageKey?: string | null; // 개설자가 등록한 목표 음식 사진(S3 key)
 }
 
 export interface CreateChallengePayload {
@@ -31,13 +31,13 @@ export interface CreateChallengeResult {
 
 /** 이번 달 남은 개설권 */
 export function fetchCreationTickets() {
-  return apiFetch<{ remaining: number }>('/api/v1/challenges/creation-tickets');
+  return apiFetch<{ remaining: number }>("/api/v1/challenges/creation-tickets");
 }
 
 /** 챌린지 개설 */
 export function createChallenge(payload: CreateChallengePayload) {
-  return apiFetch<CreateChallengeResult>('/api/v1/challenges', {
-    method: 'POST',
+  return apiFetch<CreateChallengeResult>("/api/v1/challenges", {
+    method: "POST",
     body: JSON.stringify(payload),
   });
 }
@@ -53,7 +53,7 @@ export interface ChallengeSummary {
 }
 
 /** 챌린지 탐색 (진행중/완료) */
-export function fetchChallenges(status: 'ONGOING' | 'FINISHED' = 'ONGOING') {
+export function fetchChallenges(status: "ONGOING" | "FINISHED" = "ONGOING") {
   return apiFetch<ChallengeSummary[]>(`/api/v1/challenges?status=${status}`);
 }
 
@@ -63,7 +63,7 @@ export interface ChallengeSlotDetail {
   placeName: string | null;
   slotOrder: number;
   unlocked: boolean;
-  imageUrl: string | null;   // 개설자가 등록한 목표 사진(프리사인 URL). 미해금이면 흑백 표시
+  imageUrl: string | null; // 개설자가 등록한 목표 사진(프리사인 URL). 미해금이면 흑백 표시
 }
 
 export interface ChallengeDetailData {
@@ -89,9 +89,12 @@ export function fetchChallengeDetail(id: string | number) {
 
 /** 챌린지 참여 */
 export function joinChallenge(id: string | number) {
-  return apiFetch<{ participantId: number }>(`/api/v1/challenges/${id}/participants`, {
-    method: 'POST',
-  });
+  return apiFetch<{ participantId: number }>(
+    `/api/v1/challenges/${id}/participants`,
+    {
+      method: "POST",
+    },
+  );
 }
 
 export interface UnlockResult {
@@ -112,4 +115,38 @@ export function unlockSlot(
     method: 'POST',
     body: JSON.stringify({ slotId: Number(slotId), imageKey, lat, lng }),
   });
+}
+
+export interface RewardPreset {
+  code: string;
+  name: string;
+}
+
+/** 보상 프리셋 목록 */
+export function fetchRewardPresets() {
+  return apiFetch<RewardPreset[]>("/api/v1/challenges/reward-badges/presets");
+}
+
+/** 보상 뱃지 생성 */
+export function createRewardBadge(payload: {
+  name: string;
+  presetCode?: string | null;
+  imageKey?: string | null;
+}) {
+  return apiFetch<{ badgeId: number }>("/api/v1/challenges/reward-badges", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export interface RewardBadgeInfo {
+  id: number;
+  name: string;
+  code: string | null;
+  imageUrl: string | null; // 제작=프리사인 URL, 프리셋=null(code로 매핑)
+}
+
+/** 보상 뱃지 표시 정보(상세 미리보기·완료 팝업) */
+export function fetchRewardBadge(badgeId: number | string) {
+  return apiFetch<RewardBadgeInfo>(`/api/v1/challenges/reward-badges/${badgeId}`);
 }
