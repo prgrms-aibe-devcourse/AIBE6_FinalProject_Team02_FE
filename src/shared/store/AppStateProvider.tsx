@@ -479,6 +479,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       findChallenge,
       createChallenge,
       customBadge,
+      challengeDraft,
       registrationSource,
       registrationChallengeId,
       registrationMadeDexId,

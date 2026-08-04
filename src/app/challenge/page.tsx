@@ -3,7 +3,7 @@
 import { ChallengeCountHome } from '@/features/challenge/ChallengeCountHome';
 import { useAppState } from '@/shared/store/AppStateProvider';
 import { getTabHref, ROUTES } from '@/shared/lib/routes';
-import { ChallengeSummary, fetchChallenges, fetchCreationTickets } from '@/features/challenge/api';
+import { ChallengeSummary, fetchChallenges, fetchCreationTickets, fetchMyChallenges } from '@/features/challenge/api';
 import { ChallengeData } from '@/features/challenge/types';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -33,11 +33,26 @@ function ddayLabel(endsAt: string): string {
 export default function ChallengeHomePage() {
   const router = useRouter();
   const [challenges, setChallenges] = useState<ChallengeData[]>([]);
+  const [myCreated, setMyCreated] = useState<ChallengeData[]>([]);
+  const [myJoined, setMyJoined] = useState<ChallengeData[]>([]);
+  const [myCompleted, setMyCompleted] = useState<ChallengeData[]>([]);
   const [createdThisMonth, setCreatedThisMonth] = useState(0);
 
   useEffect(() => {
     fetchChallenges('ONGOING')
       .then((list) => setChallenges(list.map(toChallengeData)))
+      .catch(() => {});
+    // 내 챌린지 탭 — relation별로 서버에서 받아 플래그를 붙인다
+    fetchMyChallenges('CREATED')
+      .then((list) => setMyCreated(list.map((c) => ({ ...toChallengeData(c), isCreator: true }))))
+      .catch(() => {});
+    fetchMyChallenges('JOINED')
+      .then((list) => setMyJoined(list.map((c) => ({ ...toChallengeData(c), joined: true }))))
+      .catch(() => {});
+    fetchMyChallenges('COMPLETED')
+      .then((list) =>
+        setMyCompleted(list.map((c) => ({ ...toChallengeData(c), joined: true, completed: true }))),
+      )
       .catch(() => {});
     fetchCreationTickets()
       .then((t) => setCreatedThisMonth(MONTHLY_LIMIT - t.remaining))
@@ -47,6 +62,9 @@ export default function ChallengeHomePage() {
   return (
     <ChallengeCountHome
       challenges={challenges}
+      myCreated={myCreated}
+      myJoined={myJoined}
+      myCompleted={myCompleted}
       createdThisMonth={createdThisMonth}
       onOpenChallenge={(challenge) => router.push(ROUTES.challengeDetail(challenge.id))}
       onCreateChallenge={() => router.push(ROUTES.challengeNew)}

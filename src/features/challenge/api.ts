@@ -57,6 +57,15 @@ export function fetchChallenges(status: "ONGOING" | "FINISHED" = "ONGOING") {
   return apiFetch<ChallengeSummary[]>(`/api/v1/challenges?status=${status}`);
 }
 
+export type MyChallengeRelation = "CREATED" | "JOINED" | "COMPLETED";
+
+/** 내 챌린지 (개설한 / 참여 중 / 완료한) */
+export function fetchMyChallenges(relation: MyChallengeRelation) {
+  return apiFetch<ChallengeSummary[]>(
+    `/api/v1/challenges/mine?relation=${relation}`,
+  );
+}
+
 export interface ChallengeSlotDetail {
   id: number;
   foodName: string;

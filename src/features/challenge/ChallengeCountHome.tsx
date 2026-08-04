@@ -33,6 +33,9 @@ const MY_TABS: Array<{ id: MyTab; label: MyTab }> = [
 
 interface Props {
   challenges: ChallengeData[];
+  myCreated: ChallengeData[];
+  myJoined: ChallengeData[];
+  myCompleted: ChallengeData[];
   createdThisMonth: number;
   onTab: (tab: NavTab) => void;
   onOpenChallenge: (challenge: ChallengeData) => void;
@@ -42,6 +45,9 @@ interface Props {
 /** 챌린지 도감 (§6) — 개설자가 지정한 목표 리스트, 랭킹 탭, 월 3회 개설 제한 */
 export function ChallengeCountHome({
   challenges,
+  myCreated,
+  myJoined,
+  myCompleted,
   createdThisMonth,
   onTab,
   onOpenChallenge,
@@ -52,12 +58,9 @@ export function ChallengeCountHome({
   const [sortMode, setSortMode] = useState<SortMode>('참가자 많은 순');
   const [sortOpen, setSortOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
+  // 내 챌린지 탭은 서버에서 relation별로 받아온 목록을 그대로 사용
   const mine =
-    myTab === '참여 중'
-      ? challenges.filter((challenge) => challenge.joined && !challenge.completed)
-      : myTab === '개설한'
-        ? challenges.filter((challenge) => challenge.isCreator)
-        : challenges.filter((challenge) => challenge.completed);
+    myTab === '참여 중' ? myJoined : myTab === '개설한' ? myCreated : myCompleted;
   const discover = useMemo(
     () =>
       sortMode === '최근 등록순'
