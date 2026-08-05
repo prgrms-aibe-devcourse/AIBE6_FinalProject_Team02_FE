@@ -27,6 +27,8 @@ export interface ChallengeData {
   tag: string;
   dday: string;
   participants: number;
+  /** 랭킹 탭 지표값(최근 7일 조회/참여/해금), 최신순이면 null */
+  score?: number | null;
   mine?: string;
   progress?: number;
   owner: string;

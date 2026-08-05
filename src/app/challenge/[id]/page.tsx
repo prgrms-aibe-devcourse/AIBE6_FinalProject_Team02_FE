@@ -103,7 +103,11 @@ export default function ChallengeDetailPage() {
     <>
     <ChallengeDetail
       challenge={challengeWithReward}
-      onBack={() => router.push(ROUTES.challenge)}
+      onBack={() => {
+        // 직전 위치(탐색 탭/정렬 포함)로 복귀. 딥링크 등 히스토리 없으면 목록으로
+        if (typeof window !== 'undefined' && window.history.length > 1) router.back();
+        else router.push(ROUTES.challenge);
+      }}
       onJoin={async () => {
         try {
           await joinChallenge(id);
