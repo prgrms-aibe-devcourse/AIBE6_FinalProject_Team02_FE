@@ -11,7 +11,7 @@ import { ChallengeCountHome } from "@/features/challenge/ChallengeCountHome";
 import { ChallengeData } from "@/features/challenge/types";
 import { getTabHref, ROUTES } from "@/shared/lib/routes";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 
 const MONTHLY_LIMIT = 3;
 const PAGE_SIZE = 10;
@@ -67,6 +67,9 @@ function ChallengeHome() {
   const [explorePage, setExplorePage] = useState(0);
   const [exploreHasNext, setExploreHasNext] = useState(false);
   const [exploreLoading, setExploreLoading] = useState(false);
+  const [exploreError, setExploreError] = useState(false);
+  const reqRef = useRef(0); // 최신 탐색 요청만 반영(정렬/상태 빠른 전환 경합 방어)
+  const joiningRef = useRef<Set<string>>(new Set()); // 참여 요청 중복 방지
 
   // 탐색 탭/정렬을 URL 쿼리에 반영 → 상세에서 router.back() 시 그대로 복원
   const syncUrl = useCallback(
@@ -109,16 +112,23 @@ function ChallengeHome() {
       page: number,
       append: boolean,
     ) => {
+      const token = ++reqRef.current;
       setExploreLoading(true);
       fetchChallenges(status, sort, page, PAGE_SIZE)
         .then((res) => {
+          if (token !== reqRef.current) return; // 더 최신 요청이 있으면 무시
           const mapped = res.content.map(toChallengeData);
           setExploreItems((prev) => (append ? [...prev, ...mapped] : mapped));
           setExplorePage(res.page);
           setExploreHasNext(res.hasNext);
+          setExploreError(false);
         })
-        .catch(() => {})
-        .finally(() => setExploreLoading(false));
+        .catch(() => {
+          if (token === reqRef.current) setExploreError(true);
+        })
+        .finally(() => {
+          if (token === reqRef.current) setExploreLoading(false);
+        });
     },
     [],
   );
@@ -143,15 +153,25 @@ function ChallengeHome() {
       loadExplore(exploreStatus, exploreSort, explorePage + 1, true);
   };
 
-  // 탐색 목록에서 바로 참여 → 해당 카드만 "참여 중"으로 (낙관적 갱신)
+  const onExploreRetry = () =>
+    loadExplore(exploreStatus, exploreSort, 0, false);
+
+  // 탐색 목록에서 바로 참여 → 낙관적으로 "참여 중"(중복 요청 방지 + 실패 시 롤백)
   const onJoinChallenge = async (c: ChallengeData) => {
+    if (c.joined || joiningRef.current.has(c.id)) return; // 중복 클릭/이미 참여 차단
+    joiningRef.current.add(c.id);
+    setExploreItems((prev) =>
+      prev.map((it) => (it.id === c.id ? { ...it, joined: true } : it)),
+    );
     try {
       await joinChallenge(c.id);
-      setExploreItems((prev) =>
-        prev.map((it) => (it.id === c.id ? { ...it, joined: true } : it)),
-      );
     } catch (e) {
+      setExploreItems((prev) =>
+        prev.map((it) => (it.id === c.id ? { ...it, joined: false } : it)),
+      );
       alert(e instanceof Error ? e.message : "참여에 실패했어요");
+    } finally {
+      joiningRef.current.delete(c.id);
     }
   };
 
@@ -166,13 +186,17 @@ function ChallengeHome() {
       exploreStatus={exploreStatus}
       exploreHasNext={exploreHasNext}
       exploreLoading={exploreLoading}
+      exploreError={exploreError}
       onExploreStatusChange={onExploreStatusChange}
       onExploreSortChange={onExploreSortChange}
       onExploreLoadMore={onExploreLoadMore}
+      onExploreRetry={onExploreRetry}
       onJoinChallenge={onJoinChallenge}
-      onOpenChallenge={(challenge) =>
-        router.push(ROUTES.challengeDetail(challenge.id))
-      }
+      onOpenChallenge={(challenge) => {
+        // 목록에서 진입했음을 표시 → 상세 뒤로가기가 이 목록으로 복귀(공유·딥링크와 구분)
+        sessionStorage.setItem("challenge:fromList", "1");
+        router.push(ROUTES.challengeDetail(challenge.id));
+      }}
       onCreateChallenge={() => router.push(ROUTES.challengeNew)}
       onTab={(tab) => router.push(getTabHref(tab))}
     />

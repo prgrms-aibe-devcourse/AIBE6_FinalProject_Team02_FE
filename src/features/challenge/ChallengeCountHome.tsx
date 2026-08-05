@@ -70,9 +70,11 @@ interface Props {
   exploreStatus: ExploreStatus;
   exploreHasNext: boolean;
   exploreLoading: boolean;
+  exploreError: boolean;
   onExploreStatusChange: (status: ExploreStatus) => void;
   onExploreSortChange: (sort: ChallengeSort) => void;
   onExploreLoadMore: () => void;
+  onExploreRetry: () => void;
   onJoinChallenge: (challenge: ChallengeData) => void;
 }
 
@@ -90,9 +92,11 @@ export function ChallengeCountHome({
   exploreStatus,
   exploreHasNext,
   exploreLoading,
+  exploreError,
   onExploreStatusChange,
   onExploreSortChange,
   onExploreLoadMore,
+  onExploreRetry,
   onJoinChallenge,
 }: Props) {
   const [myTab, setMyTab] = useState<MyTab>("참여 중");
@@ -226,6 +230,18 @@ export function ChallengeCountHome({
                     onJoin={() => onJoinChallenge(challenge)}
                   />
                 ))
+              ) : exploreError ? (
+                <div className="rounded-2xl bg-white p-6 text-center shadow-soft">
+                  <p className="text-sm font-bold text-brown">
+                    목록을 불러오지 못했어요
+                  </p>
+                  <button
+                    onClick={onExploreRetry}
+                    className="mt-3 min-h-touch rounded-full bg-orange-500 px-5 text-sm font-bold text-white"
+                  >
+                    다시 시도
+                  </button>
+                </div>
               ) : (
                 <div className="rounded-2xl bg-white p-6 text-center shadow-soft">
                   <p className="text-sm font-bold text-brown">

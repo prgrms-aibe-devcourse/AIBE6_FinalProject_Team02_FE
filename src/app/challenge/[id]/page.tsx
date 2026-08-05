@@ -105,9 +105,13 @@ export default function ChallengeDetailPage() {
     <ChallengeDetail
       challenge={challengeWithReward}
       onBack={() => {
-        // 직전 위치(탐색 탭/정렬 포함)로 복귀. 딥링크 등 히스토리 없으면 목록으로
-        if (typeof window !== 'undefined' && window.history.length > 1) router.back();
-        else router.push(ROUTES.challenge);
+        // 목록에서 들어온 경우만 뒤로가기(그 자리로). 공유·딥링크 진입은 앱 목록으로
+        if (typeof window !== 'undefined' && sessionStorage.getItem('challenge:fromList') === '1') {
+          sessionStorage.removeItem('challenge:fromList');
+          router.back();
+        } else {
+          router.push(ROUTES.challenge);
+        }
       }}
       onJoin={async () => {
         try {
