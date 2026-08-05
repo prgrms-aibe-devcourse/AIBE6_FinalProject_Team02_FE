@@ -35,19 +35,18 @@ import React, {
 
 export type RegistrationSource = "basic" | "made" | "challenge";
 
-type InviteCode = { dexId: MadeDexId; expiresAt: number };
-export type JoinResult = "success" | "invalid" | "expired" | "already";
-
-const WEEK = 7 * 24 * 60 * 60 * 1000;
-
-// TODO(CATCHEAT-29): 초대/멤버 이슈에서 API로 교체. 그때까지 목업 도감 id 1, 2로 버틴다
-const MADE_DEX_TITLE: Record<MadeDexId, string> = {
-  1: "우리의 데이트 도감",
-  2: "회사 점심 도감",
-};
-const MADE_DEX_CODE: Record<MadeDexId, string> = {
-  1: "DATE26",
-  2: "LUNCH7",
+// TODO(CATCHEAT-32): 도감 홈 아바타도 members API로 교체
+const MADE_PARTICIPANTS: Record<MadeDexId, MadeParticipant[]> = {
+  1: [
+    { id: "me", name: "신" },
+    { id: "yoon", name: "윤" },
+  ],
+  2: [
+    { id: "me", name: "신" },
+    { id: "yoon", name: "윤" },
+    { id: "min", name: "민" },
+    { id: "jay", name: "J" },
+  ],
 };
 
 /**
@@ -85,10 +84,6 @@ interface AppStore {
 
   // 제작 도감
   madeParticipants: Record<MadeDexId, MadeParticipant[]>;
-  madeDexTitle: (dexId: MadeDexId) => string;
-  madeDexCode: (dexId: MadeDexId) => string;
-  removeParticipant: (dexId: MadeDexId, participantId: string) => void;
-  joinWithCode: (code: string) => { result: JoinResult; dexId?: MadeDexId };
   recentMadeCard: MadeCard | null;
 
   // 챌린지
@@ -177,25 +172,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     refreshEntries().finally(() => setEntriesLoading(false));
   }, [authLoading, refreshEntries]);
 
-  const [madeParticipants, setMadeParticipants] = useState<
-    Record<MadeDexId, MadeParticipant[]>
-  >({
-    1: [
-      { id: "me", name: "신" },
-      { id: "yoon", name: "윤" },
-    ],
-    2: [
-      { id: "me", name: "신" },
-      { id: "yoon", name: "윤" },
-      { id: "min", name: "민" },
-      { id: "jay", name: "J" },
-    ],
-  });
-  const [inviteCodes] = useState<Record<string, InviteCode>>({
-    DATE26: { dexId: 1, expiresAt: Date.now() + WEEK },
-    LUNCH7: { dexId: 2, expiresAt: Date.now() + WEEK },
-    OLD999: { dexId: 1, expiresAt: Date.now() - 1 },
-  });
+  const madeParticipants: Record<MadeDexId, MadeParticipant[]> = MADE_PARTICIPANTS;
   const [recentMadeCard, setRecentMadeCard] = useState<MadeCard | null>(null);
 
   const [challenges, setChallenges] =
@@ -282,42 +259,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       setHasUpload(false);
     },
     [],
-  );
-
-  const removeParticipant = useCallback(
-    (dexId: MadeDexId, participantId: string) => {
-      setMadeParticipants((current) => ({
-        ...current,
-        [dexId]: (current[dexId] ?? []).filter(
-          (person) => person.id !== participantId,
-        ),
-      }));
-    },
-    [],
-  );
-
-  const joinWithCode = useCallback(
-    (code: string): { result: JoinResult; dexId?: MadeDexId } => {
-      const invite = inviteCodes[code];
-      if (!invite) return { result: "invalid" };
-      if (invite.expiresAt < Date.now()) return { result: "expired" };
-      if (
-        (madeParticipants[invite.dexId] ?? []).some(
-          (participant) => participant.id === "guest",
-        )
-      ) {
-        return { result: "already" };
-      }
-      setMadeParticipants((current) => ({
-        ...current,
-        [invite.dexId]: [
-          ...(current[invite.dexId] ?? []),
-          { id: "guest", name: "현" },
-        ],
-      }));
-      return { result: "success", dexId: invite.dexId };
-    },
-    [inviteCodes, madeParticipants],
   );
 
   const createChallenge = useCallback((challenge: ChallengeData) => {
@@ -438,10 +379,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         }
       },
       madeParticipants,
-      madeDexTitle: (dexId) => MADE_DEX_TITLE[dexId] ?? "제작 도감",
-      madeDexCode: (dexId) => MADE_DEX_CODE[dexId] ?? "------",
-      removeParticipant,
-      joinWithCode,
       recentMadeCard,
       challenges,
       createdThisMonth,
@@ -471,8 +408,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       profilePhoto,
       onboardingSeen,
       madeParticipants,
-      removeParticipant,
-      joinWithCode,
       recentMadeCard,
       challenges,
       createdThisMonth,
