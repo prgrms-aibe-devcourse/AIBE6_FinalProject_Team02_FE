@@ -41,10 +41,12 @@ export function MadeDexCodeSheet({ onSubmit, onClose }: Props) {
       change(code.slice(0, index) + code.slice(index + 1));
       return;
     }
-    // 한 칸에 여러 글자가 들어오면(붙여넣기) 그 자리부터 채운다
-    const next = normalizeInviteCode(code.slice(0, index) + typed);
+    // 입력한 길이만 덮어쓰고 뒤 글자는 남긴다. 가운데 자리를 고쳐도 뒤가 지워지지 않는다
+    const next = normalizeInviteCode(
+      code.slice(0, index) + typed + code.slice(index + typed.length),
+    );
     change(next);
-    focusBox(next.length);
+    focusBox(Math.min(index + typed.length, next.length));
   };
 
   const keyDownAt = (index: number, event: React.KeyboardEvent) => {

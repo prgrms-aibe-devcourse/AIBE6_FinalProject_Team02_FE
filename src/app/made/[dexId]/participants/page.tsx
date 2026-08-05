@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { notFound, useParams, useRouter } from 'next/navigation';
 import { MadeDexInvite } from '@/features/made/MadeDexInvite';
 import {
@@ -60,13 +60,20 @@ export default function MadeDexParticipantsPage() {
   // 조회가 깨진 것과 코드가 없는 것은 다르다. 섞으면 살아 있는 코드를 죽이는 발급을 권하게 된다
   const [loadFailed, setLoadFailed] = useState(false);
 
+  // 위임 직후 재조회와 "다시 시도"가 겹치면 먼저 쏜 응답이 늦게 도착해 역할을 되돌린다
+  const loadSeq = useRef(0);
+
   // 역할을 먼저 확정하고 코드를 읽는다. 순서를 반대로 하면 일반 멤버에게 매번 403이 나간다
   const load = useCallback(async (madeDexId: number) => {
+    const seq = ++loadSeq.current;
+    const stale = () => seq !== loadSeq.current;
+
     setMembersLoading(true);
     setLoading(true);
     setMemberError(null);
     try {
       const next = await fetchMadeDexMembers(madeDexId);
+      if (stale()) return;
       setGroup(next);
       setMembersFailed(false);
       setCanManage(next.myRole === 'OWNER');
@@ -79,10 +86,13 @@ export default function MadeDexParticipantsPage() {
       }
 
       try {
-        setInvite(await fetchActiveInvite(madeDexId));
+        const active = await fetchActiveInvite(madeDexId);
+        if (stale()) return;
+        setInvite(active);
         setLoadFailed(false);
         setError(null);
       } catch (failure) {
+        if (stale()) return;
         // 목록을 읽은 뒤 그룹장이 바뀌었을 수도 있다
         if (isNotOwner(failure)) {
           setCanManage(false);
@@ -94,13 +104,16 @@ export default function MadeDexParticipantsPage() {
         }
       }
     } catch (failure) {
+      if (stale()) return;
       setMembersFailed(true);
       setMemberError(messageOf(failure));
       // 역할을 모르는 상태라 코드 영역도 "불러오지 못함"으로 둔다
       setLoadFailed(true);
     } finally {
-      setMembersLoading(false);
-      setLoading(false);
+      if (!stale()) {
+        setMembersLoading(false);
+        setLoading(false);
+      }
     }
   }, []);
 

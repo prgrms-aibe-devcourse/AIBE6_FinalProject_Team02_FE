@@ -46,7 +46,12 @@ function JoinContent() {
     if (!linkedCode || !me) return;
     const prefilled = normalizeInviteCode(linkedCode);
     codeRef.current = prefilled;
+    // 링크가 바뀌었는데 이전 미리보기가 남으면 "도감 열기"가 옛 도감으로 간다
+    previewDexId.current = null;
     setCode(prefilled);
+    setGroupName(null);
+    setError(null);
+    setAlreadyJoined(false);
     if (prefilled.length !== INVITE_CODE_LENGTH) return;
 
     let alive = true;

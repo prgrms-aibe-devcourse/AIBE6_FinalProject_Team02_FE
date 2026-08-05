@@ -41,6 +41,13 @@ export default function MadeDexEditPage() {
     if (dexId) void load(dexId);
   }, [dexId, load]);
 
+  // URL로 직접 들어온 멤버에게 저장 UI를 보여주면 표지가 먼저 업로드되고 PUT에서야 막힌다
+  useEffect(() => {
+    if (dexId && detail && detail.myRole !== 'OWNER') {
+      router.replace(ROUTES.madeInfo(dexId));
+    }
+  }, [dexId, detail, router]);
+
   if (!dexId) notFound();
 
   const save = async (
@@ -58,7 +65,7 @@ export default function MadeDexEditPage() {
     router.replace(ROUTES.madeInfo(dexId));
   };
 
-  if (!detail) {
+  if (!detail || detail.myRole !== 'OWNER') {
     return (
       <div className="flex h-full items-center justify-center bg-cream-100">
         <p className="text-sm text-content-secondary">

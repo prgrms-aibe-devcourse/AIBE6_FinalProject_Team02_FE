@@ -296,7 +296,6 @@ export function MadeDexInvite({
         <ConfirmDialog
           confirm={confirm}
           dexTitle={dexTitle}
-          busy={memberBusy}
           onCancel={() => setConfirm(null)}
           onConfirm={() => {
             if (confirm.kind === 'kick') onKick(confirm.member);
@@ -335,15 +334,14 @@ function MemberAvatar({ member }: {member: MadeDexMember;}) {
 interface ConfirmDialogProps {
   confirm: Confirm;
   dexTitle: string;
-  busy: boolean;
   onCancel: () => void;
   onConfirm: () => void;
 }
 
+// 확인을 누르면 바로 닫는다. 진행 상태와 실패는 목록 쪽에서 알린다
 function ConfirmDialog({
   confirm,
   dexTitle,
-  busy,
   onCancel,
   onConfirm,
 }: ConfirmDialogProps) {
@@ -414,9 +412,8 @@ function ConfirmDialog({
             취소
           </button>
           <button
-            disabled={busy}
             onClick={onConfirm}
-            className="rounded-2xl bg-orange-500 py-3 text-sm font-bold text-white disabled:opacity-40">
+            className="rounded-2xl bg-orange-500 py-3 text-sm font-bold text-white">
             {copy.action}
           </button>
         </div>
