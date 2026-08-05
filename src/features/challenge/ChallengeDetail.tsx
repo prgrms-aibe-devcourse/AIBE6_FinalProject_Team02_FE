@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { ArrowLeftIcon, CrownIcon, MapPinIcon, PlusIcon, XIcon } from 'lucide-react';
+import { ArrowLeftIcon, CameraIcon, CrownIcon, MapPinIcon, PlusIcon, XIcon } from 'lucide-react';
 import { ProgressBar } from '@/shared/ui/atoms/ProgressBar';
 import { Badge } from '@/shared/ui/atoms/Badge';
 import { FoodCard } from '@/shared/ui/molecules/FoodCard';
@@ -12,7 +12,11 @@ interface Props {
   onBack: () => void;
   onRegister: () => void;
   onJoin?: () => void;
-  onUnlock?: (slotId: string, file: File) => void;
+  onUnlock?: (
+    slotId: string,
+    file: File,
+    coords: { lat: number; lng: number } | null,
+  ) => void | Promise<void>;
 }
 const RANKINGS = [
   { rank: 1, name: '윤하연수', initial: '윤', count: 14, tone: 'bg-amber-200 text-amber-800' },
@@ -36,17 +40,65 @@ export function ChallengeDetail({ challenge, onBack, onRegister, onJoin, onUnloc
   const targets = challenge.targetRestaurants ?? [];
   const completed = new Set(challenge.completedTargetIds ?? []);
   const badge = challenge.rewardBadge;
-  const fileRef = useRef<HTMLInputElement>(null);
-  const [pendingSlotId, setPendingSlotId] = useState<string | null>(null);
-  const [record, setRecord] = useState<ChallengeTarget | null>(null); // 해금 슬롯 기록 모달
-  const pickPhoto = (slotId: string) => {
-    setPendingSlotId(slotId);
-    fileRef.current?.click();
+  const [record, setRecord] = useState<ChallengeTarget | null>(null); // 해금 기록 모달
+  const isLocation = challenge.verifyType === 'LOCATION';
+
+  // 인증(등록) 모달 상태
+  const [certify, setCertify] = useState<ChallengeTarget | null>(null);
+  const [certFile, setCertFile] = useState<File | null>(null);
+  const [certPreview, setCertPreview] = useState('');
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [locating, setLocating] = useState(false);
+  const [certError, setCertError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const certFileRef = useRef<HTMLInputElement>(null);
+
+  const openCertify = (target: ChallengeTarget) => {
+    setCertify(target);
+    setCertFile(null);
+    setCertPreview('');
+    setCoords(null);
+    setCertError('');
   };
-  const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onCertFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = '';
-    if (file && pendingSlotId && onUnlock) onUnlock(pendingSlotId, file);
+    if (!file) return;
+    setCertFile(file);
+    setCertPreview(URL.createObjectURL(file));
+  };
+  const captureLocation = () => {
+    if (!navigator.geolocation) {
+      setCertError('이 브라우저에서는 위치를 쓸 수 없어요');
+      return;
+    }
+    setLocating(true);
+    setCertError('');
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setLocating(false);
+      },
+      () => {
+        setCertError('위치 권한을 허용해 주세요');
+        setLocating(false);
+      },
+      { enableHighAccuracy: true, timeout: 10_000 },
+    );
+  };
+  const canSubmit = Boolean(certFile) && (!isLocation || coords != null) && !submitting;
+  const submitCertify = async () => {
+    if (!certify || !certFile || !onUnlock) return;
+    setSubmitting(true);
+    setCertError('');
+    try {
+      await onUnlock(certify.id, certFile, coords);
+      setCertify(null);
+    } catch (e) {
+      setCertError(e instanceof Error ? e.message : '인증에 실패했어요. 다시 시도해 주세요.');
+    } finally {
+      setSubmitting(false);
+    }
   };
   return (
     <div className="flex h-full flex-col bg-cream-100">
@@ -120,7 +172,7 @@ export function ChallengeDetail({ challenge, onBack, onRegister, onJoin, onUnloc
                   const onCardClick = unlocked
                     ? () => setRecord(target)
                     : joined
-                      ? () => pickPhoto(target.id)
+                      ? () => openCertify(target)
                       : undefined;
                   return (
                     // FoodCard가 <button>(잠금 시 disabled)이라 클릭을 먹음 →
@@ -162,13 +214,6 @@ export function ChallengeDetail({ challenge, onBack, onRegister, onJoin, onUnloc
                 등록된 목표 음식이 없어요.
               </div>
             )}
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={onFileChange}
-            />
           </section>
         ) : (
           <section className="mt-4">
@@ -249,6 +294,80 @@ export function ChallengeDetail({ challenge, onBack, onRegister, onJoin, onUnloc
                 {new Date(record.unlockedAt).toLocaleString('ko-KR')} 인증
               </p>
             )}
+          </div>
+        </div>
+      )}
+      {certify && (
+        <div
+          className="absolute inset-0 z-20 flex items-end justify-center bg-black/40 p-4"
+          onClick={() => (submitting ? null : setCertify(null))}
+        >
+          <div
+            className="w-full max-w-md rounded-3xl bg-white p-5 shadow-pop"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="font-display text-lg text-brown">{certify.name} 인증</h3>
+              <button onClick={() => setCertify(null)} aria-label="닫기" disabled={submitting}>
+                <XIcon size={20} className="text-brown-muted" />
+              </button>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => certFileRef.current?.click()}
+              className="flex aspect-square w-full items-center justify-center overflow-hidden rounded-2xl bg-cream-100 text-sm text-brown-muted"
+            >
+              {certPreview ? (
+                <img src={certPreview} alt="" className="h-full w-full object-cover" />
+              ) : (
+                <span className="flex flex-col items-center gap-1">
+                  <CameraIcon size={26} />
+                  사진 올리기
+                </span>
+              )}
+            </button>
+            <input
+              ref={certFileRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={onCertFile}
+            />
+
+            {isLocation && (
+              <div className="mt-3 rounded-2xl bg-cream-50 p-3">
+                <p className="flex items-center gap-1 text-xs font-bold text-brown-soft">
+                  <MapPinIcon size={13} /> {certify.placeName ?? '지정 위치'}
+                </p>
+                {coords ? (
+                  <p className="mt-1 text-xs font-medium text-green-600">현재 위치 확인됨</p>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={captureLocation}
+                    disabled={locating}
+                    className="mt-2 w-full rounded-xl bg-brown py-2 text-sm font-bold text-white disabled:opacity-60"
+                  >
+                    {locating ? '위치 확인 중…' : '현재 위치 확인'}
+                  </button>
+                )}
+              </div>
+            )}
+
+            {certError && <p className="mt-2 text-xs font-medium text-red-500">{certError}</p>}
+
+            <button
+              type="button"
+              onClick={submitCertify}
+              disabled={!canSubmit}
+              className="mt-4 h-cta w-full rounded-full bg-orange-500 font-display text-lg text-white shadow-card disabled:bg-action-disabled-bg disabled:text-action-disabled-text disabled:shadow-none"
+            >
+              {submitting ? '인증 중…' : '인증하기'}
+            </button>
+            <p className="mt-2 text-center text-xs text-brown-muted">
+              {isLocation ? '지정 위치에서 사진과 함께 인증돼요' : '사진을 올려 인증해요'}
+            </p>
           </div>
         </div>
       )}

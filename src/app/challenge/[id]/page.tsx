@@ -24,20 +24,6 @@ function ddayLabel(endsAt: string) {
 }
 
 /** 위치 인증용 현재 좌표 취득 (권한 필요) */
-function getCurrentCoords(): Promise<{ lat: number; lng: number }> {
-  return new Promise((resolve, reject) => {
-    if (!navigator.geolocation) {
-      reject(new Error('이 브라우저에서는 위치를 사용할 수 없어요'));
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-      () => reject(new Error('위치 권한을 허용해 주세요')),
-      { enableHighAccuracy: true, timeout: 10_000 },
-    );
-  });
-}
-
 /** BE 상세 → 화면용 ChallengeData */
 function toChallengeData(d: ChallengeDetailData): ChallengeData {
   const total = d.slots.length;
@@ -136,21 +122,13 @@ export default function ChallengeDetailPage() {
           alert(e instanceof Error ? e.message : '참여에 실패했어요');
         }
       }}
-      onUnlock={async (slotId, file) => {
-        try {
-          // 위치 인증 챌린지면 현재 좌표를 먼저 확보(권한 필요)
-          let coords: { lat: number; lng: number } | null = null;
-          if (challenge.verifyType === 'LOCATION') {
-            coords = await getCurrentCoords();
-          }
-          const { key } = await uploadImageToS3(file, file.name);   // S3 업로드 → key
-          const res = await unlockSlot(id, slotId, key);            // 인증(해금)
-          // 이번 해금으로 막 완주했으면 축하 팝업
-          if (res.completed && !challenge?.completed) setShowReward(true);
-          load();                                                   // 진행도 갱신
-        } catch (e) {
-          alert(e instanceof Error ? e.message : '인증에 실패했어요');
-        }
+      onUnlock={async (slotId, file, coords) => {
+        // 위치·에러 처리는 인증 모달이 담당. 여기선 업로드 → 해금만 (실패는 throw)
+        const { key } = await uploadImageToS3(file, file.name);
+        const res = await unlockSlot(id, slotId, key, coords?.lat ?? null, coords?.lng ?? null);
+        // 이번 해금으로 막 완주했으면 축하 팝업
+        if (res.completed && !challenge?.completed) setShowReward(true);
+        load(); // 진행도 갱신
       }}
       onRegister={() => {
         startRegistration('challenge', challenge.id);
