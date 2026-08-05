@@ -3,30 +3,25 @@
 import { useCallback, useEffect, useState } from 'react';
 import { notFound, useParams, useRouter } from 'next/navigation';
 import { MadeDexInvite } from '@/features/made/MadeDexInvite';
-import { fetchActiveInvite, issueInvite } from '@/features/made/api';
-import { parseMadeDexId } from '@/features/made/types';
-import type { MadeDexInvite as Invite } from '@/features/made/types';
-import { useAppState } from '@/shared/store/AppStateProvider';
-import { ApiError, UnauthorizedError } from '@/shared/lib/api';
+import {
+  fetchActiveInvite,
+  fetchMadeDexMembers,
+  issueInvite,
+  kickMadeDexMember,
+  leaveMadeDex,
+  transferMadeDexOwner,
+} from '@/features/made/api';
+import { MADE_DEX_MAX_MEMBERS, parseMadeDexId } from '@/features/made/types';
+import type {
+  MadeDexInvite as Invite,
+  MadeDexMember,
+  MadeDexMembers,
+} from '@/features/made/types';
+import { isNotOwner, madeErrorMessage } from '@/features/made/errors';
 import { ROUTES } from '@/shared/lib/routes';
 
-const MESSAGES: Record<string, string> = {
-  MADE_DEX_NOT_FOUND: '사라진 도감이에요.',
-};
-
-/** 코드 관리는 그룹장 전용이다. 멤버에게는 에러가 아니라 화면 상태로 다룬다 */
-function isNotOwner(failure: unknown): boolean {
-  return failure instanceof ApiError && failure.code === 'MADE_DEX_NOT_OWNER';
-}
-
 function messageOf(failure: unknown): string {
-  if (failure instanceof UnauthorizedError) {
-    return '로그인이 풀렸어요. 다시 로그인해 주세요.';
-  }
-  if (failure instanceof ApiError) {
-    return MESSAGES[failure.code] ?? failure.message;
-  }
-  return '초대 코드를 처리하지 못했어요.';
+  return madeErrorMessage(failure, '요청을 처리하지 못했어요.');
 }
 
 /**
@@ -47,10 +42,14 @@ async function copyToClipboard(text: string): Promise<boolean> {
 export default function MadeDexParticipantsPage() {
   const router = useRouter();
   const params = useParams<{dexId: string;}>();
-  // TODO(멤버 관리 이슈): 참여자 목록·제목은 아직 목 스토어에서 온다
-  const { madeParticipants, madeDexTitle, removeParticipant } = useAppState();
 
   const dexId = parseMadeDexId(params.dexId);
+
+  const [group, setGroup] = useState<MadeDexMembers | null>(null);
+  const [membersLoading, setMembersLoading] = useState(true);
+  const [membersFailed, setMembersFailed] = useState(false);
+  const [memberBusy, setMemberBusy] = useState(false);
+  const [memberError, setMemberError] = useState<string | null>(null);
 
   const [invite, setInvite] = useState<Invite | null>(null);
   const [loading, setLoading] = useState(true);
@@ -61,22 +60,46 @@ export default function MadeDexParticipantsPage() {
   // 조회가 깨진 것과 코드가 없는 것은 다르다. 섞으면 살아 있는 코드를 죽이는 발급을 권하게 된다
   const [loadFailed, setLoadFailed] = useState(false);
 
+  // 역할을 먼저 확정하고 코드를 읽는다. 순서를 반대로 하면 일반 멤버에게 매번 403이 나간다
   const load = useCallback(async (madeDexId: number) => {
+    setMembersLoading(true);
     setLoading(true);
+    setMemberError(null);
     try {
-      setInvite(await fetchActiveInvite(madeDexId));
-      setLoadFailed(false);
-      setError(null);
-    } catch (failure) {
-      if (isNotOwner(failure)) {
-        setCanManage(false);
+      const next = await fetchMadeDexMembers(madeDexId);
+      setGroup(next);
+      setMembersFailed(false);
+      setCanManage(next.myRole === 'OWNER');
+
+      if (next.myRole !== 'OWNER') {
+        setInvite(null);
         setLoadFailed(false);
         setError(null);
-      } else {
-        setLoadFailed(true);
-        setError(messageOf(failure));
+        return;
       }
+
+      try {
+        setInvite(await fetchActiveInvite(madeDexId));
+        setLoadFailed(false);
+        setError(null);
+      } catch (failure) {
+        // 목록을 읽은 뒤 그룹장이 바뀌었을 수도 있다
+        if (isNotOwner(failure)) {
+          setCanManage(false);
+          setLoadFailed(false);
+          setError(null);
+        } else {
+          setLoadFailed(true);
+          setError(messageOf(failure));
+        }
+      }
+    } catch (failure) {
+      setMembersFailed(true);
+      setMemberError(messageOf(failure));
+      // 역할을 모르는 상태라 코드 영역도 "불러오지 못함"으로 둔다
+      setLoadFailed(true);
     } finally {
+      setMembersLoading(false);
       setLoading(false);
     }
   }, []);
@@ -101,6 +124,39 @@ export default function MadeDexParticipantsPage() {
     }
   };
 
+  // 위임처럼 여러 행이 한꺼번에 바뀌는 경우가 있어 낙관적 갱신 대신 다시 읽는다
+  const runMemberAction = async (action: () => Promise<void>) => {
+    setMemberBusy(true);
+    setMemberError(null);
+    try {
+      await action();
+      await load(dexId);
+    } catch (failure) {
+      setMemberError(messageOf(failure));
+    } finally {
+      setMemberBusy(false);
+    }
+  };
+
+  const kick = (member: MadeDexMember) =>
+    void runMemberAction(() => kickMadeDexMember(dexId, member.userId));
+
+  const transfer = (member: MadeDexMember) =>
+    void runMemberAction(() => transferMadeDexOwner(dexId, member.userId));
+
+  // 나간 뒤에는 이 화면을 볼 권한이 없어 목록으로 돌려보낸다
+  const leave = async () => {
+    setMemberBusy(true);
+    setMemberError(null);
+    try {
+      await leaveMadeDex(dexId);
+      router.replace(ROUTES.made);
+    } catch (failure) {
+      setMemberError(messageOf(failure));
+      setMemberBusy(false);
+    }
+  };
+
   // 링크는 지금 보고 있는 앱의 주소로 만든다 — 서버가 배포 주소를 알 필요가 없다
   const inviteLink =
   invite && typeof window !== 'undefined' ?
@@ -109,7 +165,7 @@ export default function MadeDexParticipantsPage() {
 
   return (
     <MadeDexInvite
-      dexTitle={madeDexTitle(dexId)}
+      dexTitle={group?.name ?? '제작 도감'}
       code={invite?.code ?? null}
       expiresAt={invite?.expiresAt ?? null}
       inviteLink={inviteLink}
@@ -118,11 +174,19 @@ export default function MadeDexParticipantsPage() {
       loadFailed={loadFailed}
       issuing={issuing}
       error={error}
-      participants={madeParticipants[dexId] ?? []}
+      members={group?.members ?? []}
+      maxMembers={group?.maxMembers ?? MADE_DEX_MAX_MEMBERS}
+      myRole={group?.myRole ?? null}
+      membersLoading={membersLoading}
+      membersFailed={membersFailed}
+      memberBusy={memberBusy}
+      memberError={memberError}
       onBack={() => router.push(ROUTES.madeDex(dexId))}
       onIssue={() => void issue()}
       onRetry={() => void load(dexId)}
       onCopy={copyToClipboard}
-      onRemove={(participantId) => removeParticipant(dexId, participantId)} />);
+      onKick={kick}
+      onTransfer={transfer}
+      onLeave={() => void leave()} />);
 
 }
