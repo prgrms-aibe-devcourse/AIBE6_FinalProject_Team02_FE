@@ -28,9 +28,9 @@ const MY_TABS: Array<{ id: MyTab; label: MyTab }> = [
 // 최신순(기본) + 랭킹 3종(최근 7일)
 const SORT_TABS: Array<{ id: ChallengeSort; label: string }> = [
   { id: "LATEST", label: "최신순" },
-  { id: "VIEWS", label: "조회" },
-  { id: "PARTICIPANTS", label: "참여" },
-  { id: "UNLOCKS", label: "해금" },
+  { id: "VIEWS", label: "조회순" },
+  { id: "PARTICIPANTS", label: "참여자순" },
+  { id: "UNLOCKS", label: "진행도순" },
 ];
 
 // 카드/포디움에 붙일 지표 텍스트
