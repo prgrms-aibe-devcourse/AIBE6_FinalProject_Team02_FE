@@ -115,44 +115,37 @@ export function ChallengeDetail({ challenge, onBack, onRegister, onJoin, onUnloc
               <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
                 {targets.map((target) => {
                   const unlocked = completed.has(target.id);
-                  const card = (
-                    <FoodCard
-                      name={target.name}
-                      emoji={target.emoji ?? '🍽️'}
-                      illustrationUrl={target.imageUrl || '/images/default_food.png'}
-                      state={unlocked ? 'unlocked' : 'locked'}
-                      accessibleName={unlocked ? `${target.name}, 인증 완료` : '미해금 목표 음식'}
-                      footer={
-                        <p className="text-center text-xs text-content-secondary">
-                          {unlocked ? '인증 완료' : joined ? '인증하기' : '미해금'}
-                        </p>
-                      }
-                    />
-                  );
                   // 해금됨 → 내 기록 보기, 미해금 & 참여중 → 인증(사진), 그 외 → 정적
-                  if (unlocked) {
-                    return (
-                      <button
-                        key={target.id}
-                        type="button"
-                        onClick={() => setRecord(target)}
-                        className="text-left"
-                      >
-                        {card}
-                      </button>
-                    );
-                  }
-                  return joined ? (
-                    <button
-                      key={target.id}
-                      type="button"
-                      onClick={() => pickPhoto(target.id)}
-                      className="text-left"
-                    >
-                      {card}
-                    </button>
-                  ) : (
-                    <div key={target.id}>{card}</div>
+                  const clickable = unlocked || joined;
+                  const onCardClick = unlocked
+                    ? () => setRecord(target)
+                    : joined
+                      ? () => pickPhoto(target.id)
+                      : undefined;
+                  return (
+                    // FoodCard 자체가 <button>이라, 중첩 대신 형제 오버레이 버튼으로 클릭 처리
+                    <div key={target.id} className="relative">
+                      <FoodCard
+                        name={target.name}
+                        emoji={target.emoji ?? '🍽️'}
+                        illustrationUrl={target.imageUrl || '/images/default_food.png'}
+                        state={unlocked ? 'unlocked' : 'locked'}
+                        accessibleName={unlocked ? `${target.name}, 인증 완료` : '미해금 목표 음식'}
+                        footer={
+                          <p className="text-center text-xs text-content-secondary">
+                            {unlocked ? '인증 완료' : joined ? '인증하기' : '미해금'}
+                          </p>
+                        }
+                      />
+                      {clickable && (
+                        <button
+                          type="button"
+                          onClick={onCardClick}
+                          aria-label={unlocked ? `${target.name} 기록 보기` : `${target.name} 인증하기`}
+                          className="absolute inset-0 rounded-2xl"
+                        />
+                      )}
+                    </div>
                   );
                 })}
               </div>
@@ -199,13 +192,10 @@ export function ChallengeDetail({ challenge, onBack, onRegister, onJoin, onUnloc
       </main>
       <div className="border-t border-cream-300 bg-cream-50 px-5 py-4">
         {joined ? (
-          <button
-            onClick={onRegister}
-            className="flex h-cta w-full items-center justify-center gap-2 rounded-full bg-orange-500 font-display text-lg text-white shadow-card"
-          >
-            <PlusIcon size={19} aria-hidden />
-            지정 식당에서 등록하기
-          </button>
+          <p className="flex h-cta w-full items-center justify-center gap-2 rounded-full bg-orange-50 font-display text-base text-orange-700">
+            <PlusIcon size={18} aria-hidden />
+            목표 음식을 눌러 인증하세요
+          </p>
         ) : (
           <button
             onClick={onJoin}
