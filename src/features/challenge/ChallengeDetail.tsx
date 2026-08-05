@@ -17,6 +17,7 @@ interface Props {
     file: File,
     coords: { lat: number; lng: number } | null,
   ) => void | Promise<void>;
+  onLeave?: () => void;
 }
 const RANKINGS = [
   { rank: 1, name: '윤하연수', initial: '윤', count: 14, tone: 'bg-amber-200 text-amber-800' },
@@ -34,7 +35,7 @@ const RANKINGS = [
   { rank: 6, name: '한입만', initial: '한', count: 4, tone: 'bg-cream-200 text-brown-soft' },
 ];
 
-export function ChallengeDetail({ challenge, onBack, onRegister, onJoin, onUnlock }: Props) {
+export function ChallengeDetail({ challenge, onBack, onRegister, onJoin, onUnlock, onLeave }: Props) {
   const [activeTab, setActiveTab] = useState<DetailTab>('기록 도감');
   const joined = Boolean(challenge.joined);
   const targets = challenge.targetRestaurants ?? [];
@@ -107,6 +108,14 @@ export function ChallengeDetail({ challenge, onBack, onRegister, onJoin, onUnloc
           <ArrowLeftIcon size={22} />
         </button>
         <span className="font-display text-lg text-brown">챌린지 상세</span>
+        {joined && onLeave && (
+          <button
+            onClick={onLeave}
+            className="ml-auto rounded-full border border-cream-300 px-3 py-1 text-xs font-medium text-brown-muted"
+          >
+            나가기
+          </button>
+        )}
       </header>
       <main className="no-scrollbar flex-1 overflow-y-auto px-5">
         <section className="rounded-3xl bg-white p-4 shadow-soft">

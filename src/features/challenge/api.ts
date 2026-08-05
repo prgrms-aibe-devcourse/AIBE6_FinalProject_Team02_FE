@@ -110,6 +110,13 @@ export function joinChallenge(id: string | number) {
   );
 }
 
+/** 챌린지 포기(나가기) — 내 참여·인증 기록 삭제 */
+export function leaveChallenge(id: string | number) {
+  return apiFetch<void>(`/api/v1/challenges/${id}/participants`, {
+    method: "DELETE",
+  });
+}
+
 export interface UnlockResult {
   unlockedCount: number;
   totalSlots: number;

@@ -24,7 +24,7 @@ function toChallengeData(c: ChallengeSummary): ChallengeData {
     owner: '',
     target: total,
     mine: `나 ${unlocked}/${total}`,
-    progress: total ? Math.round((unlocked / total) * 100) : 0,
+    progress: total ? unlocked / total : 0, // ProgressBar는 0~1 비율
   };
 }
 

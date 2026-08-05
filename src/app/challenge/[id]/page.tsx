@@ -7,6 +7,7 @@ import {
   fetchChallengeDetail,
   fetchRewardBadge,
   joinChallenge,
+  leaveChallenge,
   RewardBadgeInfo,
   unlockSlot,
 } from '@/features/challenge/api';
@@ -17,6 +18,8 @@ import { uploadImageToS3 } from '@/shared/lib/upload';
 import { useAppState } from '@/shared/store/AppStateProvider';
 import { notFound, useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { AlertModal } from '@/shared/ui/molecules/AlertModal';
+
 
 function ddayLabel(endsAt: string) {
   const days = Math.ceil((new Date(endsAt).getTime() - Date.now()) / 86_400_000);
@@ -40,7 +43,7 @@ function toChallengeData(d: ChallengeDetailData): ChallengeData {
     completed: d.completed,
     verifyType: d.verifyType,
     mine: `나 ${unlocked}/${total}`,
-    progress: total ? Math.round((unlocked / total) * 100) : 0,
+    progress: total ? unlocked / total : 0, // ProgressBar는 0~1 비율
     target: total,
     targetRestaurants: d.slots.map((s) => ({
       id: String(s.id),
@@ -65,6 +68,7 @@ export default function ChallengeDetailPage() {
   const [missing, setMissing] = useState(false);
   const [rewardBadge, setRewardBadge] = useState<RewardBadgeInfo | null>(null);
   const [showReward, setShowReward] = useState(false);
+  const [alertMessage, setAlertMessage] = useState<string | null>(null);
   const reqRef = useRef(0); // 최신 요청만 반영 — 다른 챌린지 응답이 늦게 도착해 덮는 것 방지
 
   const load = useCallback(() => {
@@ -119,7 +123,16 @@ export default function ChallengeDetailPage() {
           await joinChallenge(id);
           load();   // 참여 후 상태 갱신
         } catch (e) {
-          alert(e instanceof Error ? e.message : '참여에 실패했어요');
+          setAlertMessage(e instanceof Error ? e.message : '참여에 실패했어요');
+        }
+      }}
+      onLeave={async () => {
+        if (!confirm('이 챌린지를 포기할까요? 내 인증 기록도 사라져요.')) return;
+        try {
+          await leaveChallenge(id);
+          router.push(ROUTES.challenge);   // 나가면 목록으로
+        } catch (e) {
+          setAlertMessage(e instanceof Error ? e.message : '나가기에 실패했어요');
         }
       }}
       onUnlock={async (slotId, file, coords) => {
@@ -139,6 +152,13 @@ export default function ChallengeDetailPage() {
         badge={rewardBadge}
         onClose={() => setShowReward(false)}
         onGoToBadges={() => router.push(ROUTES.myBadges)}
+      />
+    )}
+    {alertMessage && (
+      <AlertModal
+        title="오류"
+        message={alertMessage}
+        onClose={() => setAlertMessage(null)}
       />
     )}
     </>);
