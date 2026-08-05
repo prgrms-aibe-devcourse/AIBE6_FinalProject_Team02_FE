@@ -123,28 +123,36 @@ export function ChallengeDetail({ challenge, onBack, onRegister, onJoin, onUnloc
                       ? () => pickPhoto(target.id)
                       : undefined;
                   return (
-                    // FoodCard 자체가 <button>이라, 중첩 대신 형제 오버레이 버튼으로 클릭 처리
-                    <div key={target.id} className="relative">
-                      <FoodCard
-                        name={target.name}
-                        emoji={target.emoji ?? '🍽️'}
-                        illustrationUrl={target.imageUrl || '/images/default_food.png'}
-                        state={unlocked ? 'unlocked' : 'locked'}
-                        accessibleName={unlocked ? `${target.name}, 인증 완료` : '미해금 목표 음식'}
-                        footer={
-                          <p className="text-center text-xs text-content-secondary">
-                            {unlocked ? '인증 완료' : joined ? '인증하기' : '미해금'}
-                          </p>
-                        }
-                      />
-                      {clickable && (
-                        <button
-                          type="button"
-                          onClick={onCardClick}
-                          aria-label={unlocked ? `${target.name} 기록 보기` : `${target.name} 인증하기`}
-                          className="absolute inset-0 rounded-2xl"
+                    // FoodCard가 <button>(잠금 시 disabled)이라 클릭을 먹음 →
+                    // 카드는 pointer-events-none로 통과시키고, 바깥 div가 클릭을 받는다
+                    <div
+                      key={target.id}
+                      role={clickable ? 'button' : undefined}
+                      tabIndex={clickable ? 0 : undefined}
+                      onClick={clickable ? onCardClick : undefined}
+                      aria-label={
+                        clickable
+                          ? unlocked
+                            ? `${target.name} 기록 보기`
+                            : `${target.name} 인증하기`
+                          : undefined
+                      }
+                      className={clickable ? 'cursor-pointer' : undefined}
+                    >
+                      <div className="pointer-events-none">
+                        <FoodCard
+                          name={target.name}
+                          emoji={target.emoji ?? '🍽️'}
+                          illustrationUrl={target.imageUrl || '/images/default_food.png'}
+                          state={unlocked ? 'unlocked' : 'locked'}
+                          accessibleName={unlocked ? `${target.name}, 인증 완료` : '미해금 목표 음식'}
+                          footer={
+                            <p className="text-center text-xs text-content-secondary">
+                              {unlocked ? '인증 완료' : joined ? '인증하기' : '미해금'}
+                            </p>
+                          }
                         />
-                      )}
+                      </div>
                     </div>
                   );
                 })}

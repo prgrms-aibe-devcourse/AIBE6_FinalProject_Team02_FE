@@ -50,6 +50,8 @@ export interface ChallengeSummary {
   startsAt: string;
   endsAt: string | null;
   participantCount: number;
+  totalSlots: number; // 전체 목표 수 (내 챌린지 진행도용, 탐색은 0)
+  unlockedCount: number; // 내가 해금한 수 (내 챌린지 진행도용, 탐색은 0)
 }
 
 /** 챌린지 탐색 (진행중/완료) */

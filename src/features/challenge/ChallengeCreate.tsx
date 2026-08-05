@@ -1,11 +1,12 @@
 import { resolveBadgeImage } from '@/shared/data/badgeAssets';
 import { useAppState } from '@/shared/store/AppStateProvider';
 import { Badge } from '@/shared/ui/atoms/Badge';
-import { ArrowLeftIcon, BadgeIcon, CameraIcon, PlusIcon, Trash2Icon } from 'lucide-react';
+import { ArrowLeftIcon, BadgeIcon, CameraIcon, MapPinIcon, PlusIcon, Trash2Icon } from 'lucide-react';
 import React, { useRef, useState } from 'react';
 import { ChallengeData, ChallengeTarget, RewardBadge } from './types';
 import { PlacePicker } from '@/features/register/PlacePicker';
 import { LocationInput } from '@/features/register/confirmApi';
+import { geocodeAddress } from '@/features/register/placeApi';
 interface Props {
   createdThisMonth: number;
   customBadge: RewardBadge | null;
@@ -39,6 +40,29 @@ export function ChallengeCreate({
   const [targetFile, setTargetFile] = useState<File | null>(null);
   const [targetPreview, setTargetPreview] = useState('');
   const [targetPlace, setTargetPlace] = useState<LocationInput | null>(null);
+  const [addressInput, setAddressInput] = useState('');
+  const [addressError, setAddressError] = useState('');
+  const [resolving, setResolving] = useState(false);
+  // 주소 → 좌표 지오코딩 후 선택 장소로 지정
+  const resolveAddress = async () => {
+    const q = addressInput.trim();
+    if (!q || resolving) return;
+    setResolving(true);
+    setAddressError('');
+    try {
+      const g = await geocodeAddress(q);
+      if (g.lat == null || g.lng == null) {
+        setAddressError('해당 주소의 위치를 찾지 못했어요.');
+        return;
+      }
+      setTargetPlace({ name: g.address || q, lat: g.lat, lng: g.lng });
+      setAddressInput('');
+    } catch {
+      setAddressError('주소를 찾지 못했어요. 다시 확인해 주세요.');
+    } finally {
+      setResolving(false);
+    }
+  };
   const targets = challengeDraft.targets;
   const setTargets = (
     updater:
@@ -80,9 +104,12 @@ export function ChallengeCreate({
     setTargetFile(file);
     setTargetPreview(URL.createObjectURL(file));
   };
+  // 위치 인증은 좌표까지 있어야 함(직접 입력·좌표 없는 장소는 불가)
+  const placeReady =
+    targetPlace != null && targetPlace.lat != null && targetPlace.lng != null;
   const addTarget = () => {
     if (!targetName.trim()) return;
-    if (verifyType === 'LOCATION' && !targetPlace) return; // 위치 인증은 장소 필수
+    if (verifyType === 'LOCATION' && !placeReady) return; // 위치 인증은 좌표 필수
     setTargets((current) => [
       ...current,
       {
@@ -264,7 +291,7 @@ export function ChallengeCreate({
               />
               <button
                 onClick={addTarget}
-                disabled={!targetName.trim() || (verifyType === 'LOCATION' && !targetPlace)}
+                disabled={!targetName.trim() || (verifyType === 'LOCATION' && !placeReady)}
                 className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-orange-500 text-white disabled:bg-action-disabled-bg disabled:text-action-disabled-text"
                 aria-label="목표 음식 추가"
               >
@@ -281,6 +308,42 @@ export function ChallengeCreate({
                   인증 장소 (위치 인증 필수)
                 </span>
                 <PlacePicker value={targetPlace} onChange={setTargetPlace} />
+                {/* 또는 주소로 직접 입력 → 좌표 변환 */}
+                <div className="mt-2 flex gap-2">
+                  <input
+                    value={addressInput}
+                    onChange={(event) => setAddressInput(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') {
+                        event.preventDefault();
+                        resolveAddress();
+                      }
+                    }}
+                    placeholder="또는 주소 입력 (예: 낙성대역6길 17-7)"
+                    className="min-w-0 flex-1 rounded-xl bg-cream-100 px-3 py-2.5 text-sm outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={resolveAddress}
+                    disabled={!addressInput.trim() || resolving}
+                    className="shrink-0 rounded-xl bg-brown px-3 text-sm font-bold text-white disabled:bg-action-disabled-bg disabled:text-action-disabled-text"
+                  >
+                    {resolving ? '확인 중' : '주소 확인'}
+                  </button>
+                </div>
+                {addressError && (
+                  <p className="mt-1.5 text-xs font-medium text-red-500">{addressError}</p>
+                )}
+                {placeReady && targetPlace && (
+                  <p className="mt-1.5 flex items-center gap-1 text-xs font-medium text-green-600">
+                    <MapPinIcon size={13} /> {targetPlace.name} 위치 확인됨
+                  </p>
+                )}
+                {targetPlace && !placeReady && (
+                  <p className="mt-1.5 text-xs font-medium text-orange-600">
+                    검색 결과에서 장소를 고르거나 주소를 입력해 위치를 지정해 주세요.
+                  </p>
+                )}
               </div>
             )}
           </div>

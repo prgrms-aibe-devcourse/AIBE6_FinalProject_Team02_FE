@@ -12,6 +12,8 @@ const MONTHLY_LIMIT = 3;
 
 /** 서버 요약 → 화면 카드 형태로 변환 */
 function toChallengeData(c: ChallengeSummary): ChallengeData {
+  const total = c.totalSlots ?? 0;
+  const unlocked = c.unlockedCount ?? 0;
   return {
     id: String(c.id),
     title: c.name,
@@ -20,6 +22,9 @@ function toChallengeData(c: ChallengeSummary): ChallengeData {
     dday: c.periodType === 'PERMANENT' ? '상시' : (c.endsAt ? ddayLabel(c.endsAt) : '기간한정'),
     participants: c.participantCount,
     owner: '',
+    target: total,
+    mine: `나 ${unlocked}/${total}`,
+    progress: total ? Math.round((unlocked / total) * 100) : 0,
   };
 }
 
