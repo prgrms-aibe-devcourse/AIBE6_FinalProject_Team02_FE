@@ -38,6 +38,7 @@ const RANKINGS = [
 export function ChallengeDetail({ challenge, onBack, onRegister, onJoin, onUnlock, onLeave }: Props) {
   const [activeTab, setActiveTab] = useState<DetailTab>('기록 도감');
   const joined = Boolean(challenge.joined);
+  const ended = Boolean(challenge.ended);
   const targets = challenge.targetRestaurants ?? [];
   const completed = new Set(challenge.completedTargetIds ?? []);
   const badge = challenge.rewardBadge;

@@ -168,5 +168,7 @@ export interface RewardBadgeInfo {
 
 /** 보상 뱃지 표시 정보(상세 미리보기·완료 팝업) */
 export function fetchRewardBadge(badgeId: number | string) {
-  return apiFetch<RewardBadgeInfo>(`/api/v1/challenges/reward-badges/${badgeId}`);
+  return apiFetch<RewardBadgeInfo>(
+    `/api/v1/challenges/reward-badges/${badgeId}`,
+  );
 }

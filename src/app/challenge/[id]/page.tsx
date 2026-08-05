@@ -42,6 +42,7 @@ function toChallengeData(d: ChallengeDetailData): ChallengeData {
     joined: d.joined,
     completed: d.completed,
     verifyType: d.verifyType,
+    ended: d.periodType === 'LIMITED' && !!d.endsAt && new Date(d.endsAt).getTime() <= Date.now(),
     mine: `나 ${unlocked}/${total}`,
     progress: total ? unlocked / total : 0, // ProgressBar는 0~1 비율
     target: total,
@@ -117,7 +118,15 @@ export default function ChallengeDetailPage() {
     <>
     <ChallengeDetail
       challenge={challengeWithReward}
-      onBack={() => router.push(ROUTES.challenge)}
+      onBack={() => {
+        // 목록에서 들어온 경우만 뒤로가기(그 자리로). 공유·딥링크 진입은 앱 목록으로
+        if (typeof window !== 'undefined' && sessionStorage.getItem('challenge:fromList') === '1') {
+          sessionStorage.removeItem('challenge:fromList');
+          router.back();
+        } else {
+          router.push(ROUTES.challenge);
+        }
+      }}
       onJoin={async () => {
         try {
           await joinChallenge(id);
