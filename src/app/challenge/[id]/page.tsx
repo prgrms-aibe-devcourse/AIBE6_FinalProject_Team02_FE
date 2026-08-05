@@ -37,6 +37,7 @@ function toChallengeData(d: ChallengeDetailData): ChallengeData {
     owner: '',
     joined: d.joined,
     completed: d.completed,
+    ended: d.periodType === 'LIMITED' && !!d.endsAt && new Date(d.endsAt).getTime() <= Date.now(),
     mine: `나 ${unlocked}/${total}`,
     progress: total ? Math.round((unlocked / total) * 100) : 0,
     target: total,

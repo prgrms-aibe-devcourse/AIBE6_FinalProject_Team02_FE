@@ -57,6 +57,9 @@ function ChallengeHome() {
   const [exploreSort, setExploreSort] = useState<ChallengeSort>(
     sortParam && SORTS.includes(sortParam) ? sortParam : "LATEST",
   );
+  const [exploreStatus, setExploreStatus] = useState<"ONGOING" | "FINISHED">(
+    params.get("status") === "finished" ? "FINISHED" : "ONGOING",
+  );
 
   const [challenges, setChallenges] = useState<ChallengeData[]>([]);
   const [createdThisMonth, setCreatedThisMonth] = useState(0);
@@ -67,10 +70,15 @@ function ChallengeHome() {
 
   // 탐색 탭/정렬을 URL 쿼리에 반영 → 상세에서 router.back() 시 그대로 복원
   const syncUrl = useCallback(
-    (tab: "mine" | "explore", sort: ChallengeSort) => {
+    (
+      tab: "mine" | "explore",
+      sort: ChallengeSort,
+      status: "ONGOING" | "FINISHED",
+    ) => {
       const q = new URLSearchParams();
       if (tab === "explore") q.set("tab", "explore");
       if (sort !== "LATEST") q.set("sort", sort);
+      if (status === "FINISHED") q.set("status", "finished");
       const qs = q.toString();
       router.replace(qs ? `${ROUTES.challenge}?${qs}` : ROUTES.challenge, {
         scroll: false,
@@ -81,18 +89,28 @@ function ChallengeHome() {
 
   const onMainTabChange = (tab: "mine" | "explore") => {
     setMainTab(tab);
-    syncUrl(tab, exploreSort);
+    syncUrl(tab, exploreSort, exploreStatus);
   };
 
   const onExploreSortChange = (sort: ChallengeSort) => {
     setExploreSort(sort);
-    syncUrl(mainTab, sort);
+    syncUrl(mainTab, sort, exploreStatus);
+  };
+
+  const onExploreStatusChange = (status: "ONGOING" | "FINISHED") => {
+    setExploreStatus(status);
+    syncUrl(mainTab, exploreSort, status);
   };
 
   const loadExplore = useCallback(
-    (sort: ChallengeSort, page: number, append: boolean) => {
+    (
+      status: "ONGOING" | "FINISHED",
+      sort: ChallengeSort,
+      page: number,
+      append: boolean,
+    ) => {
       setExploreLoading(true);
-      fetchChallenges("ONGOING", sort, page, PAGE_SIZE)
+      fetchChallenges(status, sort, page, PAGE_SIZE)
         .then((res) => {
           const mapped = res.content.map(toChallengeData);
           setExploreItems((prev) => (append ? [...prev, ...mapped] : mapped));
@@ -115,14 +133,14 @@ function ChallengeHome() {
       .catch(() => {});
   }, []);
 
-  // 정렬 탭 바뀌면 첫 페이지부터 다시 로드
+  // 상태·정렬 바뀌면 첫 페이지부터 다시 로드
   useEffect(() => {
-    loadExplore(exploreSort, 0, false);
-  }, [exploreSort, loadExplore]);
+    loadExplore(exploreStatus, exploreSort, 0, false);
+  }, [exploreStatus, exploreSort, loadExplore]);
 
   const onExploreLoadMore = () => {
     if (!exploreLoading && exploreHasNext)
-      loadExplore(exploreSort, explorePage + 1, true);
+      loadExplore(exploreStatus, exploreSort, explorePage + 1, true);
   };
 
   // 탐색 목록에서 바로 참여 → 해당 카드만 "참여 중"으로 (낙관적 갱신)
@@ -145,8 +163,10 @@ function ChallengeHome() {
       createdThisMonth={createdThisMonth}
       exploreItems={exploreItems}
       exploreSort={exploreSort}
+      exploreStatus={exploreStatus}
       exploreHasNext={exploreHasNext}
       exploreLoading={exploreLoading}
+      onExploreStatusChange={onExploreStatusChange}
       onExploreSortChange={onExploreSortChange}
       onExploreLoadMore={onExploreLoadMore}
       onJoinChallenge={onJoinChallenge}

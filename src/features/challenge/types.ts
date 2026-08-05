@@ -34,6 +34,8 @@ export interface ChallengeData {
   owner: string;
   joined?: boolean;
   completed?: boolean;
+  /** 기간 한정 챌린지가 종료됐는지(참여·등록 불가) */
+  ended?: boolean;
   isCreator?: boolean;
   target?: number;
   targetRestaurants?: ChallengeTarget[];

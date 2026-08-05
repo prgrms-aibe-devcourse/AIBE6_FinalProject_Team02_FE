@@ -12,6 +12,7 @@ import { ChallengeSort } from "./api";
 import { ChallengeData } from "./types";
 
 type MyTab = "개설한" | "참여 중" | "완료한";
+type ExploreStatus = "ONGOING" | "FINISHED";
 
 const MAIN_TABS: Array<{ id: "mine" | "explore"; label: string }> = [
   { id: "mine", label: "내 챌린지" },
@@ -22,6 +23,12 @@ const MY_TABS: Array<{ id: MyTab; label: MyTab }> = [
   { id: "개설한", label: "개설한" },
   { id: "참여 중", label: "참여 중" },
   { id: "완료한", label: "완료한" },
+];
+
+// 탐색 진행 상태 토글
+const STATUS_TABS: Array<{ id: ExploreStatus; label: string }> = [
+  { id: "ONGOING", label: "진행중" },
+  { id: "FINISHED", label: "종료" },
 ];
 
 // 탐색 정렬 탭
@@ -60,8 +67,10 @@ interface Props {
   // 탐색(서버 정렬 + 페이지)
   exploreItems: ChallengeData[];
   exploreSort: ChallengeSort;
+  exploreStatus: ExploreStatus;
   exploreHasNext: boolean;
   exploreLoading: boolean;
+  onExploreStatusChange: (status: ExploreStatus) => void;
   onExploreSortChange: (sort: ChallengeSort) => void;
   onExploreLoadMore: () => void;
   onJoinChallenge: (challenge: ChallengeData) => void;
@@ -78,8 +87,10 @@ export function ChallengeCountHome({
   onCreateChallenge,
   exploreItems,
   exploreSort,
+  exploreStatus,
   exploreHasNext,
   exploreLoading,
+  onExploreStatusChange,
   onExploreSortChange,
   onExploreLoadMore,
   onJoinChallenge,
@@ -95,8 +106,10 @@ export function ChallengeCountHome({
         ? challenges.filter((challenge) => challenge.isCreator)
         : challenges.filter((challenge) => challenge.completed);
 
-  // 랭킹 탭이면 상위 3개는 포디움으로
-  const isRanking = exploreSort !== "LATEST";
+  // 종료 탭은 랭킹 미적용(최근 완료순)
+  // 랭킹은 진행중 + 최신순 외 정렬일 때만
+  const ended = exploreStatus === "FINISHED";
+  const isRanking = !ended && exploreSort !== "LATEST";
   const podium = isRanking ? exploreItems.slice(0, 3) : [];
 
   return (
@@ -162,26 +175,39 @@ export function ChallengeCountHome({
           <>
             <div className="flex items-center justify-between">
               <p className="text-sm font-bold text-brown">전체 챌린지</p>
-            </div>
-            <TabBar
-              label="탐색 정렬"
-              variant="pill"
-              items={SORT_TABS}
-              value={exploreSort}
-              onChange={onExploreSortChange}
-              className="mt-3"
-            />
-            {isRanking && (
-              <p className="mt-2 text-xs text-brown-muted">
-                최근 7일 기준 랭킹
-              </p>
-            )}
-            {isRanking && podium.length > 0 && (
-              <Podium
-                sort={exploreSort}
-                challenges={podium}
-                onOpen={onOpenChallenge}
+              <TabBar
+                label="진행 상태"
+                variant="pill"
+                items={STATUS_TABS}
+                value={exploreStatus}
+                onChange={onExploreStatusChange}
               />
+            </div>
+            {ended ? (
+              <p className="mt-3 text-xs text-brown-muted">최근 완료순</p>
+            ) : (
+              <>
+                <TabBar
+                  label="탐색 정렬"
+                  variant="pill"
+                  items={SORT_TABS}
+                  value={exploreSort}
+                  onChange={onExploreSortChange}
+                  className="mt-3"
+                />
+                {isRanking && (
+                  <p className="mt-2 text-xs text-brown-muted">
+                    최근 7일 기준 랭킹
+                  </p>
+                )}
+                {isRanking && podium.length > 0 && (
+                  <Podium
+                    sort={exploreSort}
+                    challenges={podium}
+                    onOpen={onOpenChallenge}
+                  />
+                )}
+              </>
             )}
             <div className="mt-4 space-y-3">
               {exploreItems.length ? (
@@ -189,7 +215,12 @@ export function ChallengeCountHome({
                   <ExploreCard
                     key={challenge.id}
                     rank={isRanking ? index + 1 : undefined}
-                    metric={scoreText(exploreSort, challenge)}
+                    metric={
+                      ended
+                        ? `${challenge.participants}명 참가`
+                        : scoreText(exploreSort, challenge)
+                    }
+                    ended={ended}
                     challenge={challenge}
                     onOpen={() => onOpenChallenge(challenge)}
                     onJoin={() => onJoinChallenge(challenge)}
@@ -198,7 +229,9 @@ export function ChallengeCountHome({
               ) : (
                 <div className="rounded-2xl bg-white p-6 text-center shadow-soft">
                   <p className="text-sm font-bold text-brown">
-                    아직 진행 중인 챌린지가 없어요
+                    {ended
+                      ? "종료된 챌린지가 없어요"
+                      : "아직 진행 중인 챌린지가 없어요"}
                   </p>
                 </div>
               )}
@@ -278,7 +311,7 @@ function Podium({
   challenges: ChallengeData[];
   onOpen: (challenge: ChallengeData) => void;
 }) {
-  // 입력은 순위 순(0=1위)
+  // 순위를 먼저 확정한 뒤 시각 배치만 2-1-3으로(가운데가 1위)
   const ranked = challenges.map((challenge, i) => ({ challenge, rank: i + 1 }));
   const ordered = [ranked[1], ranked[0], ranked[2]].filter(Boolean);
   return (
@@ -322,12 +355,14 @@ function ExploreCard({
   challenge,
   rank,
   metric,
+  ended,
   onOpen,
   onJoin,
 }: {
   challenge: ChallengeData;
   rank?: number;
   metric: string;
+  ended: boolean;
   onOpen: () => void;
   onJoin: () => void;
 }) {
@@ -354,7 +389,11 @@ function ExploreCard({
           <span className="mt-1 block text-xs text-brown-soft">{metric}</span>
         </span>
       </button>
-      {challenge.joined ? (
+      {ended ? (
+        <span className="shrink-0 rounded-full bg-cream-200 px-3 py-2 text-xs font-bold text-brown-muted">
+          종료
+        </span>
+      ) : challenge.joined ? (
         <span className="shrink-0 rounded-full bg-cream-200 px-3 py-2 text-xs font-bold text-brown-soft">
           참여 중
         </span>
