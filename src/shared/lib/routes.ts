@@ -36,10 +36,12 @@ export const ROUTES = {
   challengeDetail: (id: string) => `/challenge/${id}`,
 
   my: '/my',
-  myProfile: '/my/profile',
   myNickname: '/my/nickname',
   myBadges: '/my/badges',
   myPhoto: '/my/photo',
+
+  friends: '/friends',
+  userProfile: (id: number | 'me') => `/users/${id}`,
 
   admin: '/admin',
 
