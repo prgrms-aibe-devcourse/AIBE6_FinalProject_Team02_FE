@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { MAX_PHOTOS, putToS3, requestUploadTargets, validatePhotoFile } from '@/shared/lib/upload'
 import { createRecord, fetchRecord, fetchSlots, updateRecord } from './logitApi'
 import { madeErrorMessage } from './errors'
 import { RECORD_MAX_PHOTOS, timeLabel } from './logitTypes'
-import { newPhotoId, newPhotosOf, readyCount, updatePayloadOf } from './recordPhotos'
+import { hasFailure, newPhotoId, newPhotosOf, readyCount, updatePayloadOf } from './recordPhotos'
 import type { LogitSlot } from './logitTypes'
 import type { RecordPhoto } from './recordPhotos'
 import type { MadeDexId } from './types'
@@ -29,8 +29,21 @@ export function useRecordForm({ madeDexId, recordId, initialSlotId, initialDate 
     const [submitting, setSubmitting] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
+    /**
+     * 사진 목록의 최신값. 두 가지를 위해 상태와 함께 들고 있다.
+     * - 언마운트 정리에서 blob URL을 훑어야 하는데 그때는 setState가 실행되지 않는다
+     * - 업로드 시작 같은 부수효과를 state updater 밖으로 빼야 한다 (StrictMode에서 두 번 실행된다)
+     */
+    const photosRef = useRef<RecordPhoto[]>([])
+
+    const applyPhotos = useCallback((update: (current: RecordPhoto[]) => RecordPhoto[]) => {
+        const next = update(photosRef.current)
+        photosRef.current = next
+        setPhotos(next)
+    }, [])
+
     // 숨긴 슬롯에는 새로 쓸 수 없다. 고를 수 있는 것만 보여 준다
-    const selectable = slots.filter((slot) => !slot.hidden)
+    const selectable = useMemo(() => slots.filter((slot) => !slot.hidden), [slots])
 
     useEffect(() => {
         let live = true
@@ -48,7 +61,7 @@ export function useRecordForm({ madeDexId, recordId, initialSlotId, initialDate 
                 setSlotId(record.slotId)
                 setLoggedOn(record.loggedOn)
                 setLoggedTime(record.loggedAt ? timeLabel(record.loggedAt) : '')
-                setPhotos(
+                applyPhotos(() =>
                     record.photos.map((photo) => ({
                         id: newPhotoId(),
                         kind: 'kept' as const,
@@ -71,60 +84,60 @@ export function useRecordForm({ madeDexId, recordId, initialSlotId, initialDate 
         return () => {
             live = false
         }
-    }, [madeDexId, recordId])
+    }, [madeDexId, recordId, applyPhotos])
 
     // 미리보기 blob URL은 두면 페이지를 떠나도 메모리에 남는다
     useEffect(() => {
         return () => {
-            setPhotos((current) => {
-                current.forEach((photo) => {
-                    if (photo.kind === 'new') URL.revokeObjectURL(photo.previewUrl)
-                })
-                return current
+            photosRef.current.forEach((photo) => {
+                if (photo.kind === 'new') URL.revokeObjectURL(photo.previewUrl)
             })
         }
     }, [])
 
-    const upload = useCallback(async (items: Array<{ id: string; file: File }>) => {
-        try {
-            const targets = await requestUploadTargets(
-                items.map((item) => item.file),
-                'logit-record',
-            )
-            await Promise.all(
-                items.map(async (item, index) => {
-                    const target = targets[index]
-                    try {
-                        await putToS3(item.file, item.file.type, target)
-                        setPhotos((current) =>
-                            current.map((photo) =>
-                                photo.id === item.id && photo.kind === 'new'
-                                    ? { ...photo, status: 'done', key: target.key }
-                                    : photo,
-                            ),
-                        )
-                    } catch (failure) {
-                        setPhotos((current) =>
-                            current.map((photo) =>
-                                photo.id === item.id && photo.kind === 'new'
-                                    ? { ...photo, status: 'failed', error: String(failure) }
-                                    : photo,
-                            ),
-                        )
-                    }
-                }),
-            )
-        } catch (failure) {
-            // presign 자체가 실패하면 이 묶음 전부가 실패다
-            const ids = new Set(items.map((item) => item.id))
-            setPhotos((current) =>
-                current.map((photo) =>
-                    ids.has(photo.id) && photo.kind === 'new' ? { ...photo, status: 'failed' } : photo,
-                ),
-            )
-            setError(madeErrorMessage(failure, '사진을 올리지 못했어요.'))
-        }
-    }, [])
+    const upload = useCallback(
+        async (items: Array<{ id: string; file: File }>) => {
+            try {
+                const targets = await requestUploadTargets(
+                    items.map((item) => item.file),
+                    'logit-record',
+                )
+                await Promise.all(
+                    items.map(async (item, index) => {
+                        const target = targets[index]
+                        try {
+                            await putToS3(item.file, item.file.type, target)
+                            applyPhotos((current) =>
+                                current.map((photo) =>
+                                    photo.id === item.id && photo.kind === 'new'
+                                        ? { ...photo, status: 'done', key: target.key }
+                                        : photo,
+                                ),
+                            )
+                        } catch {
+                            applyPhotos((current) =>
+                                current.map((photo) =>
+                                    photo.id === item.id && photo.kind === 'new'
+                                        ? { ...photo, status: 'failed' }
+                                        : photo,
+                                ),
+                            )
+                        }
+                    }),
+                )
+            } catch (failure) {
+                // presign 자체가 실패하면 이 묶음 전부가 실패다
+                const ids = new Set(items.map((item) => item.id))
+                applyPhotos((current) =>
+                    current.map((photo) =>
+                        ids.has(photo.id) && photo.kind === 'new' ? { ...photo, status: 'failed' } : photo,
+                    ),
+                )
+                setError(madeErrorMessage(failure, '사진을 올리지 못했어요.'))
+            }
+        },
+        [applyPhotos],
+    )
 
     const addFiles = useCallback(
         (files: File[]) => {
@@ -136,50 +149,56 @@ export function useRecordForm({ madeDexId, recordId, initialSlotId, initialDate 
                 return
             }
 
-            setPhotos((current) => {
-                // 한 번에 보낼 수 있는 장수도 서버가 막으므로 둘 중 작은 쪽을 따른다
-                const room = Math.min(RECORD_MAX_PHOTOS, MAX_PHOTOS['logit-record']) - current.length
-                if (room <= 0) return current
+            // 한 번에 보낼 수 있는 장수도 서버가 막으므로 둘 중 작은 쪽을 따른다
+            const room = Math.min(RECORD_MAX_PHOTOS, MAX_PHOTOS['logit-record']) - photosRef.current.length
+            if (room <= 0) return
 
-                const accepted = files.slice(0, room).map((file) => ({
-                    id: newPhotoId(),
-                    kind: 'new' as const,
-                    status: 'uploading' as const,
-                    file,
-                    previewUrl: URL.createObjectURL(file),
-                    caption: '',
-                }))
-                void upload(accepted.map((photo) => ({ id: photo.id, file: photo.file })))
-                return [...current, ...accepted]
-            })
+            const accepted: RecordPhoto[] = files.slice(0, room).map((file) => ({
+                id: newPhotoId(),
+                kind: 'new',
+                status: 'uploading',
+                file,
+                previewUrl: URL.createObjectURL(file),
+                caption: '',
+            }))
+
+            applyPhotos((current) => [...current, ...accepted])
+            void upload(accepted.flatMap((photo) => (photo.kind === 'new' ? [{ id: photo.id, file: photo.file }] : [])))
         },
-        [upload],
+        [applyPhotos, upload],
     )
 
     const writeCaption = (id: string, caption: string) => {
-        setPhotos((current) => current.map((photo) => (photo.id === id ? { ...photo, caption } : photo)))
+        applyPhotos((current) => current.map((photo) => (photo.id === id ? { ...photo, caption } : photo)))
     }
 
     const removePhoto = (id: string) => {
-        setPhotos((current) => {
-            const target = current.find((photo) => photo.id === id)
-            if (target?.kind === 'new') URL.revokeObjectURL(target.previewUrl)
-            return current.filter((photo) => photo.id !== id)
-        })
+        const target = photosRef.current.find((photo) => photo.id === id)
+        if (target?.kind === 'new') URL.revokeObjectURL(target.previewUrl)
+        applyPhotos((current) => current.filter((photo) => photo.id !== id))
     }
 
     const retryPhoto = (id: string) => {
-        setPhotos((current) => {
-            const target = current.find((photo) => photo.id === id)
-            if (target?.kind !== 'new') return current
-            void upload([{ id, file: target.file }])
-            return current.map((photo) =>
+        const target = photosRef.current.find((photo) => photo.id === id)
+        if (target?.kind !== 'new') return
+
+        applyPhotos((current) =>
+            current.map((photo) =>
                 photo.id === id && photo.kind === 'new' ? { ...photo, status: 'uploading' } : photo,
-            )
-        })
+            ),
+        )
+        void upload([{ id, file: target.file }])
     }
 
+    const failed = hasFailure(photos)
+
     const submit = async (): Promise<boolean> => {
+        // 실패한 사진은 key가 없어 payload에서 빠진다. 그대로 보내면 말없이 사라진다
+        if (failed) {
+            setError('올리지 못한 사진이 있어요. 다시 시도하거나 빼 주세요.')
+            return false
+        }
+
         setSubmitting(true)
         setError(null)
         try {
@@ -208,7 +227,7 @@ export function useRecordForm({ madeDexId, recordId, initialSlotId, initialDate 
     }
 
     // 올리는 중인 사진을 세면 상한을 넘긴 채로 제출된다
-    const ready = slotId !== null && readyCount(photos) > 0
+    const ready = slotId !== null && readyCount(photos) > 0 && !failed
 
     return {
         slots: selectable,
@@ -222,6 +241,7 @@ export function useRecordForm({ madeDexId, recordId, initialSlotId, initialDate 
         submitting,
         error,
         ready,
+        failed,
         addFiles,
         writeCaption,
         removePhoto,

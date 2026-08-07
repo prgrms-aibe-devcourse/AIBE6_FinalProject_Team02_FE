@@ -7,7 +7,7 @@ import { RecordPhotoPicker } from './RecordPhotoPicker'
 import { TimePickerSheet } from './TimePickerSheet'
 import { useRecordForm } from './useRecordForm'
 import { timeText } from './logitTypes'
-import { hasFailure, isUploading } from './recordPhotos'
+import { isUploading } from './recordPhotos'
 import type { MadeDexId } from './types'
 
 interface Props {
@@ -35,7 +35,6 @@ export function RecordForm({ madeDexId, recordId, slotId, date, onBack, onDone }
 
     const editing = recordId !== undefined
     const uploading = isUploading(form.photos)
-    const failed = hasFailure(form.photos)
 
     const save = async () => {
         if (await form.submit()) onDone()
@@ -119,7 +118,7 @@ export function RecordForm({ madeDexId, recordId, slotId, date, onBack, onDone }
                 {uploading ? '사진 올리는 중…' : editing ? '저장하기' : '기록하기'}
             </button>
 
-            {failed && (
+            {form.failed && (
                 <p className="absolute bottom-20 left-5 right-5 break-keep text-center text-xs font-medium text-content-link">
                     올리지 못한 사진이 있어요. 다시 시도하거나 빼 주세요.
                 </p>
