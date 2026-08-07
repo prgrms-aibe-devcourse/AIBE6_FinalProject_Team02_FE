@@ -7,12 +7,12 @@ import {
   ChevronRightIcon,
   LogOutIcon,
   PencilIcon,
+  UsersIcon,
 } from "lucide-react";
 import React from "react";
 
 interface Props {
   nickname: string;
-  collectedCount: number;
   profileImageUrl: string | null;
   equippedBadge: {
     name: string;
@@ -22,8 +22,8 @@ interface Props {
   onChangePhoto: () => void;
   onEditNickname: () => void;
   onReplayOnboarding: () => void;
-  onOpenProfile: () => void;
   onOpenBadges: () => void;
+  onOpenFriends: () => void;
   onLogout: () => void;
   onWithdraw: () => void;
   onTab: (tab: NavTab) => void;
@@ -31,28 +31,21 @@ interface Props {
 
 export function MyPage({
   nickname,
-  collectedCount,
   profileImageUrl,
   equippedBadge,
   onChangePhoto,
   onEditNickname,
   onReplayOnboarding,
-  onOpenProfile,
   onOpenBadges,
+  onOpenFriends,
   onLogout,
   onWithdraw,
   onTab,
 }: Props) {
   return (
     <div className="flex h-full flex-col bg-cream-100">
-      <header className="flex items-center justify-between px-5 py-4">
+      <header className="flex items-center px-5 py-4">
         <h1 className="font-display text-xl text-brown">마이페이지</h1>
-        <button
-          onClick={onOpenProfile}
-          className="min-h-touch px-2 text-xs font-medium text-orange-600"
-        >
-          프로필 보기
-        </button>
       </header>
       <main className="no-scrollbar flex-1 overflow-y-auto px-5 pb-6">
         <div className="flex w-full items-center gap-4">
@@ -75,7 +68,7 @@ export function MyPage({
               <CameraIcon size={19} />
             </span>
           </button>
-          <button onClick={onOpenProfile} className="min-w-0 text-left">
+          <div className="min-w-0 text-left">
             <span className="flex items-center gap-2">
               {equippedBadge && (
                 <ServerBadge
@@ -92,22 +85,7 @@ export function MyPage({
             <span className="block text-sm text-brown-soft">
               먹을수록 채워지는 나의 도감
             </span>
-          </button>
-        </div>
-        <div className="mt-5 flex rounded-2xl bg-white py-4 shadow-soft">
-          {[
-            { n: collectedCount, l: "수집" },
-            { n: 128, l: "팔로워" },
-            { n: 54, l: "팔로잉" },
-          ].map((stat, index) => (
-            <div
-              key={stat.l}
-              className={`flex flex-1 flex-col items-center ${index < 2 ? "border-r border-cream-200" : ""}`}
-            >
-              <span className="font-display text-xl text-brown">{stat.n}</span>
-              <span className="text-xs text-brown-soft">{stat.l}</span>
-            </div>
-          ))}
+          </div>
         </div>
         <button
           onClick={onOpenBadges}
@@ -139,6 +117,11 @@ export function MyPage({
           </div>
         </button>
         <div className="mt-4 overflow-hidden rounded-2xl bg-white shadow-soft">
+          <MenuItem
+            onClick={onOpenFriends}
+            icon={<UsersIcon size={18} className="text-brown-soft" />}
+            label="친구"
+          />
           <MenuItem
             onClick={onReplayOnboarding}
             icon={<BookOpenIcon size={18} className="text-brown-soft" />}

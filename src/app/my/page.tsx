@@ -5,7 +5,6 @@ import { getMyBadges, getMyProfile, withdrawAccount } from '@/features/my/api';
 import { MyPage } from '@/features/my/MyPage';
 import { WithdrawConfirmSheet } from '@/features/my/WithdrawConfirmSheet';
 import { getTabHref, ROUTES } from '@/shared/lib/routes';
-import { useDexState } from '@/shared/store/AppStateProvider';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -13,7 +12,6 @@ import { useEffect, useState } from 'react';
 export default function MyPageRoute() {
   const router = useRouter();
   const { me, logout } = useAuth();
-  const { collectedIds } = useDexState();
 
   // 프로필 사진(표시용 URL) — 없으면 MyPage가 닉네임 첫 글자로 대체
   const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
@@ -66,14 +64,13 @@ export default function MyPageRoute() {
     <>
       <MyPage
         nickname={me?.nickname ?? ''}
-        collectedCount={collectedIds.length}
         profileImageUrl={profileImageUrl}
         equippedBadge={equippedBadge}
         onChangePhoto={() => router.push(ROUTES.myPhoto)}
         onEditNickname={() => router.push(ROUTES.myNickname)}
         onReplayOnboarding={() => router.push(`${ROUTES.onboarding}?from=my`)}
-        onOpenProfile={() => router.push(ROUTES.myProfile)}
         onOpenBadges={() => router.push(ROUTES.myBadges)}
+        onOpenFriends={() => router.push(ROUTES.friends)}
         onLogout={handleLogout}
         onWithdraw={() => setConfirmOpen(true)}
         onTab={(tab) => router.push(getTabHref(tab))}
