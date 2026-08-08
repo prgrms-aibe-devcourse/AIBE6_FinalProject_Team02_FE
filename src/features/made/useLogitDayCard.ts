@@ -16,6 +16,11 @@ export function useLogitDayCard(madeDexId: MadeDexId, date: string) {
     // 날짜를 빠르게 넘기면 먼저 쏜 응답이 늦게 도착해 화면을 되돌린다
     const seq = useRef(0)
 
+    // 다른 날짜(도감)로 옮기면 이전 카드를 지운다
+    useEffect(() => {
+        setDayCard(null)
+    }, [madeDexId, date])
+
     useEffect(() => {
         if (!date) {
             setLoading(false)
