@@ -1,5 +1,6 @@
 import { apiFetch } from '@/shared/lib/api'
 import type {
+    DayCardCalendar,
     LogitDayCard,
     LogitFeed,
     LogitRecordCreateRequest,
@@ -83,6 +84,11 @@ export function updateRecord(madeDexId: MadeDexId, recordId: number, request: Lo
 export function fetchDayCard(madeDexId: MadeDexId, date?: string): Promise<LogitDayCard> {
     const query = date ? `?date=${date}` : ''
     return apiFetch<LogitDayCard>(`${base(madeDexId)}/day-card${query}`)
+}
+
+/** 캘린더 마커 */
+export function fetchDayCardCalendar(madeDexId: MadeDexId, year: number, month: number): Promise<DayCardCalendar> {
+    return apiFetch<DayCardCalendar>(`${base(madeDexId)}/day-card/calendar?year=${year}&month=${month}`)
 }
 
 export function fetchRecord(madeDexId: MadeDexId, recordId: number): Promise<LogitRecordDetail> {

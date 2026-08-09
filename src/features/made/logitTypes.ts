@@ -124,6 +124,13 @@ export interface LogitDayCard {
     stats: DayCardStats
 }
 
+/** 캘린더 마커. daysWithRecords는 그 달에 기록이 있는 날(일) */
+export interface DayCardCalendar {
+    year: number
+    month: number
+    daysWithRecords: number[]
+}
+
 export function authorName(author: DayCardAuthor | DayCardParticipant): string {
     return author.nickname?.trim() || '이름 없는 참여자'
 }
