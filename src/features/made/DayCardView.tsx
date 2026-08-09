@@ -132,34 +132,60 @@ function DayCardShelf({ slot }: { slot: DayCardSlot }) {
         <section className="rounded-xl bg-cream-100 p-2">
             <h3 className="px-1 pb-2 text-xs font-bold text-content-secondary">{slot.name}</h3>
             <ul className="grid grid-cols-2 gap-2">
-                {slot.items.map((item, index) => (
-                    <DayCardFoodItem key={index} item={item} />
+                {slot.items.map((item) => (
+                    <DayCardFoodItem key={item.recordId} item={item} />
                 ))}
             </ul>
         </section>
     )
 }
 
-/** 음식 사진 + (아래) 작성자 아바타·닉네임 + caption(사진에 붙인 글) */
+/**
+ * 대표 사진(첫 장) + (아래) 작성자 아바타·닉네임 + caption(사진에 붙인 글)
+ * 여러 장이면 뒤에 겹쳐 쌓인 것처럼 보이게 하고 장수를 숫자로 얹음
+ */
 function DayCardFoodItem({ item }: { item: DayCardItem }) {
+    const cover = item.photos[0]
+    const count = item.photos.length
+    // BE가 걸러 주지만 대표가 없으면 놓을 것이 없음
+    if (!cover) return null
+
     return (
-        <li className="overflow-hidden rounded-xl bg-surface-card shadow-card">
-            <div className="aspect-square w-full bg-cream-200">
-                {item.imageUrl && (
-                    // presigned URL이라 next/image의 도메인 설정 대상이 아니다
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                        src={item.imageUrl}
-                        alt={item.caption ?? `${authorName(item.author)}님이 담은 음식 사진`}
-                        className="h-full w-full object-cover"
-                    />
-                )}
-            </div>
-            <div className="p-2">
-                {item.caption && <p className="truncate text-sm font-bold text-content-primary">{item.caption}</p>}
-                <div className={`flex items-center gap-1 ${item.caption ? 'pt-1' : ''}`}>
-                    <LogitAvatar name={authorName(item.author)} imageUrl={item.author.profileImageUrl} size="sm" />
-                    <span className="truncate text-xs text-content-muted">{authorName(item.author)}</span>
+        // 겹쳐 쌓인 장이 회전하며 삐져나오는 만큼 여백을 둠 — 옆 칸을 침범하지 않음
+        <li className="relative p-1">
+            {count > 2 && (
+                <span aria-hidden className="absolute inset-1 rotate-3 rounded-xl bg-cream-200 shadow-card" />
+            )}
+            {count > 1 && (
+                <span aria-hidden className="absolute inset-1 -rotate-2 rounded-xl bg-cream-50 shadow-card" />
+            )}
+
+            <div className="relative overflow-hidden rounded-xl bg-surface-card shadow-card">
+                <div className="relative aspect-square w-full bg-cream-200">
+                    {cover.imageUrl && (
+                        // presigned URL이라 next/image의 도메인 설정 대상이 아니다
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                            src={cover.imageUrl}
+                            alt={cover.caption ?? `${authorName(item.author)}님이 담은 음식 사진`}
+                            className="h-full w-full object-cover"
+                        />
+                    )}
+                    {/* 한 장이면 숫자를 붙이지 않음 */}
+                    {count > 1 && (
+                        <span className="absolute right-1.5 top-1.5 rounded-full bg-black/55 px-2 py-0.5 text-xs font-bold text-white">
+                            {count}장
+                        </span>
+                    )}
+                </div>
+                <div className="p-2">
+                    {cover.caption && (
+                        <p className="truncate text-sm font-bold text-content-primary">{cover.caption}</p>
+                    )}
+                    <div className={`flex items-center gap-1 ${cover.caption ? 'pt-1' : ''}`}>
+                        <LogitAvatar name={authorName(item.author)} imageUrl={item.author.profileImageUrl} size="sm" />
+                        <span className="truncate text-xs text-content-muted">{authorName(item.author)}</span>
+                    </div>
                 </div>
             </div>
         </li>
