@@ -12,7 +12,11 @@ interface Props {
     onBack: () => void
     onRegister: () => void
     onJoin?: () => void
-    onUnlock?: (slotId: string, file: File, coords: { lat: number; lng: number } | null) => void | Promise<void>
+    onUnlock?: (
+        slotId: string,
+        file: File,
+        coords: { lat: number; lng: number } | null,
+    ) => void | Promise<void>
     onLeave?: () => void
 }
 const RANKINGS = [
