@@ -130,6 +130,7 @@ export function LogitHome({ dexId, title, onBack, onOpenInfo, onRecord, onEditRe
 
             {calendarOpen && feed.today && (
                 <LogitCalendar
+                    madeDexId={dexId}
                     date={feed.date}
                     today={feed.today}
                     onSelect={(picked) => {
