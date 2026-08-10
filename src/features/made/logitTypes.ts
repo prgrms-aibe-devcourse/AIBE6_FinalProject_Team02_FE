@@ -128,6 +128,8 @@ export interface DayCardStats {
 
 export interface LogitDayCard {
     date: string
+    /** 로그잇 참여자 전원, 가입 순 */
+    members: DayCardAuthor[]
     slots: DayCardSlot[]
     participants: DayCardParticipant[]
     stats: DayCardStats
