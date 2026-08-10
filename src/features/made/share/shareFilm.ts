@@ -17,7 +17,13 @@ function downloadFile(file: File): void {
     const anchor = document.createElement('a')
     anchor.href = url
     anchor.download = file.name
+
+    // 문서에 붙지 않은 a는 파이어폭스에서 내려받기가 시작되지 않는다
+    anchor.hidden = true
+    document.body.appendChild(anchor)
     anchor.click()
+    anchor.remove()
+
     // 곧바로 해제하면 일부 브라우저가 내려받기를 놓친다
     setTimeout(() => URL.revokeObjectURL(url), 10_000)
 }

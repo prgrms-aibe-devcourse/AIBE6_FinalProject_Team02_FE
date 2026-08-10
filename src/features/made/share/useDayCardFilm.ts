@@ -10,7 +10,10 @@ import type { FilmTimeline } from './shareTimeline'
 import type { BitmapMap } from './loadBitmaps'
 import type { LogitDayCard } from '../logitTypes'
 
-/** `blocked`는 사진을 한 장도 불러오지 못한 상태. S3 CORS가 막히면 여기로 떨어진다 */
+/**
+ * `blocked`는 카드를 못 만든 상태
+ * 대부분 사진을 한 장도 불러오지 못한 경우다 — S3 CORS가 막히면 여기로 떨어진다
+ */
 export type FilmStatus = 'preparing' | 'playing' | 'idle' | 'blocked'
 
 /** 공유할 파일을 만드는 상태. 화면 재생과 별개로 굴러간다 */
@@ -91,7 +94,8 @@ export function useDayCardFilm(dayCard: LogitDayCard | null, title: string) {
         setProgress(0)
         setShareFile(null)
 
-        const run = async () => {
+        /** 준비해서 한 번 보여 준다. 끝까지 갔으면 구울 재료를 돌려준다 */
+        const show = async (): Promise<Prepared | null> => {
             // 폰트보다 먼저 그리면 첫 프레임만 폴백 글꼴로 나온다
             await fontsReady()
 
@@ -101,7 +105,7 @@ export function useDayCardFilm(dayCard: LogitDayCard | null, title: string) {
             const bitmaps = await loadBitmaps(targets)
             if (!live) {
                 closeBitmaps(bitmaps)
-                return
+                return null
             }
 
             const prepared: Prepared = { layout, timeline: planTimeline(layout), bitmaps }
@@ -110,13 +114,15 @@ export function useDayCardFilm(dayCard: LogitDayCard | null, title: string) {
             // 담은 것이 있는데 한 장도 못 받았으면 그릴 것이 없다
             if (targets.length > 0 && bitmaps.size === 0) {
                 setStatus('blocked')
-                return
+                return null
             }
 
             // 재생이 끝난 뒤에 굽는다. 같이 돌리면 메인 스레드를 나눠 써 애니메이션이 끊긴다
             await new Promise<void>((resolve) => play(resolve))
-            if (!live) return
+            return live ? prepared : null
+        }
 
+        const bake = async (prepared: Prepared) => {
             setVideo('encoding')
 
             // 프레임마다 올리면 20초짜리에 588번 리렌더가 난다. 보이는 눈금이 바뀔 때만 올린다
@@ -148,6 +154,29 @@ export function useDayCardFilm(dayCard: LogitDayCard | null, title: string) {
                 setVideo('ready')
             } else {
                 setVideo('failed')
+            }
+        }
+
+        /**
+         * 두 구간을 따로 받는다
+         * 하나로 묶으면 재생까지 끝난 뒤 인코딩만 실패했는데도 카드가 없다고 말하게 된다
+         */
+        const run = async () => {
+            let prepared: Prepared | null
+            try {
+                prepared = await show()
+            } catch {
+                // 어디서 깨지든 자리 표시자가 영원히 도는 화면으로 굳지 않게 한다
+                if (live) setStatus('blocked')
+                return
+            }
+            if (!prepared) return
+
+            try {
+                await bake(prepared)
+            } catch {
+                // 카드는 이미 화면에 있다. 영상만 포기한다
+                if (live) setVideo('failed')
             }
         }
 

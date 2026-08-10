@@ -40,15 +40,21 @@ export function roundRectPath(
     ctx.closePath()
 }
 
-/** 넘치는 글자는 말줄임으로 자른다. 캔버스에는 자동 줄바꿈이 없다 */
+/**
+ * 넘치는 글자는 말줄임으로 자른다. 캔버스에는 자동 줄바꿈이 없다
+ *
+ * 코드 포인트 단위로 자른다 — `slice(0, -1)`은 UTF-16 단위라
+ * 닉네임 끝의 이모지에서 서로게이트 페어의 반쪽만 남아 `�`가 된다
+ */
 export function truncate(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string {
+    // 들어가면 자를 것도 없다. 프레임마다 도는 경로라 여기서 끝나야 한다
     if (ctx.measureText(text).width <= maxWidth) return text
 
-    let cut = text
-    while (cut.length > 1 && ctx.measureText(`${cut}…`).width > maxWidth) {
-        cut = cut.slice(0, -1)
+    const chars = Array.from(text)
+    while (chars.length > 1 && ctx.measureText(`${chars.join('')}…`).width > maxWidth) {
+        chars.pop()
     }
-    return `${cut}…`
+    return `${chars.join('')}…`
 }
 
 /** 대표 뒤에 비스듬히 깔리는 장 */

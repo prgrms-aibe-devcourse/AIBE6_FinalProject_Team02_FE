@@ -94,9 +94,12 @@ function WheelColumn({ label, values, value, suffix, onChange }: ColumnProps) {
  */
 export function YearMonthWheel({ month, maxMonth, onDone }: Props) {
     const maxYear = maxMonth.getFullYear()
-    const years = Array.from({ length: YEAR_SPAN }, (_, index) => maxYear - (YEAR_SPAN - 1) + index)
+    // 보고 있는 연도가 기본 범위보다 과거면 거기까지 넓힌다
+    // 그러지 않으면 휠이 열리자마자 선택을 조용히 앞으로 당겨 놓는다
+    const minYear = Math.min(maxYear - (YEAR_SPAN - 1), month.getFullYear())
+    const years = Array.from({ length: maxYear - minYear + 1 }, (_, index) => minYear + index)
 
-    const [year, setYear] = useState(Math.min(Math.max(month.getFullYear(), years[0]), maxYear))
+    const [year, setYear] = useState(Math.min(Math.max(month.getFullYear(), minYear), maxYear))
     const [monthNumber, setMonthNumber] = useState(month.getMonth() + 1)
 
     // 아직 오지 않은 달은 아예 목록에 넣지 않는다

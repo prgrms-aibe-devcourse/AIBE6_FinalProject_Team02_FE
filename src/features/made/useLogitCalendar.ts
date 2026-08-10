@@ -2,8 +2,12 @@ import { useCallback, useRef, useState } from 'react'
 import { fetchDayCardCalendar } from './logitApi'
 import type { MadeDexId } from './types'
 
-function monthKey(year: number, month: number): string {
-    return `${year}-${String(month).padStart(2, '0')}`
+/**
+ * 캐시 키에 로그잇을 함께 넣는다
+ * 연·월만 쓰면 다른 로그잇으로 옮겼을 때 이전 로그잇의 마커가 그대로 보인다
+ */
+function monthKey(madeDexId: MadeDexId, year: number, month: number): string {
+    return `${madeDexId}:${year}-${String(month).padStart(2, '0')}`
 }
 
 /**
@@ -19,7 +23,7 @@ export function useLogitCalendar(madeDexId: MadeDexId) {
         (month: Date) => {
             const year = month.getFullYear()
             const monthNumber = month.getMonth() + 1
-            const key = monthKey(year, monthNumber)
+            const key = monthKey(madeDexId, year, monthNumber)
             if (asked.current.has(key)) return
             asked.current.add(key)
 
@@ -28,7 +32,7 @@ export function useLogitCalendar(madeDexId: MadeDexId) {
                     // 늦게 온 응답이 다른 달을 덮지 않도록 응답이 말하는 달에 넣음
                     setDaysByMonth((current) => ({
                         ...current,
-                        [monthKey(calendar.year, calendar.month)]: calendar.daysWithRecords,
+                        [monthKey(madeDexId, calendar.year, calendar.month)]: calendar.daysWithRecords,
                     }))
                 })
                 .catch(() => {
@@ -40,8 +44,8 @@ export function useLogitCalendar(madeDexId: MadeDexId) {
     )
 
     const daysOf = useCallback(
-        (month: Date): number[] => daysByMonth[monthKey(month.getFullYear(), month.getMonth() + 1)] ?? [],
-        [daysByMonth],
+        (month: Date): number[] => daysByMonth[monthKey(madeDexId, month.getFullYear(), month.getMonth() + 1)] ?? [],
+        [daysByMonth, madeDexId],
     )
 
     return { daysOf, load }

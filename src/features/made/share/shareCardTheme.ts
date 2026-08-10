@@ -120,5 +120,7 @@ export function sansFont(size: number, weight: 400 | 700 = 400): string {
  * 캔버스를 그리기 전에 반드시 기다린다
  */
 export function fontsReady(): Promise<unknown> {
-    return typeof document === 'undefined' ? Promise.resolve() : document.fonts.ready
+    // document는 있어도 fonts가 없는 웹뷰가 있다. 없으면 기다릴 것도 없다
+    if (typeof document === 'undefined') return Promise.resolve()
+    return document.fonts ? document.fonts.ready : Promise.resolve()
 }
