@@ -41,9 +41,7 @@ export default function RegisterUnlockPage() {
     // 여러 칸을 한 번에 열었으면 첫 음식 기준이고, 전부 검토 대기여도 그 칸으로 데려간다
     const firstSlot = unlockResult.unlocked[0] ?? unlockResult.awaitingReview[0]
     const dexHref =
-        registrationSource === 'basic' && firstSlot
-            ? ROUTES.basicDex(normalizeCategory(firstSlot.category))
-            : exitHref
+        registrationSource === 'basic' && firstSlot ? ROUTES.basicDex(normalizeCategory(firstSlot.category)) : exitHref
 
     return (
         <UnlockReveal
