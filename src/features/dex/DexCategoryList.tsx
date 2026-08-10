@@ -98,7 +98,7 @@ export function DexCategoryList({ entries, collectedIds, onOpenCategory, onRegis
                                 <span className="block text-sm font-bold text-watermelon-600">
                                     {row.mine}/{row.total}
                                 </span>
-                                <span className="text-[10px] text-neutral-400">수집</span>
+                                <span className="text-xs text-neutral-400">수집</span>
                             </span>
                             <ChevronRightIcon size={18} className="shrink-0 text-neutral-400" />
                         </button>

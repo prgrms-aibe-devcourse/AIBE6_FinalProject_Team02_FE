@@ -202,11 +202,11 @@ export function DexDetail({
                         >
                             <ChevronLeftIcon size={18} aria-hidden className="shrink-0 text-neutral-400" />
                             <span className="min-w-0">
-                                <span className="block text-[11px] font-bold text-neutral-400">이전</span>
+                                <span className="block text-xs font-bold text-neutral-400">이전</span>
                                 <span className="block truncate text-sm font-bold text-neutral-900">
                                     {prevEntry?.name ?? '이전 도감'}
                                 </span>
-                                <span className="block truncate text-[11px] text-neutral-400">
+                                <span className="block truncate text-xs text-neutral-400">
                                     {prevEntry?.firstDate ?? '수집일 없음'}
                                 </span>
                             </span>
@@ -300,11 +300,11 @@ export function DexDetail({
                             className="flex min-h-[76px] w-36 items-center gap-2 rounded-2xl bg-watermelon-500 px-3 text-left text-white shadow-soft transition-colors hover:bg-watermelon-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
                         >
                             <span className="min-w-0 flex-1">
-                                <span className="block text-[11px] font-bold text-watermelon-100">다음</span>
+                                <span className="block text-xs font-bold text-watermelon-100">다음</span>
                                 <span className="block truncate text-sm font-bold">
                                     {nextEntry?.name ?? '다음 도감'}
                                 </span>
-                                <span className="block truncate text-[11px] text-watermelon-100">
+                                <span className="block truncate text-xs text-watermelon-100">
                                     {nextEntry?.firstDate ?? '수집일 없음'}
                                 </span>
                             </span>

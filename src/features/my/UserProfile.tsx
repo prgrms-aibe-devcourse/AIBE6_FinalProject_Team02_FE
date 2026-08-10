@@ -138,7 +138,7 @@ export function UserProfile({ userId, onBack, onTab }: Props) {
                                     ) : (
                                         <UtensilsIcon size={22} strokeWidth={1.5} aria-hidden className="text-neutral-400" />
                                     )}
-                                    <span className="px-1 text-center text-[11px] text-neutral-800">{d.name}</span>
+                                    <span className="px-1 text-center text-xs text-neutral-800">{d.name}</span>
                                 </div>
                             ))}
                         {basicDex.filter((d) => d.unlocked).length === 0 && (

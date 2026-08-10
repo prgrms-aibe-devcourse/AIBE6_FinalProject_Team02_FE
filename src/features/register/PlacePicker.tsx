@@ -252,7 +252,7 @@ export function PlacePicker({ value, onChange }: Props) {
                     </ul>
 
                     {results.length > 0 && (
-                        <p className="mt-1 px-1 text-right text-[11px] text-content-muted">장소 정보 © Kakao</p>
+                        <p className="mt-1 px-1 text-right text-xs text-content-muted">장소 정보 © Kakao</p>
                     )}
                 </>
             )}

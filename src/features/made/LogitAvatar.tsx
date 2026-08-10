@@ -9,7 +9,7 @@ interface Props {
 }
 
 const sizeClass = {
-    sm: 'h-6 w-6 text-[10px]',
+    sm: 'h-6 w-6 text-xs',
     md: 'h-9 w-9 text-sm',
 }
 

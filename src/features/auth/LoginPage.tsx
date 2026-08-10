@@ -222,7 +222,7 @@ export function LoginPage({ errorMessage }: { errorMessage?: string }) {
                     className="absolute z-10 w-32 h-40 bg-white border-2 border-watermelon-400 rounded-2xl shadow-modal p-2.5 flex flex-col justify-between items-center"
                 >
                     <div className="w-full h-24 bg-watermelon-50 rounded-xl flex items-center justify-center relative overflow-hidden">
-                        <div className="absolute top-1 left-1.5 bg-watermelon-500 text-[9px] text-white px-1.5 py-0.5 rounded-full font-bold">
+                        <div className="absolute top-1 left-1.5 bg-watermelon-500 text-xs text-white px-1.5 py-0.5 rounded-full font-bold">
                             New
                         </div>
                         {/* 라멘 SVG */}
@@ -305,7 +305,7 @@ export function LoginPage({ errorMessage }: { errorMessage?: string }) {
                     ))}
                 </div>
 
-                <p className="text-[10px] text-neutral-400 text-center leading-normal max-w-xs px-4">
+                <p className="text-xs text-neutral-400 text-center leading-normal max-w-xs px-4">
                     로그인 시 캣칫의{' '}
                     <a href="#" className="underline hover:text-neutral-800">
                         이용약관
