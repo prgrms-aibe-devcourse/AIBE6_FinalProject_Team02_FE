@@ -164,12 +164,19 @@ export function DexDetail({
                     <span className="whitespace-nowrap">등록하기</span>
                 </button>
             </header>
+            {/* 데스크톱 전용 좌우 사이드 버튼을 대체한다 — 마우스·키보드는 스와이프를 못 하므로
+                이동 수단이 항상 보여야 한다. 대상 이름과 수집일도 사이드 버튼에서 그대로 옮겨 왔다 */}
             <button
+                type="button"
                 onClick={movePrev}
-                className="flex min-h-touch w-full items-center justify-center gap-1 pt-1 text-xs text-brown-soft md:hidden"
+                disabled={!prevEntry}
+                className="flex min-h-touch w-full items-center justify-center gap-1.5 px-5 pt-1 text-xs text-brown-soft transition-colors hover:bg-cream-200 disabled:cursor-not-allowed disabled:opacity-40"
             >
-                <ChevronDownIcon size={16} aria-hidden />
-                아래로 스와이프하면 이전 도감으로
+                <ChevronDownIcon size={16} aria-hidden className="shrink-0" />
+                <span className="min-w-0 truncate">
+                    이전 · {prevEntry?.name ?? '없음'}
+                    {prevEntry?.firstDate && <span className="text-brown-muted"> {prevEntry.firstDate}</span>}
+                </span>
             </button>
             {cards.length > 1 && (
                 <div className="border-y border-cream-200 bg-cream-50 px-5 py-2.5">
@@ -191,130 +198,92 @@ export function DexDetail({
                     </div>
                 </div>
             )}
-            <main className="no-scrollbar flex-1 overflow-y-auto md:px-6 md:pb-6">
-                <div className="md:mx-auto md:grid md:max-w-6xl md:grid-cols-[144px_minmax(0,768px)_144px] md:items-center md:gap-6">
-                    <div className="hidden md:flex md:justify-end">
-                        <button
-                            type="button"
-                            disabled={!prevEntry}
-                            onClick={movePrev}
-                            className="flex min-h-[76px] w-36 items-center gap-2 rounded-2xl border border-cream-300 bg-white px-3 text-left shadow-soft transition-colors hover:bg-cream-50 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
-                        >
-                            <ChevronLeftIcon size={18} aria-hidden className="shrink-0 text-brown-muted" />
-                            <span className="min-w-0">
-                                <span className="block text-[11px] font-bold text-brown-muted">이전</span>
-                                <span className="block truncate text-sm font-bold text-brown">
-                                    {prevEntry?.name ?? '이전 도감'}
-                                </span>
-                                <span className="block truncate text-[11px] text-brown-muted">
-                                    {prevEntry?.firstDate ?? '수집일 없음'}
-                                </span>
-                            </span>
-                        </button>
-                    </div>
-                    <div>
-                        <div
-                            className="relative aspect-[4/3] w-full bg-orange-50 md:mt-1 md:overflow-hidden md:rounded-3xl md:shadow-card lg:aspect-[16/10]"
-                            onTouchStart={(event) => setPhotoTouchStartX(event.touches[0].clientX)}
-                            onTouchEnd={(event) => {
-                                if (photoTouchStartX === null) return
-                                const distance = photoTouchStartX - event.changedTouches[0].clientX
-                                // 사진 영역 스와이프는 현재 카드의 사진만 넘긴다(카드로 넘어가지 않음).
-                                if (Math.abs(distance) > 45 && photos.length > 1) {
-                                    movePhoto(distance > 0 ? 1 : -1)
-                                }
-                                setPhotoTouchStartX(null)
-                            }}
-                        >
-                            <AnimatePresence mode="wait">
-                                <motion.div
-                                    key={`${cardIndex}-${photoIndex}`}
-                                    initial={{ opacity: 0, x: 18 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: -18 }}
-                                    className="flex h-full items-center justify-center text-8xl"
-                                >
-                                    {currentPhoto.startsWith('http') || currentPhoto.startsWith('/') ? (
-                                        <Image
-                                            src={currentPhoto}
-                                            alt=""
-                                            fill
-                                            sizes="(min-width: 768px) 768px, 100vw"
-                                            className="h-full w-full object-contain p-6"
-                                        />
-                                    ) : (
-                                        currentPhoto
-                                    )}
-                                </motion.div>
-                            </AnimatePresence>
-                            <span className="absolute right-3 top-3 rounded-full bg-black/50 px-2 py-0.5 text-xs font-medium text-white">
-                                {photoIndex + 1}/{photos.length}
-                            </span>
-
-                            <div className="absolute inset-x-0 bottom-0 flex justify-center">
-                                {photos.map((_, index) => (
-                                    <button
-                                        key={index}
-                                        onClick={() => setPhotoIndex(index)}
-                                        aria-label={`${index + 1}번째 사진`}
-                                        className="no-touch-expand flex h-11 w-11 items-end justify-center pb-3"
-                                    >
-                                        <span
-                                            aria-hidden
-                                            className={`h-2 w-2 rounded-full ${index === photoIndex ? 'bg-orange-500' : 'bg-white/70'}`}
-                                        />
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                        <p className="mt-3 hidden text-center text-xs font-medium text-brown-muted md:block">
-                            {activeCategory === '전체' ? '전체' : activeCategory} ·{' '}
-                            {currentIndex >= 0 ? currentIndex + 1 : 0}/{scopedCollectedEntries.length}
-                        </p>
-                        {photos.length > 1 && (
-                            <div className="mt-2 hidden justify-end gap-2 px-5 md:flex md:px-0">
-                                <button
-                                    type="button"
-                                    onClick={() => movePhoto(-1)}
-                                    className="flex h-8 items-center gap-1 rounded-full border border-cream-300 bg-white px-3 text-xs font-bold text-brown-soft shadow-soft transition-colors hover:bg-cream-50 active:scale-[0.98]"
-                                >
-                                    <ChevronLeftIcon size={14} aria-hidden />
-                                    이전 사진
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => movePhoto(1)}
-                                    className="flex h-8 items-center gap-1 rounded-full bg-orange-500 px-3 text-xs font-bold text-white shadow-soft transition-colors hover:bg-orange-600 active:scale-[0.98]"
-                                >
-                                    다음 사진
-                                    <ChevronRightIcon size={14} aria-hidden />
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                    <div className="hidden md:flex md:justify-start">
-                        <button
-                            type="button"
-                            disabled={!nextEntry}
-                            onClick={moveNext}
-                            className="flex min-h-[76px] w-36 items-center gap-2 rounded-2xl bg-orange-500 px-3 text-left text-white shadow-soft transition-colors hover:bg-orange-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
-                        >
-                            <span className="min-w-0 flex-1">
-                                <span className="block text-[11px] font-bold text-orange-100">다음</span>
-                                <span className="block truncate text-sm font-bold">
-                                    {nextEntry?.name ?? '다음 도감'}
-                                </span>
-                                <span className="block truncate text-[11px] text-orange-100">
-                                    {nextEntry?.firstDate ?? '수집일 없음'}
-                                </span>
-                            </span>
-                            <ChevronRightIcon size={18} aria-hidden className="shrink-0 text-orange-100" />
-                        </button>
-                    </div>
-                </div>
-                <div className="md:mx-auto md:grid md:max-w-6xl md:grid-cols-[144px_minmax(0,768px)_144px] md:gap-6">
+            <main className="no-scrollbar flex-1 overflow-y-auto">
+                <div>
                     <div
-                        className="md:col-start-2"
+                        className="relative aspect-[4/3] w-full bg-orange-50"
+                        onTouchStart={(event) => setPhotoTouchStartX(event.touches[0].clientX)}
+                        onTouchEnd={(event) => {
+                            if (photoTouchStartX === null) return
+                            const distance = photoTouchStartX - event.changedTouches[0].clientX
+                            // 사진 영역 스와이프는 현재 카드의 사진만 넘긴다(카드로 넘어가지 않음).
+                            if (Math.abs(distance) > 45 && photos.length > 1) {
+                                movePhoto(distance > 0 ? 1 : -1)
+                            }
+                            setPhotoTouchStartX(null)
+                        }}
+                    >
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={`${cardIndex}-${photoIndex}`}
+                                initial={{ opacity: 0, x: 18 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -18 }}
+                                className="flex h-full items-center justify-center text-8xl"
+                            >
+                                {currentPhoto.startsWith('http') || currentPhoto.startsWith('/') ? (
+                                    <Image
+                                        src={currentPhoto}
+                                        alt=""
+                                        fill
+                                        sizes="(min-width: 768px) 768px, 100vw"
+                                        className="h-full w-full object-contain p-6"
+                                    />
+                                ) : (
+                                    currentPhoto
+                                )}
+                            </motion.div>
+                        </AnimatePresence>
+                        <span className="absolute right-3 top-3 rounded-full bg-black/50 px-2 py-0.5 text-xs font-medium text-white">
+                            {photoIndex + 1}/{photos.length}
+                        </span>
+
+                        <div className="absolute inset-x-0 bottom-0 flex justify-center">
+                            {photos.map((_, index) => (
+                                <button
+                                    key={index}
+                                    onClick={() => setPhotoIndex(index)}
+                                    aria-label={`${index + 1}번째 사진`}
+                                    className="no-touch-expand flex h-11 w-11 items-end justify-center pb-3"
+                                >
+                                    <span
+                                        aria-hidden
+                                        className={`h-2 w-2 rounded-full ${index === photoIndex ? 'bg-orange-500' : 'bg-white/70'}`}
+                                    />
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                    {/* 데스크톱에서만 보였던 진행 표시 — 모바일에서 숨길 이유가 없어 항상 낸다 */}
+                    <p className="mt-3 text-center text-xs font-medium text-brown-muted">
+                        {activeCategory === '전체' ? '전체' : activeCategory} ·{' '}
+                        {currentIndex >= 0 ? currentIndex + 1 : 0}/{scopedCollectedEntries.length}
+                    </p>
+                    {photos.length > 1 && (
+                        /* 점 인디케이터만으로도 넘길 수는 있지만 5장이면 정확히 누르기 어렵다.
+                               스와이프가 안 되는 마우스·키보드를 위해 항상 보인다 */
+                        <div className="mt-2 flex justify-end gap-2 px-5">
+                            <button
+                                type="button"
+                                onClick={() => movePhoto(-1)}
+                                className="flex h-8 items-center gap-1 rounded-full border border-cream-300 bg-white px-3 text-xs font-bold text-brown-soft shadow-soft transition-colors hover:bg-cream-50 active:scale-[0.98]"
+                            >
+                                <ChevronLeftIcon size={14} aria-hidden />
+                                이전 사진
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => movePhoto(1)}
+                                className="flex h-8 items-center gap-1 rounded-full bg-orange-500 px-3 text-xs font-bold text-white shadow-soft transition-colors hover:bg-orange-600 active:scale-[0.98]"
+                            >
+                                다음 사진
+                                <ChevronRightIcon size={14} aria-hidden />
+                            </button>
+                        </div>
+                    )}
+                </div>
+                <div>
+                    <div
                         onTouchStart={
                             cards.length > 1 ? (event) => setCardTouchStartX(event.touches[0].clientX) : undefined
                         }
@@ -330,18 +299,14 @@ export function DexDetail({
                                 : undefined
                         }
                     >
-                        <div className="px-5 py-3 md:px-0">
+                        <div className="px-5 py-3">
                             <span className="text-xs text-brown-soft">
                                 카드 {cardIndex + 1}의 사진 {photos.length}장
-                                {cards.length > 1 && (
-                                    <>
-                                        <span className="md:hidden"> · 좌우로 스와이프해 카드 넘기기</span>
-                                        <span className="hidden md:inline"> · 위 카드 버튼으로 기록 선택</span>
-                                    </>
-                                )}
+                                {/* 스와이프와 상단 카드 버튼 둘 다 되므로 한 문장으로 합친다 */}
+                                {cards.length > 1 && <> · 좌우로 스와이프하거나 위 카드 버튼으로 기록 선택</>}
                             </span>
                         </div>
-                        <div className="mx-5 rounded-2xl bg-white p-4 shadow-soft md:mx-0">
+                        <div className="mx-5 rounded-2xl bg-white p-4 shadow-soft">
                             <p className="flex items-center gap-1.5 text-sm text-brown-soft">
                                 <MapPinIcon size={15} className="text-orange-500" />
                                 {currentCard.location || '위치 없음'} · {currentCard.date} 수집
@@ -350,14 +315,14 @@ export function DexDetail({
                         </div>
                     </div>
                 </div>
-                <div className="md:mx-auto md:grid md:max-w-6xl md:grid-cols-[144px_minmax(0,768px)_144px] md:gap-6">
+                <div>
                     <AnimatePresence>
                         {teaser && (
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0 }}
-                                className="mx-5 mt-4 flex items-center gap-3 rounded-2xl border-2 border-dashed border-cream-300 bg-cream-50 p-3 md:col-start-2 md:mx-0"
+                                className="mx-5 mt-4 flex items-center gap-3 rounded-2xl border-2 border-dashed border-cream-300 bg-cream-50 p-3"
                             >
                                 <div className="flex">
                                     {Array.from({
@@ -400,8 +365,8 @@ export function DexDetail({
                         )}
                     </AnimatePresence>
                 </div>
-                <div className="md:mx-auto md:grid md:max-w-6xl md:grid-cols-[144px_minmax(0,768px)_144px] md:gap-6">
-                    <div className="mt-4 border-t border-cream-300 px-5 py-4 md:col-start-2 md:rounded-2xl md:border md:bg-white md:shadow-soft">
+                <div>
+                    <div className="mt-4 border-t border-cream-300 px-5 py-4">
                         <div className="flex items-center justify-between">
                             <span className="font-display text-lg text-brown">{entry.name}</span>
                             <StarRank value={entry.stars ?? 1} size={16} />
@@ -410,11 +375,16 @@ export function DexDetail({
                     </div>
                 </div>
                 <button
+                    type="button"
                     onClick={moveNext}
-                    className="flex min-h-touch w-full items-center justify-center gap-1 pb-6 text-xs text-brown-soft md:hidden"
+                    disabled={!nextEntry}
+                    className="flex min-h-touch w-full items-center justify-center gap-1.5 px-5 pb-6 pt-2 text-xs text-brown-soft transition-colors hover:bg-cream-200 disabled:cursor-not-allowed disabled:opacity-40"
                 >
-                    <ChevronUpIcon size={16} aria-hidden />
-                    위로 스와이프하면 다음 도감으로
+                    <ChevronUpIcon size={16} aria-hidden className="shrink-0" />
+                    <span className="min-w-0 truncate">
+                        다음 · {nextEntry?.name ?? '없음'}
+                        {nextEntry?.firstDate && <span className="text-brown-muted"> {nextEntry.firstDate}</span>}
+                    </span>
                 </button>
             </main>
             <BottomNav active="기본" onTab={onTab} />

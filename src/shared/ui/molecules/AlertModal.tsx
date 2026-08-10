@@ -55,7 +55,9 @@ export function AlertModal({ title = '알림', message, buttonText = '확인', o
     }, [onClose])
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        // absolute — 앱 셸(.app-shell > *)에 갇힌다. fixed로 두면 뷰포트 전체를 덮어
+        // 데스크톱에서 430px 셸과 동떨어진 자리에 뜬다
+        <div className="absolute inset-0 z-50 flex items-center justify-center p-4">
             {/* 어두운 배경 */}
             <button
                 type="button"

@@ -12,7 +12,7 @@ export function RewardModal({ badge, onClose, onGoToBadges }: Props) {
     const image = resolveBadgeImage(badge.code, badge.imageUrl)
     return (
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-6"
+            className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 px-6"
             role="dialog"
             aria-modal="true"
             onClick={onClose}

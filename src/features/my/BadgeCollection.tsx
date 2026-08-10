@@ -53,7 +53,7 @@ export function BadgeCollection({ badges, pending, onEquip, onBack }: Props) {
                                             {BADGE_GROUP_LABEL[group]}
                                             <span className="text-xs font-normal text-brown-muted">{items.length}</span>
                                         </h3>
-                                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                                        <div className="grid grid-cols-2 gap-3">
                                             {items.map((badge) => {
                                                 const active = selected === badge.id
                                                 return (

@@ -246,7 +246,8 @@ export function DexGrid({
                                 ))}
                         </div>
                     ) : (
-                        <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10">
+                        /* §2 3열 고정 — 필터링·검색 중에도 유지한다. 뷰포트 변형을 쓰지 않는다 */
+                        <div className="grid grid-cols-3 gap-3">
                             {visibleEntries.map((entry) => {
                                 const unlocked = collected.has(entry.id)
                                 const isNew = unlocked && entry.recentlyUnlocked === true

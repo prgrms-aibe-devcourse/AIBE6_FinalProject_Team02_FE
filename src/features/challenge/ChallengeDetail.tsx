@@ -122,7 +122,7 @@ export function ChallengeDetail({
                             </span>
                         </div>
                         {targets.length ? (
-                            <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
+                            <div className="grid grid-cols-3 gap-3">
                                 {targets.map((target) => {
                                     const unlocked = completed.has(target.id)
                                     // 해금됨 → 내 기록 보기 / 미해금 → 미리보기(흑백+리뷰 일부). 미리보기 안에서 인증 진입

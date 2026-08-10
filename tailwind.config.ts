@@ -6,6 +6,19 @@ const token = (name: string) => `rgb(var(--${name}) / <alpha-value>)`
 const config: Config = {
     content: ['./src/**/*.{js,ts,jsx,tsx,mdx}'],
     theme: {
+        /**
+         * 뷰포트 브레이크포인트를 의도적으로 비웠다 (DESIGN.md §2).
+         *
+         * 이 앱은 웹 전용 기능이 없어 데스크톱에서도 모바일과 같은 규격으로 낸다.
+         * `.app-shell`이 --layout-max(430px)로 폭을 가두므로, Tailwind 변형(`md:` 등)은
+         * **컨테이너가 아니라 뷰포트**를 봐서 셸 안에서 엉뚱하게 발동한다 —
+         * 창이 1400px이면 430px 셸에 `xl:grid-cols-10`이 적용돼 카드가 40px가 된다.
+         *
+         * 여기가 비어 있으면 `md:` 같은 클래스는 CSS가 생성되지 않아 아무 일도 하지 않는다.
+         * 레이아웃이 조용히 깨지는 것보다 낫다. 반응형이 정말 필요해지면
+         * 셸을 푸는 기획 결정과 함께 이 값을 되살릴 것.
+         */
+        screens: {},
         extend: {
             colors: {
                 /* --- Primitive (DESIGN.md §1.1) --- */
