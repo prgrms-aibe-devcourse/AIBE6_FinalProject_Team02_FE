@@ -142,17 +142,23 @@ body {
 /* 앱 셸 — 뷰포트 전체를 채움 (모바일 목업 제거).
    자식(화면 컴포넌트 루트)이 셸 높이를 그대로 상속하도록 h-full 전제 유지 */
 .app-shell {
-    display: flex;
-    justify-content: center;
+    /* block + margin-auto 중앙 정렬 (flex 아이템 max-width 이슈 회피, 더 안정적) */
     width: 100%;
     height: 100dvh;
     overflow: hidden;
-    background: rgb(var(--surface-app));
+    /* 데스크톱 등 넓은 화면에서 폰 폭 컬럼 양옆(레터박스)을 회색으로 두어
+       폰 프레임처럼 경계가 보이게 한다. 폰 폭(≤--layout-max)에서는 컬럼이
+       화면을 꽉 채워 이 회색은 보이지 않는다. */
+    background: rgb(var(--neutral-200));
 }
 .app-shell > * {
     width: 100%;
     max-width: var(--layout-max);
     height: 100%;
+    margin-inline: auto; /* 폰 폭 컬럼을 가운데로 */
+    /* 폰 폭 화이트 컬럼 — 회색 레터박스 위에서 떠 보이도록 그림자 */
+    background: rgb(var(--surface-app));
+    box-shadow: 0 0 24px rgba(0, 0, 0, 0.1);
     /* fixed 모달·바텀시트가 뷰포트가 아닌 이 폰 폭 컬럼 기준으로 배치되도록
        컨테이닝 블록을 만든다 (데스크톱에서도 오버레이가 폰 폭 안에 갇힘) */
     position: relative;
