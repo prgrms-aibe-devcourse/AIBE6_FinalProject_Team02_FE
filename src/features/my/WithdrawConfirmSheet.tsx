@@ -13,7 +13,7 @@ interface Props {
  * 되돌릴 수 없는 동작이라 한 번 더 확인받음 */
 export function WithdrawConfirmSheet({ pending, error, onConfirm, onClose }: Props) {
     return (
-        <BottomSheet title="회원 탈퇴" onClose={onClose} draggable>
+        <BottomSheet title="회원 탈퇴" onClose={onClose}>
             <div className="px-5 pb-8 pt-3">
                 <p className="text-sm leading-6 text-brown-soft">
                     탈퇴하면 프로필·닉네임 등 계정 정보가 삭제되며 되돌릴 수 없어요. 정말 탈퇴하시겠어요?
