@@ -84,7 +84,7 @@ export function RegisterAnalyze({ onBack, onProceed }: Props) {
 
     return (
         // break-keep은 상속된다 — 이 화면 전체에서 한글이 단어 중간에 끊기지 않는다
-        <div className="flex h-full flex-col break-keep bg-neutral-50">
+        <div className="flex h-full flex-col break-keep bg-surface-app">
             <header className="flex shrink-0 items-center gap-3 px-5 py-4">
                 <button type="button" onClick={onBack} aria-label="뒤로가기">
                     <ArrowLeftIcon size={22} aria-hidden className="text-neutral-900" />

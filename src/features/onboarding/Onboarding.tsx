@@ -20,7 +20,7 @@ export function Onboarding({ onDone }: { onDone?: () => void }) {
     const last = step === STEPS.length - 1
 
     return (
-        <div className="flex h-full flex-col bg-neutral-50">
+        <div className="flex h-full flex-col bg-surface-app">
             <header className="flex items-center justify-between px-5 py-4">
                 <h1 className="font-display text-xl text-watermelon-600">캣칫 CatchEat</h1>
                 <button onClick={onDone} className="min-h-touch px-2 text-sm text-neutral-800">

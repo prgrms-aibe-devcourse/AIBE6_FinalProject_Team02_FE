@@ -23,7 +23,7 @@ export function BadgeCollection({ badges, pending, onEquip, onBack }: Props) {
     const changed = selected !== equippedId
 
     return (
-        <div className="flex h-full flex-col bg-neutral-50">
+        <div className="flex h-full flex-col bg-surface-app">
             <header className="flex items-center gap-3 px-5 py-4">
                 <button onClick={onBack} aria-label="뒤로가기">
                     <ArrowLeftIcon size={22} className="text-neutral-900" />
@@ -53,7 +53,7 @@ export function BadgeCollection({ badges, pending, onEquip, onBack }: Props) {
                                             {BADGE_GROUP_LABEL[group]}
                                             <span className="text-xs font-normal text-neutral-400">{items.length}</span>
                                         </h3>
-                                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                                        <div className="grid grid-cols-2 gap-3">
                                             {items.map((badge) => {
                                                 const active = selected === badge.id
                                                 return (

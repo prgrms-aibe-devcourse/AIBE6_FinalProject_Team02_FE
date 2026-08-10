@@ -66,7 +66,7 @@ export function FriendsPanel({ onBack, onOpenUser }: Props) {
             .catch(() => {})
 
     return (
-        <div className="flex h-full flex-col bg-neutral-50">
+        <div className="flex h-full flex-col bg-surface-app">
             <header className="flex items-center gap-3 px-5 pt-4">
                 <button onClick={onBack} aria-label="뒤로가기">
                     <ArrowLeftIcon size={21} />

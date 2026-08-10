@@ -32,7 +32,7 @@ export function ConfirmModal({
                 initial={reduceMotion ? false : { opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={reduceMotion ? { duration: 0 } : { duration: 0.2, ease: 'easeOut' }}
-                className="relative z-10 flex w-full max-w-sm flex-col items-center rounded-3xl border border-neutral-100 bg-neutral-50 p-6 text-center shadow-modal"
+                className="relative z-10 flex w-full max-w-sm flex-col items-center rounded-3xl border border-neutral-100 bg-surface-raised p-6 text-center shadow-modal"
             >
                 {title && <h2 className="mb-2 font-display text-xl text-neutral-900">{title}</h2>}
                 <p className="mb-6 whitespace-pre-wrap text-sm font-medium leading-relaxed text-neutral-800">

@@ -45,7 +45,7 @@ export function MadeDexInfo({
     }
 
     return (
-        <div className="relative flex h-full flex-col bg-neutral-50">
+        <div className="relative flex h-full flex-col bg-surface-app">
             <header className="flex items-center justify-between gap-3 px-5 py-4">
                 <button type="button" onClick={onBack} aria-label="뒤로가기" className="min-h-touch">
                     <ArrowLeftIcon size={22} className="text-content-primary" />

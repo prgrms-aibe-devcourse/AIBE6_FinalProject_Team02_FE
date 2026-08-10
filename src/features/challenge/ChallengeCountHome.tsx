@@ -114,7 +114,7 @@ export function ChallengeCountHome({
     const isRanking = !ended && exploreSort !== 'LATEST'
     const podium = isRanking ? exploreItems.slice(0, 3) : []
     return (
-        <div className="relative flex h-full flex-col bg-neutral-50">
+        <div className="relative flex h-full flex-col bg-surface-app">
             <header className="px-5 pt-4">
                 <div className="flex items-center gap-1">
                     <h1 className="font-display text-xl text-neutral-900">챌린지 도감</h1>

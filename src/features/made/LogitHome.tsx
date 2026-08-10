@@ -34,7 +34,7 @@ export function LogitHome({ dexId, title, onBack, onOpenInfo, onRecord, onEditRe
     const slots = feed.feed?.slots ?? []
 
     return (
-        <div className="relative flex h-full flex-col bg-neutral-50">
+        <div className="relative flex h-full flex-col bg-surface-app">
             <header className="shrink-0 bg-surface-app px-5 pt-4">
                 <div className="flex items-center gap-2">
                     <button type="button" onClick={onBack} aria-label="로그잇 목록으로">
@@ -161,7 +161,7 @@ export function LogitHome({ dexId, title, onBack, onOpenInfo, onRecord, onEditRe
             )}
 
             {dayCardOpen && (
-                <div className="absolute inset-0 z-20 flex flex-col bg-neutral-50">
+                <div className="absolute inset-0 z-20 flex flex-col bg-surface-app">
                     <div className="shrink-0 bg-surface-app px-5 pt-4">
                         <button
                             type="button"

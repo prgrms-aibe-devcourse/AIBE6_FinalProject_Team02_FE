@@ -88,7 +88,7 @@ export function AdminConsole() {
     const isPendingReports = tab === 'reports' && reportStatus === 'PENDING'
 
     return (
-        <div className="flex h-full flex-col bg-neutral-50">
+        <div className="flex h-full flex-col bg-surface-app">
             <header className="px-5 py-4">
                 <h1 className="font-display text-xl text-neutral-900">관리자 콘솔</h1>
             </header>

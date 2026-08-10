@@ -76,7 +76,7 @@ export function AlertModal({ title = '알림', message, buttonText = '확인', o
                 initial={reduceMotion ? false : { opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={reduceMotion ? { duration: 0 } : { duration: 0.2, ease: 'easeOut' }}
-                className="relative z-10 w-full max-w-sm rounded-3xl bg-neutral-50 p-6 shadow-modal outline-none flex flex-col items-center text-center border border-neutral-100"
+                className="relative z-10 w-full max-w-sm rounded-3xl bg-surface-raised p-6 shadow-modal outline-none flex flex-col items-center text-center border border-neutral-100"
             >
                 <AlertTriangle size={30} strokeWidth={2} className="mb-3 text-watermelon-500" aria-hidden="true" />
 

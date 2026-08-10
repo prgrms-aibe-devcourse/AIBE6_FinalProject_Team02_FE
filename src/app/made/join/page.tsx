@@ -100,7 +100,7 @@ function JoinContent() {
     // 로그인 후 원래 링크로 되돌리는 처리는 OAuth 콜백이 홈 고정이라 아직 없다.
     if (!authLoading && !me) {
         return (
-            <div className="flex h-full flex-col items-center justify-center gap-4 bg-neutral-50 px-8 text-center">
+            <div className="flex h-full flex-col items-center justify-center gap-4 bg-surface-app px-8 text-center">
                 <Handshake size={44} strokeWidth={1.5} className="text-watermelon-500" aria-hidden />
                 <p className="text-sm leading-5 text-neutral-800">
                     로그인하면 초대받은 도감에 참여할 수 있어요.

@@ -66,7 +66,7 @@ export function UserProfile({ userId, onBack, onTab }: Props) {
 
     if (!profile) {
         return (
-            <div className="flex h-full items-center justify-center bg-neutral-50">
+            <div className="flex h-full items-center justify-center bg-surface-app">
                 <p className="text-sm text-neutral-800">불러오는 중…</p>
             </div>
         )
@@ -74,7 +74,7 @@ export function UserProfile({ userId, onBack, onTab }: Props) {
 
     const { user, relationStatus } = profile
     return (
-        <div className="flex h-full flex-col bg-neutral-50">
+        <div className="flex h-full flex-col bg-surface-app">
             <main className="no-scrollbar flex-1 overflow-y-auto">
                 <header className="flex items-center gap-3 px-5 pt-4">
                     <button onClick={onBack} aria-label="뒤로가기">
@@ -120,7 +120,7 @@ export function UserProfile({ userId, onBack, onTab }: Props) {
                     />
                 </div>
                 {tab === '기본도감' && (
-                    <div className="grid grid-cols-3 gap-3 px-5 py-5 sm:grid-cols-4">
+                    <div className="grid grid-cols-[repeat(auto-fill,minmax(104px,1fr))] gap-3 px-5 py-5">
                         {basicDex
                             .filter((d) => d.unlocked)
                             .map((d) => (

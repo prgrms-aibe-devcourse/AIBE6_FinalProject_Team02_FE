@@ -43,7 +43,7 @@ export function MadeDexCreateWizard({ onCreate, onExit }: Props) {
     }
 
     return (
-        <div className="relative flex h-full flex-col bg-neutral-50">
+        <div className="relative flex h-full flex-col bg-surface-app">
             <header className="px-5 pb-2 pt-4">
                 <button type="button" onClick={back} aria-label="뒤로가기" className="min-h-touch">
                     <ArrowLeftIcon size={22} className="text-content-primary" />

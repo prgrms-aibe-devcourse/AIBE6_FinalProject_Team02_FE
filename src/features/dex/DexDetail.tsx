@@ -28,7 +28,7 @@ interface Props {
     onTab: (tab: NavTab) => void
 }
 
-/** 위/아래로 스와이프해 다음·이전 "해금된" 도감으로 건너뛸 때 보여줄 안내 */
+/** 위/아래로 스와이프해 다음·이전"해금된" 도감으로 건너뛸 때 보여줄 안내 */
 interface SkipTeaser {
     kind: 'skipped' | 'complete'
     direction: 'next' | 'prev'
@@ -134,7 +134,7 @@ export function DexDetail({
 
     return (
         <div
-            className="relative flex h-full flex-col bg-neutral-50"
+            className="relative flex h-full flex-col bg-surface-app"
             onTouchStart={(event) => setTouchStartY(event.touches[0].clientY)}
             onTouchEnd={(event) => {
                 if (touchStartY !== null) {
@@ -166,7 +166,7 @@ export function DexDetail({
             </header>
             <button
                 onClick={movePrev}
-                className="flex min-h-touch w-full items-center justify-center gap-1 pt-1 text-xs text-neutral-800 md:hidden"
+                className="flex min-h-touch w-full items-center justify-center gap-1 pt-1 text-xs text-neutral-800"
             >
                 <ChevronDownIcon size={16} aria-hidden />
                 아래로 스와이프하면 이전 도감으로
@@ -191,9 +191,9 @@ export function DexDetail({
                     </div>
                 </div>
             )}
-            <main className="no-scrollbar flex-1 overflow-y-auto md:px-6 md:pb-6">
-                <div className="md:mx-auto md:grid md:max-w-6xl md:grid-cols-[144px_minmax(0,768px)_144px] md:items-center md:gap-6">
-                    <div className="hidden md:flex md:justify-end">
+            <main className="no-scrollbar flex-1 overflow-y-auto">
+                <div className="">
+                    <div className="hidden">
                         <button
                             type="button"
                             disabled={!prevEntry}
@@ -214,7 +214,7 @@ export function DexDetail({
                     </div>
                     <div>
                         <div
-                            className="relative aspect-[4/3] w-full bg-watermelon-50 md:mt-1 md:overflow-hidden md:rounded-3xl md:shadow-card lg:aspect-[16/10]"
+                            className="relative aspect-[4/3] w-full bg-watermelon-50"
                             onTouchStart={(event) => setPhotoTouchStartX(event.touches[0].clientX)}
                             onTouchEnd={(event) => {
                                 if (photoTouchStartX === null) return
@@ -267,12 +267,12 @@ export function DexDetail({
                                 ))}
                             </div>
                         </div>
-                        <p className="mt-3 hidden text-center text-xs font-medium text-neutral-400 md:block">
+                        <p className="mt-3 hidden text-center text-xs font-medium text-neutral-400">
                             {activeCategory === '전체' ? '전체' : activeCategory} ·{' '}
                             {currentIndex >= 0 ? currentIndex + 1 : 0}/{scopedCollectedEntries.length}
                         </p>
                         {photos.length > 1 && (
-                            <div className="mt-2 hidden justify-end gap-2 px-5 md:flex md:px-0">
+                            <div className="mt-2 hidden justify-end gap-2 px-5">
                                 <button
                                     type="button"
                                     onClick={() => movePhoto(-1)}
@@ -292,7 +292,7 @@ export function DexDetail({
                             </div>
                         )}
                     </div>
-                    <div className="hidden md:flex md:justify-start">
+                    <div className="hidden">
                         <button
                             type="button"
                             disabled={!nextEntry}
@@ -312,9 +312,9 @@ export function DexDetail({
                         </button>
                     </div>
                 </div>
-                <div className="md:mx-auto md:grid md:max-w-6xl md:grid-cols-[144px_minmax(0,768px)_144px] md:gap-6">
+                <div className="">
                     <div
-                        className="md:col-start-2"
+                        className=""
                         onTouchStart={
                             cards.length > 1 ? (event) => setCardTouchStartX(event.touches[0].clientX) : undefined
                         }
@@ -330,18 +330,18 @@ export function DexDetail({
                                 : undefined
                         }
                     >
-                        <div className="px-5 py-3 md:px-0">
+                        <div className="px-5 py-3">
                             <span className="text-xs text-neutral-800">
                                 카드 {cardIndex + 1}의 사진 {photos.length}장
                                 {cards.length > 1 && (
                                     <>
-                                        <span className="md:hidden"> · 좌우로 스와이프해 카드 넘기기</span>
-                                        <span className="hidden md:inline"> · 위 카드 버튼으로 기록 선택</span>
+                                        <span className=""> · 좌우로 스와이프해 카드 넘기기</span>
+                                        <span className="hidden"> · 위 카드 버튼으로 기록 선택</span>
                                     </>
                                 )}
                             </span>
                         </div>
-                        <div className="mx-5 rounded-2xl bg-white p-4 shadow-soft md:mx-0">
+                        <div className="mx-5 rounded-2xl bg-white p-4 shadow-soft">
                             <p className="flex items-center gap-1.5 text-sm text-neutral-800">
                                 <MapPinIcon size={15} className="text-watermelon-500" />
                                 {currentCard.location || '위치 없음'} · {currentCard.date} 수집
@@ -350,14 +350,14 @@ export function DexDetail({
                         </div>
                     </div>
                 </div>
-                <div className="md:mx-auto md:grid md:max-w-6xl md:grid-cols-[144px_minmax(0,768px)_144px] md:gap-6">
+                <div className="">
                     <AnimatePresence>
                         {teaser && (
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0 }}
-                                className="mx-5 mt-4 flex items-center gap-3 rounded-2xl border-2 border-dashed border-neutral-200 bg-white p-3 md:col-start-2 md:mx-0"
+                                className="mx-5 mt-4 flex items-center gap-3 rounded-2xl border-2 border-dashed border-neutral-200 bg-white p-3"
                             >
                                 <div className="flex">
                                     {Array.from({
@@ -400,8 +400,8 @@ export function DexDetail({
                         )}
                     </AnimatePresence>
                 </div>
-                <div className="md:mx-auto md:grid md:max-w-6xl md:grid-cols-[144px_minmax(0,768px)_144px] md:gap-6">
-                    <div className="mt-4 border-t border-neutral-200 px-5 py-4 md:col-start-2 md:rounded-2xl md:border md:bg-white md:shadow-soft">
+                <div className="">
+                    <div className="mt-4 border-t border-neutral-200 px-5 py-4">
                         <div className="flex items-center justify-between">
                             <span className="font-display text-lg text-neutral-900">{entry.name}</span>
                             <StarRank value={entry.stars ?? 1} size={16} />
@@ -411,7 +411,7 @@ export function DexDetail({
                 </div>
                 <button
                     onClick={moveNext}
-                    className="flex min-h-touch w-full items-center justify-center gap-1 pb-6 text-xs text-neutral-800 md:hidden"
+                    className="flex min-h-touch w-full items-center justify-center gap-1 pb-6 text-xs text-neutral-800"
                 >
                     <ChevronUpIcon size={16} aria-hidden />
                     위로 스와이프하면 다음 도감으로

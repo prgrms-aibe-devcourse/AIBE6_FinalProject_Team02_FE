@@ -86,7 +86,7 @@ export function DexGrid({
     const displayTotal = activeCategory === '전체' ? entries.length : sectionTotal
 
     return (
-        <div className="relative flex h-full flex-col bg-neutral-50">
+        <div className="relative flex h-full flex-col bg-surface-app">
             <header className="shrink-0 px-4 pt-4">
                 <div className="flex items-center justify-between gap-3">
                     <div className="flex min-w-0 items-center gap-2">
@@ -232,7 +232,7 @@ export function DexGrid({
                                 ))}
                         </div>
                     ) : (
-                        <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10">
+                        <div className="grid grid-cols-[repeat(auto-fill,minmax(104px,1fr))] gap-3">
                             {visibleEntries.map((entry) => {
                                 const unlocked = collected.has(entry.id)
                                 const isNew = entry.id === newlyUnlockedId

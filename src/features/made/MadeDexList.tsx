@@ -18,7 +18,7 @@ export function MadeDexList({ dexes, loading, error, onCreateNew, onOpenDex, onE
     const [joinOpen, setJoinOpen] = useState(false)
 
     return (
-        <div className="relative flex h-full flex-col bg-neutral-50">
+        <div className="relative flex h-full flex-col bg-surface-app">
             <header className="flex items-start justify-between gap-3 px-5 pb-2 pt-4">
                 <div>
                     <h1 className="font-display text-xl text-content-primary">제작 도감</h1>
@@ -64,7 +64,7 @@ export function MadeDexList({ dexes, loading, error, onCreateNew, onOpenDex, onE
                                 <img
                                     src={dex.imageUrl ?? DEFAULT_MADE_DEX_COVER}
                                     alt=""
-                                    className="h-14 w-14 shrink-0 rounded-2xl bg-neutral-100 object-cover"
+                                    className="h-12 w-12 shrink-0 rounded-xl bg-neutral-100 object-cover"
                                 />
                                 <span className="min-w-0 flex-1">
                                     <span className="flex items-center gap-1">

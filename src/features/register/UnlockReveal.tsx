@@ -56,7 +56,7 @@ export function UnlockReveal({ cards, awaitingReview, collectedCount, totalSlots
     return (
         <div
             className={`relative flex h-full flex-col items-center justify-center overflow-hidden px-8 text-center ${
-                celebrate ? 'bg-watermelon-500' : 'bg-neutral-50'
+                celebrate ? 'bg-watermelon-500' : 'bg-surface-app'
             }`}
         >
             {/* 반짝임은 첫 해금에만, 1회만 재생 (무한 루프 장식 금지) */}
@@ -180,7 +180,7 @@ export function UnlockReveal({ cards, awaitingReview, collectedCount, totalSlots
  */
 function ReviewRequested({ names, onGoDex }: { names: string[]; onGoDex: () => void }) {
     return (
-        <div className="flex h-full flex-col items-center justify-center bg-neutral-50 px-8 text-center">
+        <div className="flex h-full flex-col items-center justify-center bg-surface-app px-8 text-center">
             <ClockIcon size={44} aria-hidden className="text-content-link" />
             <h1 className="mt-4 font-display text-xl text-content-primary">검토를 요청했어요</h1>
             <p className="mt-2 text-sm leading-6 text-content-secondary">

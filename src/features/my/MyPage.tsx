@@ -35,7 +35,7 @@ export function MyPage({
     onTab,
 }: Props) {
     return (
-        <div className="flex h-full flex-col bg-neutral-50">
+        <div className="flex h-full flex-col bg-surface-app">
             <header className="flex items-center px-5 py-4">
                 <h1 className="font-display text-xl text-neutral-900">마이페이지</h1>
             </header>

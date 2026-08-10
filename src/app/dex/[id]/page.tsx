@@ -51,7 +51,7 @@ export default function DexDetailPage() {
 
     if (detailLoading) {
         return (
-            <div className="flex h-full items-center justify-center bg-neutral-50">
+            <div className="flex h-full items-center justify-center bg-surface-app">
                 <p className="text-sm text-neutral-800">불러오는 중…</p>
             </div>
         )

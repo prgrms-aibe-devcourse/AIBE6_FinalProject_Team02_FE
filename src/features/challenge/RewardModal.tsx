@@ -19,7 +19,7 @@ export function RewardModal({ badge, onClose, onGoToBadges }: Props) {
             onClick={onClose}
         >
             <div
-                className="w-full max-w-xs rounded-3xl bg-neutral-50 p-6 text-center shadow-card"
+                className="w-full max-w-xs rounded-3xl bg-surface-raised p-6 text-center shadow-card"
                 onClick={(event) => event.stopPropagation()}
             >
                 <p className="font-display text-xl text-neutral-900">챌린지 완주!</p>

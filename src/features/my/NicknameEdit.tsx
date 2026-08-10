@@ -47,7 +47,7 @@ export function NicknameEdit({
     }
 
     return (
-        <div className="flex h-full flex-col bg-neutral-50">
+        <div className="flex h-full flex-col bg-surface-app">
             <header className="flex items-center gap-3 px-5 py-4">
                 <button onClick={onBack} aria-label="뒤로가기" className="min-h-touch">
                     <ArrowLeftIcon size={21} className="text-neutral-900" />

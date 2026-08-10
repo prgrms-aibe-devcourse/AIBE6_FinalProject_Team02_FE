@@ -48,7 +48,7 @@ export function ChallengeDetail({
     const openCertify = (target: ChallengeTarget) => setCertify(target)
 
     return (
-        <div className="flex h-full flex-col bg-neutral-50">
+        <div className="flex h-full flex-col bg-surface-app">
             <header className="flex items-center gap-3 px-5 py-4">
                 <button onClick={onBack} aria-label="뒤로가기">
                     <ArrowLeftIcon size={22} />
@@ -87,12 +87,12 @@ export function ChallengeDetail({
                                 <span>내 진행</span>
                                 <span>{challenge.mine ?? `나 0/${targets.length}`}</span>
                             </div>
-                            <ProgressBar value={challenge.progress ?? 0} animate={false} label="챌린지 진행률" />
+                            <ProgressBar value={challenge.progress ?? 0} animate={false} tone="lime" label="챌린지 진행률" />
                         </div>
                     )}
                 </section>
                 {badge && (
-                    <section className={`mt-4 flex items-center gap-3 rounded-2xl p-4 ${badge.tone}`}>
+                    <section className="mt-4 flex items-center gap-3 rounded-2xl border border-mint-border bg-mint-soft p-4 text-mint-ink">
                         <Badge variant="reward" imageSrc={badge.customImage} label={`${badge.name} 보상 뱃지`}>
                             <AwardIcon size={24} strokeWidth={1.5} aria-hidden className="text-watermelon-500" />
                         </Badge>
@@ -122,7 +122,7 @@ export function ChallengeDetail({
                             </span>
                         </div>
                         {targets.length ? (
-                            <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
+                            <div className="grid grid-cols-[repeat(auto-fill,minmax(104px,1fr))] gap-3">
                                 {targets.map((target) => {
                                     const unlocked = completed.has(target.id)
                                     // 해금됨 → 내 기록 보기 / 미해금 → 미리보기(흑백+리뷰 일부). 미리보기 안에서 인증 진입
@@ -145,7 +145,7 @@ export function ChallengeDetail({
                                                 <FoodCard
                                                     name={target.name}
                                                     emoji={target.emoji ?? '🍽️'}
-                                                    illustrationUrl={target.imageUrl || '/images/default_food.png'}
+                                                    illustrationUrl={target.imageUrl || undefined}
                                                     state={unlocked ? 'unlocked' : 'locked'}
                                                     accessibleName={
                                                         unlocked ? `${target.name}, 인증 완료` : '미해금 목표 음식'

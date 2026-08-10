@@ -41,7 +41,7 @@ export function RecordForm({ madeDexId, recordId, slotId, date, onBack, onDone }
     }
 
     return (
-        <div className="relative flex h-full flex-col bg-neutral-50">
+        <div className="relative flex h-full flex-col bg-surface-app">
             <header className="flex shrink-0 items-center gap-2 bg-surface-app px-5 pt-4">
                 <button type="button" onClick={onBack} aria-label="뒤로">
                     <ArrowLeftIcon size={21} aria-hidden />

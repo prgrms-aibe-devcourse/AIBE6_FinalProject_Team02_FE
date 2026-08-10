@@ -24,7 +24,7 @@ export function NicknameSetup({ onSubmit, submitting, error }: Props) {
     }
 
     return (
-        <div className="flex h-full flex-col bg-neutral-50">
+        <div className="flex h-full flex-col bg-surface-app">
             <div className="flex flex-1 flex-col justify-center px-8">
                 <h1 className="font-display text-2xl text-neutral-900">닉네임을 정해주세요</h1>
                 <p className="mt-2 text-sm text-neutral-800">

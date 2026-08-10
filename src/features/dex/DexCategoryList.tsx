@@ -32,7 +32,7 @@ export function DexCategoryList({ entries, collectedIds, onOpenCategory, onRegis
     )
 
     return (
-        <div className="relative flex h-full flex-col bg-neutral-50">
+        <div className="relative flex h-full flex-col bg-surface-app">
             <header className="px-5 pt-4">
                 <div className="flex items-center justify-between gap-3">
                     <div className="flex min-w-0 items-center gap-1.5">
