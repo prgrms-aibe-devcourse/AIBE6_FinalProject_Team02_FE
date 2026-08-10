@@ -144,21 +144,17 @@ export function ChallengeDetail({
                                             <div className="pointer-events-none">
                                                 <FoodCard
                                                     name={target.name}
-                                                    emoji={target.emoji ?? '🍽️'}
-                                                    illustrationUrl={target.imageUrl || undefined}
+                                                    store={target.storeName ?? target.placeName ?? undefined}
+                                                    illustrationUrl={
+                                                        target.myImageUrl ||
+                                                        target.imageUrl ||
+                                                        '/images/default_food.png'
+                                                    }
                                                     state={unlocked ? 'unlocked' : 'locked'}
                                                     accessibleName={
-                                                        unlocked ? `${target.name}, 인증 완료` : '미해금 목표 음식'
+                                                        unlocked ? `${target.name}, 인증 완료` : '미인증 목표 음식'
                                                     }
-                                                    footer={
-                                                        <p className="text-center text-xs text-content-secondary">
-                                                            {unlocked
-                                                                ? '인증 완료'
-                                                                : joined && !ended
-                                                                  ? '인증하기'
-                                                                  : '미해금'}
-                                                        </p>
-                                                    }
+                                                    footer={<span aria-hidden />}
                                                 />
                                             </div>
                                         </div>

@@ -36,6 +36,8 @@ interface FoodCardProps {
     overlay?: React.ReactNode
     /** locked일 때 이름 대신 보여줄 문자열 */
     lockedName?: string
+    /** 음식 이름 위에 표시할 가게/장소 이름 */
+    store?: string
 }
 
 export function FoodCard({
@@ -48,6 +50,7 @@ export function FoodCard({
     corner,
     overlay,
     lockedName = name,
+    store,
 }: FoodCardProps) {
     const locked = state === 'locked'
     const [imageFailed, setImageFailed] = useState(false)
@@ -88,9 +91,14 @@ export function FoodCard({
                 )}
                 {overlay}
             </div>
+            {store && (
+                <span aria-hidden className="mt-1.5 w-full truncate text-center text-xs text-content-muted">
+                    {store}
+                </span>
+            )}
             <span
                 aria-hidden
-                className={`mt-1.5 w-full truncate text-center text-xs font-semibold ${
+                className={`${store ? 'mt-0.5' : 'mt-1.5'} w-full truncate text-center text-xs font-semibold ${
                     locked ? 'text-content-secondary' : 'text-content-primary'
                 }`}
             >

@@ -50,6 +50,7 @@ function toChallengeData(d: ChallengeDetailData): ChallengeData {
             name: s.foodName,
             emoji: '🍽️',
             imageUrl: s.imageUrl ?? undefined,
+            storeName: s.storeName ?? undefined,
             placeName: s.placeName,
             myImageUrl: s.myImageUrl,
             unlockedAt: s.unlockedAt,
