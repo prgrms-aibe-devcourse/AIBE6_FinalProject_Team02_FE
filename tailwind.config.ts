@@ -84,55 +84,6 @@ const config: Config = {
                     error: token('red-500'),
                     success: token('lime-text'),
                 },
-
-                /* =====================================================================
-                   @deprecated 레거시 별칭 — Watermelon 리네임 마이그레이션 안전망.
-                   codemod로 컴포넌트 클래스를 새 이름으로 치환한 뒤, 빌드 확인되면
-                   이 블록 전체를 삭제한다. 신규 코드에서 사용 금지.
-                   ===================================================================== */
-                orange: {
-                    DEFAULT: token('watermelon-500'),
-                    50: token('watermelon-50'),
-                    100: token('watermelon-100'),
-                    200: token('watermelon-200'),
-                    300: token('watermelon-300'),
-                    400: token('watermelon-400'),
-                    500: token('watermelon-500'),
-                    600: token('watermelon-600'),
-                    700: token('watermelon-700'),
-                    800: token('watermelon-800'),
-                    900: token('watermelon-900'),
-                },
-                cream: {
-                    DEFAULT: token('white'),
-                    50: token('white'),
-                    100: token('neutral-50'),
-                    200: token('neutral-100'),
-                    300: token('neutral-200'),
-                },
-                brown: {
-                    DEFAULT: token('neutral-900'),
-                    300: token('neutral-400'),
-                    400: token('neutral-300'),
-                    500: token('neutral-500'),
-                    600: token('neutral-600'),
-                    700: token('neutral-700'),
-                    800: token('neutral-800'),
-                    900: token('neutral-900'),
-                    soft: token('neutral-800'),
-                    muted: token('neutral-400'),
-                },
-                blue: {
-                    50: token('lime-soft'),
-                    300: token('lime-500'),
-                    400: token('lime-500'),
-                    500: token('lime-500'),
-                    600: token('lime-500'),
-                },
-                green: {
-                    500: token('lime-text'),
-                    600: token('lime-text'),
-                },
             },
 
             /* §1.4 타이포 스케일 — xs가 최소 크기. 그 아래 값 사용 금지 */

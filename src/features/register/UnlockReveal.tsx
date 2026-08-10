@@ -1,7 +1,8 @@
 'use client'
 
 import { motion, useReducedMotion } from 'framer-motion'
-import { ClockIcon } from 'lucide-react'
+import { ClockIcon, Sparkles, Star } from 'lucide-react'
+import { StarRank } from '@/shared/ui/atoms/StarRank'
 
 export interface RevealCard {
     slotId: number
@@ -74,7 +75,13 @@ export function UnlockReveal({ cards, awaitingReview, collectedCount, totalSlots
                             top: `${20 + (index % 5) * 12}%`,
                         }}
                     >
-                        {['✨', '🎉', '⭐'][index % 3]}
+                        {
+                            [
+                                <Sparkles key="a" size={22} className="text-lime-500" fill="currentColor" />,
+                                <Star key="b" size={22} className="text-lime-500" fill="currentColor" />,
+                                <Sparkles key="c" size={22} className="text-lime-500" fill="currentColor" />,
+                            ][index % 3]
+                        }
                     </motion.span>
                 ))}
 
@@ -129,10 +136,9 @@ export function UnlockReveal({ cards, awaitingReview, collectedCount, totalSlots
                             {card.name}
                         </span>
 
-                        <span aria-label={`별 ${card.rank}개`} className="mt-1 text-action-primary">
-                            {'★'.repeat(card.rank)}
-                            {'☆'.repeat(Math.max(0, 3 - card.rank))}
-                        </span>
+                        <div className="mt-1">
+                            <StarRank value={card.rank} size={16} />
+                        </div>
 
                         {!card.firstUnlock && (
                             <span className="mt-1 rounded-full bg-surface-accent px-2 py-0.5 text-xs font-bold text-content-link">

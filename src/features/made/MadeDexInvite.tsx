@@ -1,10 +1,12 @@
 import React, { useState } from 'react'
 import {
     ArrowLeftIcon,
+    BookMarkedIcon,
     CheckIcon,
     ClipboardIcon,
     CopyIcon,
     CrownIcon,
+    HandshakeIcon,
     LinkIcon,
     LogOutIcon,
     RefreshCwIcon,
@@ -429,7 +431,11 @@ export function MadeDexCodeEntry({
 
             <main className="flex-1 px-5 pt-8">
                 <div className="rounded-3xl bg-white p-5 text-center shadow-soft">
-                    <span className="text-4xl">{alreadyJoined ? '📔' : '🤝'}</span>
+                    {alreadyJoined ? (
+                        <BookMarkedIcon size={44} strokeWidth={1.5} aria-hidden className="mx-auto text-watermelon-500" />
+                    ) : (
+                        <HandshakeIcon size={44} strokeWidth={1.5} aria-hidden className="mx-auto text-watermelon-500" />
+                    )}
                     <h1 className="mt-3 font-display text-xl text-neutral-900">
                         {alreadyJoined
                             ? '이미 참여하고 있는 도감이에요'

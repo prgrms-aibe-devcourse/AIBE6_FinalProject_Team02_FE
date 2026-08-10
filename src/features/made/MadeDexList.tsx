@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { ChevronRightIcon, GlobeIcon, KeyRoundIcon, LockIcon, PlusIcon, UsersIcon } from 'lucide-react'
+import { ChevronRightIcon, GlobeIcon, KeyRoundIcon, LockIcon, PlusIcon, UsersIcon, BookMarkedIcon } from 'lucide-react'
 import { BottomNav, NavTab } from '@/shared/ui/molecules/BottomNav'
 import { MadeDexCodeSheet } from './MadeDexCodeSheet'
 import { DEFAULT_MADE_DEX_COVER, MadeDexId, MadeDexSummary } from './types'
@@ -100,9 +100,7 @@ export function MadeDexList({ dexes, loading, error, onCreateNew, onOpenDex, onE
 
                         {dexes.length === 0 && !error && (
                             <div className="flex min-h-40 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-edge-default bg-white text-center">
-                                <span aria-hidden className="text-3xl">
-                                    📔
-                                </span>
+                                <BookMarkedIcon size={30} strokeWidth={1.5} aria-hidden className="text-neutral-400" />
                                 <p className="mt-2 text-sm font-bold text-content-primary">
                                     아직 참여 중인 제작 도감이 없어요
                                 </p>

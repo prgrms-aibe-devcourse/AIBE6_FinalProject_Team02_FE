@@ -209,7 +209,7 @@ export function CertifyWizard({ name, placeName, onUnlock, onSubmitReview, onClo
                                 >
                                     <CheckCircleIcon size={36} />
                                 </motion.div>
-                                <h1 className="mt-3 text-center font-display text-2xl text-neutral-900">인증 완료! 🎉</h1>
+                                <h1 className="mt-3 text-center font-display text-2xl text-neutral-900">인증 완료!</h1>
                                 <p className="mt-1 text-center text-sm text-neutral-800">
                                     방금 다녀온 곳, 한 줄 남겨줄래요?
                                 </p>

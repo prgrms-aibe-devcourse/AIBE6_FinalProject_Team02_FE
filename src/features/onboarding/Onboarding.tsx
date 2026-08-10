@@ -1,14 +1,15 @@
 import { motion } from 'framer-motion'
 import { useState } from 'react'
+import { BookOpen, Camera } from 'lucide-react'
 
 const STEPS = [
     {
-        emoji: '📖',
+        Icon: BookOpen,
         title: '먹은 음식을 도감으로 모아요',
         desc: '매번 기록하는 게 아니라,\n 먹은 걸 한 칸씩 수집해요.',
     },
     {
-        emoji: '📸',
+        Icon: Camera,
         title: '사진 한 장이면 칸이 채워져요',
         desc: '먹고 사진만 남기면 끝!\n위치·메모는 선택이에요.',
     },
@@ -35,8 +36,11 @@ export function Onboarding({ onDone }: { onDone?: () => void }) {
                     transition={{ duration: 0.3 }}
                     className="flex flex-col items-center"
                 >
-                    <div className="mb-8 flex h-40 w-40 items-center justify-center rounded-full bg-watermelon-50 text-7xl shadow-soft">
-                        {STEPS[step].emoji}
+                    <div className="mb-8 flex h-40 w-40 items-center justify-center rounded-full bg-watermelon-50 text-watermelon-500 shadow-soft">
+                        {(() => {
+                            const Icon = STEPS[step].Icon
+                            return <Icon size={72} strokeWidth={1.5} aria-hidden />
+                        })()}
                     </div>
                     <h2 className="mb-3 font-display text-xl text-neutral-900">{STEPS[step].title}</h2>
                     <p className="whitespace-pre-line text-sm leading-6 text-neutral-800">{STEPS[step].desc}</p>

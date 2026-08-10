@@ -5,7 +5,17 @@ import { resolveBadgeImage } from '@/shared/data/badgeAssets'
 import { useAppState } from '@/shared/store/AppStateProvider'
 import { Badge } from '@/shared/ui/atoms/Badge'
 import { AnimatePresence, motion } from 'framer-motion'
-import { ArrowLeftIcon, CameraIcon, CheckIcon, MapPinIcon, Trash2Icon } from 'lucide-react'
+import {
+    ArrowLeftIcon,
+    CameraIcon,
+    CheckIcon,
+    MapPinIcon,
+    MedalIcon,
+    PencilIcon,
+    Trash2Icon,
+    TrophyIcon,
+    UtensilsIcon,
+} from 'lucide-react'
 import React, { useRef, useState } from 'react'
 import { ChallengeData, ChallengeTarget, RewardBadge } from './types'
 
@@ -219,8 +229,9 @@ export function ChallengeCreate({
                                 <h1 className="mt-1 font-display text-2xl leading-snug text-neutral-900">
                                     어떤 챌린지인가요?
                                 </h1>
-                                <p className="mt-2 text-sm text-neutral-400">
-                                    📍 위치 인증 챌린지 — 참가자는 지정 장소에서 인증해요
+                                <p className="mt-2 flex items-center gap-1 text-sm text-neutral-400">
+                                    <MapPinIcon size={15} strokeWidth={2} aria-hidden className="shrink-0" />
+                                    위치 인증 챌린지 — 참가자는 지정 장소에서 인증해요
                                 </p>
                                 <input
                                     autoFocus
@@ -435,7 +446,7 @@ export function ChallengeCreate({
                                                             className="h-full w-full object-cover"
                                                         />
                                                     ) : (
-                                                        '🍽️'
+                                                        <UtensilsIcon size={18} strokeWidth={1.5} aria-hidden className="text-neutral-400" />
                                                     )}
                                                 </span>
                                                 <span className="min-w-0 flex-1 text-sm font-bold text-neutral-900">
@@ -488,7 +499,7 @@ export function ChallengeCreate({
                                                             className="h-full w-full object-cover"
                                                         />
                                                     ) : (
-                                                        '🏅'
+                                                        <MedalIcon size={22} strokeWidth={1.5} aria-hidden className="text-watermelon-500" />
                                                     )}
                                                 </span>
                                                 <span className="text-sm font-bold text-neutral-900">{preset.name}</span>
@@ -507,7 +518,7 @@ export function ChallengeCreate({
                                                     className="h-full w-full object-cover"
                                                 />
                                             ) : (
-                                                '✏️'
+                                                <PencilIcon size={20} strokeWidth={1.5} aria-hidden />
                                             )}
                                         </span>
                                         <span className="min-w-0 flex-1">
@@ -535,7 +546,7 @@ export function ChallengeCreate({
                                 )}
                                 <div className="mt-3 flex items-center gap-3 rounded-2xl bg-white p-3">
                                     <Badge variant="reward" imageSrc={rewardImage} label={`보상 뱃지 ${rewardName}`}>
-                                        🏆
+                                        <TrophyIcon size={24} strokeWidth={1.5} aria-hidden className="text-watermelon-500" />
                                     </Badge>
                                     <span>
                                         <p className="text-xs text-neutral-400">완주 보상 미리보기</p>

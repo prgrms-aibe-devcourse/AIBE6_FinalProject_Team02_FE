@@ -6,7 +6,7 @@ import { ProgressBar } from '@/shared/ui/atoms/ProgressBar'
 import { BottomNav, NavTab } from '@/shared/ui/molecules/BottomNav'
 import { DexHelpSheet } from '@/shared/ui/molecules/DexHelpSheet'
 import { TabBar } from '@/shared/ui/molecules/TabBar'
-import { CrownIcon, MedalIcon, PlusIcon } from 'lucide-react'
+import { CrownIcon, MedalIcon, PlusIcon, TrophyIcon } from 'lucide-react'
 import { useState } from 'react'
 import { ChallengeSort } from './api'
 import { ChallengeData } from './types'
@@ -256,7 +256,9 @@ function MyChallengeCard({ challenge, onOpen }: { challenge: ChallengeData; onOp
     return (
         <button onClick={onOpen} className="w-full rounded-2xl bg-white p-4 text-left shadow-soft">
             <div className="flex items-center gap-2">
-                <span className="text-2xl">{challenge.emoji}</span>
+                <span className="text-watermelon-500">
+                    <TrophyIcon size={22} strokeWidth={1.75} aria-hidden />
+                </span>
                 <span className="flex-1 font-display text-base text-neutral-900">{challenge.title}</span>
                 <Badge variant="dday">{challenge.dday}</Badge>
             </div>
@@ -313,7 +315,7 @@ function Podium({
                             className={`relative flex items-center justify-center rounded-2xl bg-white text-3xl shadow-soft ${rank === 1 ? 'h-20 w-20 ring-2 ring-amber-400' : 'h-16 w-16'}`}
                         >
                             {rank === 1 && <CrownIcon size={21} className="absolute -top-5 text-amber-500" />}
-                            {challenge.emoji}
+                            <TrophyIcon size={30} strokeWidth={1.5} aria-hidden className="text-watermelon-500" />
                         </span>
                         <span className="mt-2 line-clamp-1 text-center text-xs font-bold text-neutral-900">
                             {challenge.title}
@@ -351,8 +353,8 @@ function ExploreCard({
         <div className="flex w-full items-center gap-3 rounded-2xl bg-white p-3 shadow-soft">
             <button onClick={onOpen} className="flex min-w-0 flex-1 items-center gap-3 text-left active:scale-[0.99]">
                 {rank && <span className="w-5 text-center font-display text-sm text-neutral-400">{rank}</span>}
-                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-watermelon-50 text-2xl">
-                    {challenge.emoji}
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-watermelon-50 text-watermelon-500">
+                    <TrophyIcon size={22} strokeWidth={1.75} aria-hidden />
                 </span>
                 <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-bold text-neutral-900">{challenge.title}</span>

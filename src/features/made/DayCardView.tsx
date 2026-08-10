@@ -1,4 +1,4 @@
-import { RotateCwIcon } from 'lucide-react'
+import { RotateCwIcon, RefrigeratorIcon } from 'lucide-react'
 import { LogitAvatar } from './LogitAvatar'
 import { DayCardShare } from './share/DayCardShare'
 import type { LogitDayCard } from './logitTypes'
@@ -69,9 +69,7 @@ export function DayCardContent({ dayCard, loading, error, onReload, onRecord }: 
     if (filledSlots.length === 0) {
         return (
             <div className="flex min-h-48 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-edge-default bg-white text-center">
-                <span aria-hidden className="text-3xl">
-                    🧊
-                </span>
+                <RefrigeratorIcon size={30} strokeWidth={1.5} aria-hidden className="text-neutral-400" />
                 <p className="mt-2 break-keep text-sm font-bold text-content-primary">아직 냉장고가 비어 있어요</p>
                 <button
                     type="button"

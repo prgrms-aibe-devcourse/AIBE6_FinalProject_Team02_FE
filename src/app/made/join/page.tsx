@@ -10,6 +10,7 @@ import { useAuth } from '@/features/auth/AuthContext'
 import { madeErrorMessage } from '@/features/made/errors'
 import { ApiError } from '@/shared/lib/api'
 import { ROUTES } from '@/shared/lib/routes'
+import { Handshake } from 'lucide-react'
 
 function messageOf(failure: unknown): string {
     return madeErrorMessage(failure, '참여하지 못했어요. 잠시 후 다시 시도해 주세요.')
@@ -100,7 +101,7 @@ function JoinContent() {
     if (!authLoading && !me) {
         return (
             <div className="flex h-full flex-col items-center justify-center gap-4 bg-neutral-50 px-8 text-center">
-                <span className="text-4xl">🤝</span>
+                <Handshake size={44} strokeWidth={1.5} className="text-watermelon-500" aria-hidden />
                 <p className="text-sm leading-5 text-neutral-800">
                     로그인하면 초대받은 도감에 참여할 수 있어요.
                     <br />

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { ArrowLeftIcon, EraserIcon, ImagePlusIcon, PaintbrushIcon, RotateCcwIcon } from 'lucide-react'
+import { ArrowLeftIcon, EraserIcon, ImagePlusIcon, PaintbrushIcon, RotateCcwIcon, Sparkles } from 'lucide-react'
 import { RewardBadge } from './types'
 
 type BadgeTab = '그림으로 그리기' | '이미지로 만들기'
@@ -215,7 +215,7 @@ export function BadgeCustom({ onBack, onSave }: Props) {
                         {preview ? (
                             <img src={preview} alt="실시간 뱃지 미리보기" className="h-full w-full object-cover" />
                         ) : (
-                            '✨'
+                            <Sparkles size={22} strokeWidth={1.5} aria-hidden className="text-watermelon-500" />
                         )}
                     </span>
                     <span>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { ArrowLeftIcon, MapPinIcon, PlusIcon, XIcon } from 'lucide-react'
+import { ArrowLeftIcon, AwardIcon, MapPinIcon, PlusIcon, TrophyIcon, XIcon } from 'lucide-react'
 import { ProgressBar } from '@/shared/ui/atoms/ProgressBar'
 import { Badge } from '@/shared/ui/atoms/Badge'
 import { FoodCard } from '@/shared/ui/molecules/FoodCard'
@@ -66,8 +66,8 @@ export function ChallengeDetail({
             <main className="no-scrollbar flex-1 overflow-y-auto px-5">
                 <section className="rounded-3xl bg-white p-4 shadow-soft">
                     <div className="flex items-center gap-3">
-                        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-watermelon-50 text-3xl">
-                            {challenge.emoji}
+                        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-watermelon-50 text-watermelon-500">
+                            <TrophyIcon size={26} strokeWidth={1.75} aria-hidden />
                         </span>
                         <span className="min-w-0 flex-1">
                             <Badge variant="type">{challenge.tag}</Badge>
@@ -94,7 +94,7 @@ export function ChallengeDetail({
                 {badge && (
                     <section className={`mt-4 flex items-center gap-3 rounded-2xl p-4 ${badge.tone}`}>
                         <Badge variant="reward" imageSrc={badge.customImage} label={`${badge.name} 보상 뱃지`}>
-                            {badge.emoji}
+                            <AwardIcon size={24} strokeWidth={1.5} aria-hidden className="text-watermelon-500" />
                         </Badge>
                         <span>
                             <p className="text-xs font-medium opacity-75">완주 보상 뱃지</p>

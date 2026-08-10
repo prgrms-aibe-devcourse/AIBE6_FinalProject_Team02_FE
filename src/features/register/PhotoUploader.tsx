@@ -189,7 +189,9 @@ function PhotoThumb({ photo, isAnalysis, selectable, onSelect, onRemove, onRetry
                 className="h-full w-full bg-surface-card-locked"
             >
                 {previewBroken ? (
-                    <span className="flex h-full w-full items-center justify-center text-3xl">🖼️</span>
+                    <span className="flex h-full w-full items-center justify-center text-neutral-400">
+                        <ImageIcon size={30} strokeWidth={1.5} aria-hidden />
+                    </span>
                 ) : (
                     // eslint-disable-next-line @next/next/no-img-element -- blob: 미리보기라 next/image 최적화 대상이 아니다
                     <img

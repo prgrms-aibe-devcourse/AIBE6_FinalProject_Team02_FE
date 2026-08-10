@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { StarRank } from '@/shared/ui/atoms/StarRank'
 
 // 환경변수 없으면 로컬 BE(8080)로 폴백
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8080'
@@ -145,7 +146,7 @@ export function LoginPage({ errorMessage }: { errorMessage?: string }) {
                     <h1 className="font-display text-4xl text-neutral-900 tracking-wide">
                         캣칫 <span className="text-watermelon-500 font-display">CatchEat</span>
                     </h1>
-                    <p className="mt-2.5 text-sm text-neutral-800 font-medium">먹을수록 채워지는 나의 도감 📖</p>
+                    <p className="mt-2.5 text-sm text-neutral-800 font-medium">먹을수록 채워지는 나의 도감</p>
                 </motion.div>
             </header>
 
@@ -176,7 +177,9 @@ export function LoginPage({ errorMessage }: { errorMessage?: string }) {
                     </div>
                     <div className="text-center w-full">
                         <p className="text-[12px] font-bold text-neutral-900 leading-tight">연어초밥</p>
-                        <p className="text-[10px] text-watermelon-500 font-bold mt-0.5">★★★</p>
+                        <div className="mt-0.5 flex justify-center">
+                            <StarRank value={3} size={11} />
+                        </div>
                     </div>
                 </motion.div>
 
@@ -192,7 +195,9 @@ export function LoginPage({ errorMessage }: { errorMessage?: string }) {
                     </div>
                     <div className="text-center w-full">
                         <p className="text-[12px] font-bold text-neutral-400 leading-tight">미해금</p>
-                        <p className="text-[10px] text-neutral-400 font-bold mt-0.5">☆☆☆</p>
+                        <div className="mt-0.5 flex justify-center">
+                            <StarRank value={0} size={11} />
+                        </div>
                     </div>
                 </motion.div>
 
@@ -262,7 +267,9 @@ export function LoginPage({ errorMessage }: { errorMessage?: string }) {
                     </div>
                     <div className="text-center w-full">
                         <p className="text-sm font-bold text-neutral-900 leading-tight">돈코츠라멘</p>
-                        <p className="text-[11px] text-watermelon-500 font-bold mt-0.5">★★☆</p>
+                        <div className="mt-0.5 flex justify-center">
+                            <StarRank value={2} size={12} />
+                        </div>
                     </div>
                 </motion.div>
             </div>

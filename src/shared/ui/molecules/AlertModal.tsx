@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
+import { AlertTriangle } from 'lucide-react'
 
 interface AlertModalProps {
     title?: string
@@ -77,9 +78,7 @@ export function AlertModal({ title = '알림', message, buttonText = '확인', o
                 transition={reduceMotion ? { duration: 0 } : { duration: 0.2, ease: 'easeOut' }}
                 className="relative z-10 w-full max-w-sm rounded-3xl bg-neutral-50 p-6 shadow-modal outline-none flex flex-col items-center text-center border border-neutral-100"
             >
-                <span className="text-3xl mb-3" aria-hidden="true">
-                    ⚠️
-                </span>
+                <AlertTriangle size={30} strokeWidth={2} className="mb-3 text-watermelon-500" aria-hidden="true" />
 
                 {title && (
                     <h2 id="alert-title" className="font-display text-xl text-neutral-900 mb-2">

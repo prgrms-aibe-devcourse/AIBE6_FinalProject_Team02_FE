@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { ArrowLeftIcon, UserPlusIcon, UserCheckIcon, XIcon, CheckIcon } from 'lucide-react'
+import { ArrowLeftIcon, UserPlusIcon, UserCheckIcon, XIcon, CheckIcon, UtensilsIcon } from 'lucide-react'
 import { BottomNav, NavTab } from '@/shared/ui/molecules/BottomNav'
 import { TabBar } from '@/shared/ui/molecules/TabBar'
 import { ServerBadge } from '@/shared/ui/atoms/ServerBadge'
@@ -136,7 +136,7 @@ export function UserProfile({ userId, onBack, onTab }: Props) {
                                             className="h-2/3 w-2/3 object-contain"
                                         />
                                     ) : (
-                                        <span>🍽️</span>
+                                        <UtensilsIcon size={22} strokeWidth={1.5} aria-hidden className="text-neutral-400" />
                                     )}
                                     <span className="px-1 text-center text-[11px] text-neutral-800">{d.name}</span>
                                 </div>
