@@ -19,10 +19,10 @@ export function Onboarding({ onDone }: { onDone?: () => void }) {
     const last = step === STEPS.length - 1
 
     return (
-        <div className="flex h-full flex-col bg-cream-100">
+        <div className="flex h-full flex-col bg-neutral-50">
             <header className="flex items-center justify-between px-5 py-4">
-                <h1 className="font-display text-xl text-orange-600">캣칫 CatchEat</h1>
-                <button onClick={onDone} className="min-h-touch px-2 text-sm text-brown-soft">
+                <h1 className="font-display text-xl text-watermelon-600">캣칫 CatchEat</h1>
+                <button onClick={onDone} className="min-h-touch px-2 text-sm text-neutral-800">
                     건너뛰기
                 </button>
             </header>
@@ -35,11 +35,11 @@ export function Onboarding({ onDone }: { onDone?: () => void }) {
                     transition={{ duration: 0.3 }}
                     className="flex flex-col items-center"
                 >
-                    <div className="mb-8 flex h-40 w-40 items-center justify-center rounded-full bg-orange-50 text-7xl shadow-soft">
+                    <div className="mb-8 flex h-40 w-40 items-center justify-center rounded-full bg-watermelon-50 text-7xl shadow-soft">
                         {STEPS[step].emoji}
                     </div>
-                    <h2 className="mb-3 font-display text-xl text-brown">{STEPS[step].title}</h2>
-                    <p className="whitespace-pre-line text-sm leading-6 text-brown-soft">{STEPS[step].desc}</p>
+                    <h2 className="mb-3 font-display text-xl text-neutral-900">{STEPS[step].title}</h2>
+                    <p className="whitespace-pre-line text-sm leading-6 text-neutral-800">{STEPS[step].desc}</p>
                 </motion.div>
             </div>
 
@@ -48,13 +48,13 @@ export function Onboarding({ onDone }: { onDone?: () => void }) {
                     {STEPS.map((_, i) => (
                         <span
                             key={i}
-                            className={`h-2 rounded-full transition-all ${i === step ? 'w-6 bg-orange-500' : 'w-2 bg-cream-300'}`}
+                            className={`h-2 rounded-full transition-all ${i === step ? 'w-6 bg-watermelon-500' : 'w-2 bg-neutral-200'}`}
                         />
                     ))}
                 </div>
                 <button
                     onClick={() => (last ? onDone?.() : setStep((s) => s + 1))}
-                    className="h-cta w-full rounded-full bg-orange-500 font-display text-lg text-white shadow-card transition active:scale-[0.98]"
+                    className="h-cta w-full rounded-full bg-watermelon-500 font-display text-lg text-white shadow-card transition active:scale-[0.98]"
                 >
                     {last ? '시작하기' : '다음'}
                 </button>

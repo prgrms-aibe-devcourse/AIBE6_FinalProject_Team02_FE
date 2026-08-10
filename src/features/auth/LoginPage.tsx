@@ -36,7 +36,7 @@ const PROVIDERS: {
     {
         key: 'google',
         label: 'Google로 시작해요',
-        className: 'bg-white text-brown-900 border border-cream-200 hover:bg-cream-50 focus-visible:outline-[#C9A87C]',
+        className: 'bg-white text-neutral-900 border border-neutral-100 hover:bg-white focus-visible:outline-[#C9A87C]',
         icon: (
             <svg className="w-5 h-5 mr-3 flex-shrink-0" viewBox="0 0 24 24">
                 <path
@@ -66,7 +66,7 @@ export function LoginPage({ errorMessage }: { errorMessage?: string }) {
     }
 
     return (
-        <main className="flex h-full flex-col justify-between py-12 px-6 bg-cream-50 select-none overflow-y-auto no-scrollbar">
+        <main className="flex h-full flex-col justify-between py-12 px-6 bg-white select-none overflow-y-auto no-scrollbar">
             {/* 상단 로고 및 서비스 타이틀 */}
             <header className="flex flex-col items-center text-center mt-6">
                 <motion.div
@@ -76,7 +76,7 @@ export function LoginPage({ errorMessage }: { errorMessage?: string }) {
                     className="relative flex items-center justify-center w-24 h-24 mb-4"
                 >
                     {/* 캐릭터 식판/로고 데코레이션 */}
-                    <svg viewBox="0 0 100 100" className="w-full h-full text-orange-500 fill-current">
+                    <svg viewBox="0 0 100 100" className="w-full h-full text-watermelon-500 fill-current">
                         {/* 귀여운 고양이 귀 */}
                         <path d="M 25 35 L 12 8 L 38 22 Z" fill="#D98E33" />
                         <path d="M 75 35 L 88 8 L 62 22 Z" fill="#D98E33" />
@@ -142,10 +142,10 @@ export function LoginPage({ errorMessage }: { errorMessage?: string }) {
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.2, duration: 0.6 }}
                 >
-                    <h1 className="font-display text-4xl text-brown-900 tracking-wide">
-                        캣칫 <span className="text-orange-500 font-display">CatchEat</span>
+                    <h1 className="font-display text-4xl text-neutral-900 tracking-wide">
+                        캣칫 <span className="text-watermelon-500 font-display">CatchEat</span>
                     </h1>
-                    <p className="mt-2.5 text-sm text-brown-800 font-medium">먹을수록 채워지는 나의 도감 📖</p>
+                    <p className="mt-2.5 text-sm text-neutral-800 font-medium">먹을수록 채워지는 나의 도감 📖</p>
                 </motion.div>
             </header>
 
@@ -156,9 +156,9 @@ export function LoginPage({ errorMessage }: { errorMessage?: string }) {
                     initial={{ opacity: 0, x: -50, rotate: -25, scale: 0.8 }}
                     animate={{ opacity: 1, x: -70, rotate: -15, scale: 0.9 }}
                     transition={{ delay: 0.4, type: 'spring', stiffness: 100 }}
-                    className="absolute w-28 h-36 bg-white border border-cream-200 rounded-xl shadow-card p-2 flex flex-col justify-between items-center"
+                    className="absolute w-28 h-36 bg-white border border-neutral-100 rounded-xl shadow-card p-2 flex flex-col justify-between items-center"
                 >
-                    <div className="w-full h-20 bg-cream-50 rounded-lg flex items-center justify-center">
+                    <div className="w-full h-20 bg-white rounded-lg flex items-center justify-center">
                         {/* 초밥 SVG */}
                         <svg viewBox="0 0 100 100" className="w-14 h-14">
                             <path d="M 15 50 Q 50 12 85 50 Q 50 65 15 50 Z" fill="#FF7B54" />
@@ -175,8 +175,8 @@ export function LoginPage({ errorMessage }: { errorMessage?: string }) {
                         </svg>
                     </div>
                     <div className="text-center w-full">
-                        <p className="text-[12px] font-bold text-brown-900 leading-tight">연어초밥</p>
-                        <p className="text-[10px] text-orange-500 font-bold mt-0.5">★★★</p>
+                        <p className="text-[12px] font-bold text-neutral-900 leading-tight">연어초밥</p>
+                        <p className="text-[10px] text-watermelon-500 font-bold mt-0.5">★★★</p>
                     </div>
                 </motion.div>
 
@@ -185,14 +185,14 @@ export function LoginPage({ errorMessage }: { errorMessage?: string }) {
                     initial={{ opacity: 0, x: 50, rotate: 25, scale: 0.8 }}
                     animate={{ opacity: 1, x: 70, rotate: 15, scale: 0.9 }}
                     transition={{ delay: 0.5, type: 'spring', stiffness: 100 }}
-                    className="absolute w-28 h-36 bg-cream-200 border border-cream-300 rounded-xl shadow-card p-2 flex flex-col justify-between items-center"
+                    className="absolute w-28 h-36 bg-neutral-100 border border-neutral-200 rounded-xl shadow-card p-2 flex flex-col justify-between items-center"
                 >
-                    <div className="w-full h-20 bg-cream-100 rounded-lg flex items-center justify-center">
-                        <span className="text-3xl font-display text-brown-300">?</span>
+                    <div className="w-full h-20 bg-neutral-50 rounded-lg flex items-center justify-center">
+                        <span className="text-3xl font-display text-neutral-400">?</span>
                     </div>
                     <div className="text-center w-full">
-                        <p className="text-[12px] font-bold text-brown-300 leading-tight">미해금</p>
-                        <p className="text-[10px] text-brown-300 font-bold mt-0.5">☆☆☆</p>
+                        <p className="text-[12px] font-bold text-neutral-400 leading-tight">미해금</p>
+                        <p className="text-[10px] text-neutral-400 font-bold mt-0.5">☆☆☆</p>
                     </div>
                 </motion.div>
 
@@ -214,10 +214,10 @@ export function LoginPage({ errorMessage }: { errorMessage?: string }) {
                             ease: 'easeInOut',
                         },
                     }}
-                    className="absolute z-10 w-32 h-40 bg-white border-2 border-orange-400 rounded-2xl shadow-modal p-2.5 flex flex-col justify-between items-center"
+                    className="absolute z-10 w-32 h-40 bg-white border-2 border-watermelon-400 rounded-2xl shadow-modal p-2.5 flex flex-col justify-between items-center"
                 >
-                    <div className="w-full h-24 bg-orange-50 rounded-xl flex items-center justify-center relative overflow-hidden">
-                        <div className="absolute top-1 left-1.5 bg-orange-500 text-[9px] text-white px-1.5 py-0.5 rounded-full font-bold">
+                    <div className="w-full h-24 bg-watermelon-50 rounded-xl flex items-center justify-center relative overflow-hidden">
+                        <div className="absolute top-1 left-1.5 bg-watermelon-500 text-[9px] text-white px-1.5 py-0.5 rounded-full font-bold">
                             New
                         </div>
                         {/* 라멘 SVG */}
@@ -261,8 +261,8 @@ export function LoginPage({ errorMessage }: { errorMessage?: string }) {
                         </svg>
                     </div>
                     <div className="text-center w-full">
-                        <p className="text-sm font-bold text-brown-900 leading-tight">돈코츠라멘</p>
-                        <p className="text-[11px] text-orange-500 font-bold mt-0.5">★★☆</p>
+                        <p className="text-sm font-bold text-neutral-900 leading-tight">돈코츠라멘</p>
+                        <p className="text-[11px] text-watermelon-500 font-bold mt-0.5">★★☆</p>
                     </div>
                 </motion.div>
             </div>
@@ -278,7 +278,7 @@ export function LoginPage({ errorMessage }: { errorMessage?: string }) {
                             {errorMessage}
                         </p>
                     )}
-                    <p className="text-xs text-brown-800 text-center font-medium opacity-85 mb-1">
+                    <p className="text-xs text-neutral-800 text-center font-medium opacity-85 mb-1">
                         소셜 계정으로 간편하게 시작해요
                     </p>
 
@@ -298,13 +298,13 @@ export function LoginPage({ errorMessage }: { errorMessage?: string }) {
                     ))}
                 </div>
 
-                <p className="text-[10px] text-brown-300 text-center leading-normal max-w-xs px-4">
+                <p className="text-[10px] text-neutral-400 text-center leading-normal max-w-xs px-4">
                     로그인 시 캣칫의{' '}
-                    <a href="#" className="underline hover:text-brown-800">
+                    <a href="#" className="underline hover:text-neutral-800">
                         이용약관
                     </a>{' '}
                     및{' '}
-                    <a href="#" className="underline hover:text-brown-800">
+                    <a href="#" className="underline hover:text-neutral-800">
                         개인정보처리방침
                     </a>
                     에 동의하게 됩니다.

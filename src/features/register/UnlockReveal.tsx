@@ -55,7 +55,7 @@ export function UnlockReveal({ cards, awaitingReview, collectedCount, totalSlots
     return (
         <div
             className={`relative flex h-full flex-col items-center justify-center overflow-hidden px-8 text-center ${
-                celebrate ? 'bg-orange-500' : 'bg-cream-100'
+                celebrate ? 'bg-watermelon-500' : 'bg-neutral-50'
             }`}
         >
             {/* 반짝임은 첫 해금에만, 1회만 재생 (무한 루프 장식 금지) */}
@@ -160,7 +160,7 @@ export function UnlockReveal({ cards, awaitingReview, collectedCount, totalSlots
                 transition={reduceMotion ? { duration: 0 } : { delay: 0.5 + cards.length * 0.18 }}
                 onClick={onGoDex}
                 className={`mt-10 h-cta rounded-full border-2 px-10 font-display text-lg ${
-                    celebrate ? 'border-white text-white' : 'border-orange-400 text-orange-600'
+                    celebrate ? 'border-white text-white' : 'border-watermelon-400 text-watermelon-600'
                 }`}
             >
                 도감 보러 가기
@@ -174,7 +174,7 @@ export function UnlockReveal({ cards, awaitingReview, collectedCount, totalSlots
  */
 function ReviewRequested({ names, onGoDex }: { names: string[]; onGoDex: () => void }) {
     return (
-        <div className="flex h-full flex-col items-center justify-center bg-cream-100 px-8 text-center">
+        <div className="flex h-full flex-col items-center justify-center bg-neutral-50 px-8 text-center">
             <ClockIcon size={44} aria-hidden className="text-content-link" />
             <h1 className="mt-4 font-display text-xl text-content-primary">검토를 요청했어요</h1>
             <p className="mt-2 text-sm leading-6 text-content-secondary">
@@ -199,7 +199,7 @@ function ReviewRequested({ names, onGoDex }: { names: string[]; onGoDex: () => v
             <button
                 type="button"
                 onClick={onGoDex}
-                className="mt-10 h-cta rounded-full border-2 border-orange-400 px-10 font-display text-lg text-orange-600"
+                className="mt-10 h-cta rounded-full border-2 border-watermelon-400 px-10 font-display text-lg text-watermelon-600"
             >
                 도감 보러 가기
             </button>

@@ -26,7 +26,7 @@ export function ProgressBar({ value, className = '', animate = true, label }: Pr
             aria-valuenow={Math.round(pct)}
             aria-valuemin={0}
             aria-valuemax={100}
-            className={`h-2 w-full overflow-hidden rounded-full bg-cream-300 ${className}`}
+            className={`h-2 w-full overflow-hidden rounded-full bg-neutral-200 ${className}`}
         >
             <motion.div
                 className="h-full rounded-full bg-action-primary"

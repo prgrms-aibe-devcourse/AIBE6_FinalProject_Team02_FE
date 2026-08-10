@@ -180,7 +180,7 @@ export function PlacePicker({ value, onChange }: Props) {
                         aria-pressed={nearbyOn}
                         className={`flex shrink-0 items-center gap-1 rounded-full border px-2.5 py-1 text-xs disabled:opacity-40 ${
                             nearbyOn
-                                ? 'border-edge-active bg-orange-50 text-content-link'
+                                ? 'border-edge-active bg-watermelon-50 text-content-link'
                                 : 'border-edge-default text-content-secondary'
                         }`}
                     >

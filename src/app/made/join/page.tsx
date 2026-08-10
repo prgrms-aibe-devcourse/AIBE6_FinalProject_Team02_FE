@@ -99,16 +99,16 @@ function JoinContent() {
     // 로그인 후 원래 링크로 되돌리는 처리는 OAuth 콜백이 홈 고정이라 아직 없다.
     if (!authLoading && !me) {
         return (
-            <div className="flex h-full flex-col items-center justify-center gap-4 bg-cream-100 px-8 text-center">
+            <div className="flex h-full flex-col items-center justify-center gap-4 bg-neutral-50 px-8 text-center">
                 <span className="text-4xl">🤝</span>
-                <p className="text-sm leading-5 text-brown-soft">
+                <p className="text-sm leading-5 text-neutral-800">
                     로그인하면 초대받은 도감에 참여할 수 있어요.
                     <br />
                     로그인한 뒤 초대 링크를 다시 눌러 주세요.
                 </p>
                 <button
                     onClick={() => router.push(ROUTES.login)}
-                    className="rounded-2xl bg-orange-500 px-6 py-3 font-display text-white shadow-card"
+                    className="rounded-2xl bg-watermelon-500 px-6 py-3 font-display text-white shadow-card"
                 >
                     로그인하러 가기
                 </button>

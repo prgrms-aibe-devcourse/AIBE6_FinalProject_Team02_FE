@@ -86,7 +86,7 @@ export function DexGrid({
     const displayTotal = activeCategory === '전체' ? entries.length : sectionTotal
 
     return (
-        <div className="relative flex h-full flex-col bg-cream-100">
+        <div className="relative flex h-full flex-col bg-neutral-50">
             <header className="shrink-0 px-4 pt-4">
                 <div className="flex items-center justify-between gap-3">
                     <div className="flex min-w-0 items-center gap-2">
@@ -94,7 +94,7 @@ export function DexGrid({
                             type="button"
                             onClick={onBackToList}
                             aria-label="도감 목록으로 돌아가기"
-                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-card text-content-primary shadow-card transition-colors hover:bg-cream-50 active:scale-[0.98]"
+                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-card text-content-primary shadow-card transition-colors hover:bg-white active:scale-[0.98]"
                         >
                             <ArrowLeftIcon size={19} aria-hidden />
                         </button>
@@ -113,7 +113,7 @@ export function DexGrid({
                 <div className="mt-3 rounded-2xl bg-surface-card p-4 shadow-card">
                     <div className="mb-2 flex items-center justify-between">
                         <span className="text-sm font-medium text-content-secondary">수집률</span>
-                        <span className="rounded-full bg-orange-50 px-3 py-1 text-xs font-bold text-content-link">
+                        <span className="rounded-full bg-watermelon-50 px-3 py-1 text-xs font-bold text-content-link">
                             {displayCollected} / {displayTotal} · {displayPercentage}%
                         </span>
                     </div>
@@ -147,7 +147,7 @@ export function DexGrid({
                         aria-haspopup="listbox"
                         aria-expanded={unlockMenuOpen}
                         onClick={() => setUnlockMenuOpen((open) => !open)}
-                        className="flex min-h-touch items-center gap-2 rounded-full border border-edge-default bg-surface-card px-4 text-sm font-bold text-content-primary shadow-card transition-colors hover:bg-cream-50 active:scale-[0.98]"
+                        className="flex min-h-touch items-center gap-2 rounded-full border border-edge-default bg-surface-card px-4 text-sm font-bold text-content-primary shadow-card transition-colors hover:bg-white active:scale-[0.98]"
                     >
                         {unlockFilter}
                         <ChevronDownIcon
@@ -174,8 +174,8 @@ export function DexGrid({
                                     }}
                                     className={`min-h-touch w-full px-4 text-left text-sm ${
                                         unlockFilter === item.id
-                                            ? 'bg-orange-50 font-bold text-content-link'
-                                            : 'text-content-secondary hover:bg-cream-50'
+                                            ? 'bg-watermelon-50 font-bold text-content-link'
+                                            : 'text-content-secondary hover:bg-white'
                                     }`}
                                 >
                                     {item.label}
@@ -251,7 +251,7 @@ export function DexGrid({
                                         onClick={() => onOpenEntry(entry.id, activeCategory)}
                                         corner={
                                             isNew ? (
-                                                <span className="absolute -right-2 -top-2 rounded-full bg-blue-500 px-2 py-1 text-xs font-bold leading-none text-white">
+                                                <span className="absolute -right-2 -top-2 rounded-full bg-lime-text px-2 py-1 text-xs font-bold leading-none text-white">
                                                     New
                                                 </span>
                                             ) : undefined

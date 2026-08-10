@@ -48,16 +48,16 @@ export function ChallengeDetail({
     const openCertify = (target: ChallengeTarget) => setCertify(target)
 
     return (
-        <div className="flex h-full flex-col bg-cream-100">
+        <div className="flex h-full flex-col bg-neutral-50">
             <header className="flex items-center gap-3 px-5 py-4">
                 <button onClick={onBack} aria-label="뒤로가기">
                     <ArrowLeftIcon size={22} />
                 </button>
-                <span className="font-display text-lg text-brown">챌린지 상세</span>
+                <span className="font-display text-lg text-neutral-900">챌린지 상세</span>
                 {joined && onLeave && (
                     <button
                         onClick={onLeave}
-                        className="ml-auto rounded-full border border-cream-300 px-3 py-1 text-xs font-medium text-brown-muted"
+                        className="ml-auto rounded-full border border-neutral-200 px-3 py-1 text-xs font-medium text-neutral-400"
                     >
                         나가기
                     </button>
@@ -66,24 +66,24 @@ export function ChallengeDetail({
             <main className="no-scrollbar flex-1 overflow-y-auto px-5">
                 <section className="rounded-3xl bg-white p-4 shadow-soft">
                     <div className="flex items-center gap-3">
-                        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-3xl">
+                        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-watermelon-50 text-3xl">
                             {challenge.emoji}
                         </span>
                         <span className="min-w-0 flex-1">
                             <Badge variant="type">{challenge.tag}</Badge>
-                            <h1 className="mt-1 truncate font-display text-xl text-brown">{challenge.title}</h1>
-                            <p className="mt-1 text-xs text-brown-soft">
+                            <h1 className="mt-1 truncate font-display text-xl text-neutral-900">{challenge.title}</h1>
+                            <p className="mt-1 text-xs text-neutral-800">
                                 {challenge.participants}명 참가 · {challenge.dday}
                             </p>
                         </span>
                     </div>
-                    <div className="mt-3 flex items-center gap-2 rounded-xl bg-orange-50 px-3 py-2 text-sm font-bold text-orange-700">
+                    <div className="mt-3 flex items-center gap-2 rounded-xl bg-watermelon-50 px-3 py-2 text-sm font-bold text-watermelon-700">
                         <MapPinIcon size={16} />
                         <span>지정 목표 음식 {targets.length}개</span>
                     </div>
                     {joined && (
                         <div className="mt-3">
-                            <div className="mb-1 flex justify-between text-xs text-brown-soft">
+                            <div className="mb-1 flex justify-between text-xs text-neutral-800">
                                 <span>내 진행</span>
                                 <span>{challenge.mine ?? `나 0/${targets.length}`}</span>
                             </div>
@@ -116,8 +116,8 @@ export function ChallengeDetail({
                 {activeTab === '기록 도감' && (
                     <section className="mt-4">
                         <div className="mb-3 flex items-center justify-between">
-                            <h2 className="font-bold text-brown">목표 도감</h2>
-                            <span className="text-xs text-brown-muted">
+                            <h2 className="font-bold text-neutral-900">목표 도감</h2>
+                            <span className="text-xs text-neutral-400">
                                 내 진행 {completed.size}/{targets.length}
                             </span>
                         </div>
@@ -166,7 +166,7 @@ export function ChallengeDetail({
                                 })}
                             </div>
                         ) : (
-                            <div className="rounded-2xl bg-white p-6 text-center text-sm text-brown-muted">
+                            <div className="rounded-2xl bg-white p-6 text-center text-sm text-neutral-400">
                                 등록된 목표 음식이 없어요.
                             </div>
                         )}
@@ -174,7 +174,7 @@ export function ChallengeDetail({
                 )}
                 {activeTab === '리뷰' && (
                     <section className="mt-4">
-                        <h2 className="mb-3 font-bold text-brown">챌린지 리뷰</h2>
+                        <h2 className="mb-3 font-bold text-neutral-900">챌린지 리뷰</h2>
                         <ReviewSection
                             reloadKey={`challenge-${challenge.id}`}
                             load={() => fetchChallengeReviews(challenge.id)}
@@ -187,20 +187,20 @@ export function ChallengeDetail({
                     </section>
                 )}
             </main>
-            <div className="border-t border-cream-300 bg-cream-50 px-5 py-4">
+            <div className="border-t border-neutral-200 bg-white px-5 py-4">
                 {ended ? (
-                    <p className="flex h-cta w-full items-center justify-center rounded-full bg-cream-200 font-display text-base text-brown-muted">
+                    <p className="flex h-cta w-full items-center justify-center rounded-full bg-neutral-100 font-display text-base text-neutral-400">
                         종료된 챌린지예요
                     </p>
                 ) : joined ? (
-                    <p className="flex h-cta w-full items-center justify-center gap-2 rounded-full bg-orange-50 font-display text-base text-orange-700">
+                    <p className="flex h-cta w-full items-center justify-center gap-2 rounded-full bg-watermelon-50 font-display text-base text-watermelon-700">
                         <PlusIcon size={18} aria-hidden />
                         목표 음식을 눌러 인증하세요
                     </p>
                 ) : (
                     <button
                         onClick={onJoin}
-                        className="h-cta w-full rounded-full bg-orange-500 font-display text-lg text-white shadow-card"
+                        className="h-cta w-full rounded-full bg-watermelon-500 font-display text-lg text-white shadow-card"
                     >
                         참여하기
                     </button>
@@ -216,9 +216,9 @@ export function ChallengeDetail({
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="mb-3 flex items-center justify-between">
-                            <h3 className="font-display text-lg text-brown">{record.name}</h3>
+                            <h3 className="font-display text-lg text-neutral-900">{record.name}</h3>
                             <button onClick={() => setRecord(null)} aria-label="닫기">
-                                <XIcon size={20} className="text-brown-muted" />
+                                <XIcon size={20} className="text-neutral-400" />
                             </button>
                         </div>
                         {record.myImageUrl ? (
@@ -228,22 +228,22 @@ export function ChallengeDetail({
                                 className="mb-3 aspect-square w-full rounded-2xl object-cover"
                             />
                         ) : (
-                            <div className="mb-3 flex aspect-square w-full items-center justify-center rounded-2xl bg-cream-100 text-sm text-brown-muted">
+                            <div className="mb-3 flex aspect-square w-full items-center justify-center rounded-2xl bg-neutral-50 text-sm text-neutral-400">
                                 인증 사진이 없어요
                             </div>
                         )}
                         {record.placeName && (
-                            <p className="flex items-center gap-1 text-sm text-brown-soft">
+                            <p className="flex items-center gap-1 text-sm text-neutral-800">
                                 <MapPinIcon size={15} /> {record.placeName}
                             </p>
                         )}
                         {record.unlockedAt && (
-                            <p className="mt-1 text-xs text-brown-muted">
+                            <p className="mt-1 text-xs text-neutral-400">
                                 {new Date(record.unlockedAt).toLocaleString('ko-KR')} 인증
                             </p>
                         )}
-                        <div className="mt-4 border-t border-cream-200 pt-4">
-                            <h4 className="mb-2 font-bold text-brown">리뷰</h4>
+                        <div className="mt-4 border-t border-neutral-100 pt-4">
+                            <h4 className="mb-2 font-bold text-neutral-900">리뷰</h4>
                             <ReviewSection
                                 reloadKey={`food-${record.id}`}
                                 load={() => fetchFoodReviews(challenge.id, record.id)}
@@ -265,9 +265,9 @@ export function ChallengeDetail({
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="mb-3 flex items-center justify-between">
-                            <h3 className="font-display text-lg text-brown">{locked.name}</h3>
+                            <h3 className="font-display text-lg text-neutral-900">{locked.name}</h3>
                             <button onClick={() => setLocked(null)} aria-label="닫기">
-                                <XIcon size={20} className="text-brown-muted" />
+                                <XIcon size={20} className="text-neutral-400" />
                             </button>
                         </div>
                         <div className="relative mb-3">
@@ -283,11 +283,11 @@ export function ChallengeDetail({
                             </div>
                         </div>
                         {locked.placeName && (
-                            <p className="flex items-center gap-1 text-sm text-brown-soft">
+                            <p className="flex items-center gap-1 text-sm text-neutral-800">
                                 <MapPinIcon size={15} /> {locked.placeName}
                             </p>
                         )}
-                        {locked.description && <p className="mt-1 text-sm text-brown-soft">{locked.description}</p>}
+                        {locked.description && <p className="mt-1 text-sm text-neutral-800">{locked.description}</p>}
                         {joined && !ended ? (
                             <button
                                 type="button"
@@ -296,17 +296,17 @@ export function ChallengeDetail({
                                     setLocked(null)
                                     openCertify(t)
                                 }}
-                                className="mt-3 h-cta w-full rounded-full bg-orange-500 font-display text-base text-white shadow-card"
+                                className="mt-3 h-cta w-full rounded-full bg-watermelon-500 font-display text-base text-white shadow-card"
                             >
                                 인증하기
                             </button>
                         ) : (
-                            <p className="mt-3 rounded-full bg-cream-200 py-3 text-center text-sm font-medium text-brown-muted">
+                            <p className="mt-3 rounded-full bg-neutral-100 py-3 text-center text-sm font-medium text-neutral-400">
                                 {ended ? '종료된 챌린지예요' : '참여하면 인증할 수 있어요'}
                             </p>
                         )}
-                        <div className="mt-4 border-t border-cream-200 pt-4">
-                            <h4 className="mb-2 font-bold text-brown">리뷰</h4>
+                        <div className="mt-4 border-t border-neutral-100 pt-4">
+                            <h4 className="mb-2 font-bold text-neutral-900">리뷰</h4>
                             <ReviewSection
                                 reloadKey={`food-locked-${locked.id}`}
                                 load={() => fetchFoodReviews(challenge.id, locked.id)}

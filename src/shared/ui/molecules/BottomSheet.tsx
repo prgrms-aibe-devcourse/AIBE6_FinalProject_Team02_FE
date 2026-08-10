@@ -119,7 +119,7 @@ export function BottomSheet({
                     }`}
                     onPointerDown={handleOnly ? (event) => dragControls.start(event) : undefined}
                 >
-                    <span aria-hidden className="h-1 w-10 rounded-full bg-cream-300" />
+                    <span aria-hidden className="h-1 w-10 rounded-full bg-neutral-200" />
                 </div>
                 {showTitle ? (
                     <h2 className="shrink-0 px-5 pt-3 font-display text-xl text-content-primary">{title}</h2>

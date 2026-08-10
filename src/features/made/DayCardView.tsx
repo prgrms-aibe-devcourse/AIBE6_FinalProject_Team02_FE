@@ -45,7 +45,7 @@ export function DayCardContent({ dayCard, loading, error, onReload, onRecord }: 
                 <button
                     type="button"
                     onClick={onReload}
-                    className="mt-3 min-h-touch rounded-full bg-cream-200 px-5 text-sm font-bold text-content-secondary"
+                    className="mt-3 min-h-touch rounded-full bg-neutral-100 px-5 text-sm font-bold text-content-secondary"
                 >
                     다시 시도
                 </button>
@@ -56,8 +56,8 @@ export function DayCardContent({ dayCard, loading, error, onReload, onRecord }: 
     if (loading && !dayCard) {
         return (
             <div className="space-y-3 pt-5" aria-hidden>
-                <div className="h-5 w-24 animate-pulse rounded-full bg-cream-200" />
-                <div className="aspect-[4/3] w-full animate-pulse rounded-2xl bg-cream-200" />
+                <div className="h-5 w-24 animate-pulse rounded-full bg-neutral-100" />
+                <div className="aspect-[4/3] w-full animate-pulse rounded-2xl bg-neutral-100" />
             </div>
         )
     }
@@ -68,7 +68,7 @@ export function DayCardContent({ dayCard, loading, error, onReload, onRecord }: 
 
     if (filledSlots.length === 0) {
         return (
-            <div className="flex min-h-48 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-edge-default bg-cream-50 text-center">
+            <div className="flex min-h-48 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-edge-default bg-white text-center">
                 <span aria-hidden className="text-3xl">
                     🧊
                 </span>
