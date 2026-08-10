@@ -1,6 +1,14 @@
 import { apiFetch } from '@/shared/lib/api'
+import type {
+    LogitDayCard,
+    LogitFeed,
+    LogitRecordCreateRequest,
+    LogitRecordDetail,
+    LogitRecordUpdateRequest,
+    LogitSlot,
+    SlotDeleteResult,
+} from './logitTypes'
 import type { MadeDexId } from './types'
-import type { LogitFeed, LogitRecordDetail, LogitSlot, SlotDeleteResult } from './logitTypes'
 
 function base(madeDexId: MadeDexId): string {
     return `/api/v1/made-dexes/${madeDexId}`
@@ -52,6 +60,29 @@ export function restoreSlot(madeDexId: MadeDexId, slotId: number): Promise<Logit
 export function fetchFeed(madeDexId: MadeDexId, date?: string): Promise<LogitFeed> {
     const query = date ? `?date=${date}` : ''
     return apiFetch<LogitFeed>(`${base(madeDexId)}/feed${query}`)
+}
+
+export function createRecord(madeDexId: MadeDexId, request: LogitRecordCreateRequest): Promise<{ recordId: number }> {
+    return apiFetch<{ recordId: number }>(`${base(madeDexId)}/records`, {
+        method: 'POST',
+        body: JSON.stringify(request),
+    })
+}
+
+/** 사진·음식명은 보낸 목록으로 전부 교체된다 */
+export function updateRecord(madeDexId: MadeDexId, recordId: number, request: LogitRecordUpdateRequest): Promise<void> {
+    return apiFetch<void>(`${base(madeDexId)}/records/${recordId}`, {
+        method: 'PUT',
+        body: JSON.stringify(request),
+    })
+}
+
+/** 오늘의 하루 카드
+ * 끼니 층 + 음식 사진 + 통계 + 담긴 사람
+ * date를 비우면 서버 기준 오늘 */
+export function fetchDayCard(madeDexId: MadeDexId, date?: string): Promise<LogitDayCard> {
+    const query = date ? `?date=${date}` : ''
+    return apiFetch<LogitDayCard>(`${base(madeDexId)}/day-card${query}`)
 }
 
 export function fetchRecord(madeDexId: MadeDexId, recordId: number): Promise<LogitRecordDetail> {
