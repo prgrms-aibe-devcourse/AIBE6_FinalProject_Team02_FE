@@ -13,7 +13,7 @@ import {
     UsersIcon,
 } from 'lucide-react'
 
-import { ConfirmDialog as ConfirmView } from '@/shared/ui/molecules/ConfirmDialog'
+import { Dialog } from '@/shared/ui/molecules/Dialog'
 import { inviteDaysLeft, INVITE_CODE_LENGTH, memberInitial, memberName } from './types'
 import type { MadeDexMember, MadeDexRole } from './types'
 
@@ -385,12 +385,12 @@ function ConfirmDialog({ confirm, dexTitle, onCancel, onConfirm }: ConfirmDialog
                   }
 
     return (
-        <ConfirmView
+        <Dialog
             title={copy.title}
             message={copy.body}
-            actionText={copy.action}
-            onCancel={onCancel}
-            onConfirm={onConfirm}
+            danger
+            action={{ label: copy.action, onClick: onConfirm }}
+            onClose={onCancel}
         />
     )
 }

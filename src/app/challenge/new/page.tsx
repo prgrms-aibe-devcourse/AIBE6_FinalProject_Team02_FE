@@ -7,7 +7,7 @@ import { uploadImageToS3 } from '@/shared/lib/upload'
 import { useAppState } from '@/shared/store/AppStateProvider'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { AlertModal } from '@/shared/ui/molecules/AlertModal'
+import { Dialog } from '@/shared/ui/molecules/Dialog'
 
 const MONTHLY_LIMIT = 3
 
@@ -102,7 +102,7 @@ export default function ChallengeCreatePage() {
                 onUsePreset={() => setCustomBadge(null)}
             />
             {alertMessage && (
-                <AlertModal title="개설 실패" message={alertMessage} onClose={() => setAlertMessage(null)} />
+                <Dialog title="개설 실패" message={alertMessage} onClose={() => setAlertMessage(null)} />
             )}
         </>
     )

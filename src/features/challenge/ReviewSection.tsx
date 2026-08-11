@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { HeartIcon, LockIcon, PencilIcon, StarIcon, Trash2Icon } from 'lucide-react'
 import { Review, ReviewWritePayload, deleteReview, editReview, toggleReviewLike } from './api'
-import { ConfirmModal } from '@/shared/ui/molecules/ConfirmModal'
+import { Dialog } from '@/shared/ui/molecules/Dialog'
 
 interface Props {
     load: () => Promise<Review[]>
@@ -276,14 +276,12 @@ export function ReviewSection({
             )}
 
             {confirmDeleteId != null && (
-                <ConfirmModal
+                <Dialog
                     title="리뷰 삭제"
                     message="이 리뷰를 지울까요?"
-                    confirmText="삭제"
-                    cancelText="취소"
                     danger
-                    onConfirm={doDelete}
-                    onCancel={() => setConfirmDeleteId(null)}
+                    action={{ label: '삭제', onClick: doDelete }}
+                    onClose={() => setConfirmDeleteId(null)}
                 />
             )}
         </div>

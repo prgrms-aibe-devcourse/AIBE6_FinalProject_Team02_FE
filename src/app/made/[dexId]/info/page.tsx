@@ -7,17 +7,8 @@ import { fetchActiveInvite, fetchMadeDexDetail, leaveMadeDex } from '@/features/
 import { isNotOwner, madeErrorMessage } from '@/features/made/errors'
 import { parseMadeDexId } from '@/features/made/types'
 import type { MadeDexDetail } from '@/features/made/types'
+import { copyToClipboard } from '@/shared/lib/clipboard'
 import { ROUTES } from '@/shared/lib/routes'
-
-async function copyToClipboard(text: string): Promise<boolean> {
-    if (!navigator.clipboard) return false
-    try {
-        await navigator.clipboard.writeText(text)
-        return true
-    } catch {
-        return false
-    }
-}
 
 /** `/made/[dexId]/info` 도감 정보 */
 export default function MadeDexInfoPage() {
