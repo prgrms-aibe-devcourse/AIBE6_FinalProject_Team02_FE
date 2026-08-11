@@ -20,9 +20,21 @@ type ButtonVariant = 'primary' | 'secondary' | 'soft' | 'ghost' | 'danger'
  */
 type ButtonSize = 'cta' | 'md' | 'sm'
 
+/**
+ * 모서리 모양.
+ *
+ * 둘 다 실제로 쓰이고 있어서 옵션으로 남긴다 — 화면을 훑어 보니 알약(`rounded-full`) CTA와
+ * 사각(`rounded-2xl`) CTA가 섞여 있었다. 하나로 통일하는 건 디자인 결정이라 여기서 하지 않는다.
+ *
+ * - `pill`  기본. 하단 고정 CTA, 목록 속 작은 버튼
+ * - `block` 카드처럼 각진 큰 버튼. 카드 사이에 끼어 있을 때 라운드를 맞추려면 이쪽
+ */
+type ButtonShape = 'pill' | 'block'
+
 interface ButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'className'> {
     variant?: ButtonVariant
     size?: ButtonSize
+    shape?: ButtonShape
     /** 가로를 꽉 채움. 하단 고정 CTA는 대부분 이것 */
     fullWidth?: boolean
     /**
@@ -39,7 +51,9 @@ interface ButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>
 }
 
 const BASE =
-    'inline-flex items-center justify-center gap-2 rounded-full font-display transition active:scale-[0.98] disabled:pointer-events-none'
+    'inline-flex items-center justify-center gap-2 font-display transition active:scale-[0.98] disabled:pointer-events-none'
+
+const SHAPE: Record<ButtonShape, string> = { pill: 'rounded-full', block: 'rounded-2xl' }
 
 /** disabled는 변형마다 다르게 두지 않는다 — 잠긴 버튼은 어떤 종류였든 똑같이 잠겨 보여야 한다 */
 const DISABLED = 'disabled:bg-action-disabled-bg disabled:text-action-disabled-text disabled:shadow-none'
@@ -49,7 +63,7 @@ const VARIANT: Record<ButtonVariant, string> = {
     secondary: `border-2 border-edge-default bg-surface-card text-content-primary ${DISABLED} disabled:border-transparent`,
     soft: `bg-action-soft text-action-soft-text ${DISABLED}`,
     ghost: `text-content-secondary ${DISABLED} disabled:bg-transparent`,
-    danger: `bg-feedback-error text-content-on-action shadow-card ${DISABLED}`,
+    danger: `bg-feedback-error text-content-on-dark shadow-card ${DISABLED}`,
 }
 
 const SIZE: Record<ButtonSize, string> = {
@@ -71,6 +85,7 @@ const SPINNER: Record<ButtonSize, number> = { cta: 20, md: 18, sm: 16 }
 export function Button({
     variant = 'primary',
     size = 'cta',
+    shape = 'pill',
     fullWidth = false,
     loading = false,
     icon,
@@ -87,7 +102,7 @@ export function Button({
             disabled={disabled || loading}
             // disabled와 달리 "값이 없어서"가 아니라 "처리 중이라" 못 누른다는 뜻을 따로 알린다
             aria-busy={loading || undefined}
-            className={`${BASE} ${VARIANT[variant]} ${SIZE[size]} ${fullWidth ? 'w-full' : ''} ${className}`}
+            className={`${BASE} ${SHAPE[shape]} ${VARIANT[variant]} ${SIZE[size]} ${fullWidth ? 'w-full' : ''} ${className}`}
             {...rest}
         >
             {loading ? (

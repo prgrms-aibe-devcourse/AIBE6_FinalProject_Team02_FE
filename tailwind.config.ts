@@ -73,7 +73,10 @@ const config: Config = {
                     primary: token('text-primary'),
                     secondary: token('text-secondary'),
                     muted: token('text-muted'),
+                    /** 핑크 면 위 — 어두운 색이다 (globals.css 주석 참고) */
                     'on-action': token('text-on-action'),
+                    /** 어두운 면(에러 버튼·토스트) 위 — 흰색 */
+                    'on-dark': token('text-on-dark'),
                     link: token('text-link'),
                 },
                 action: {

@@ -35,15 +35,15 @@ const BOTTOM_OFFSET = 'calc(5rem + env(safe-area-inset-bottom))'
 const TONE_STYLE: Record<ToastTone, { icon: React.ReactNode; className: string }> = {
     success: {
         icon: <CheckCircle2Icon size={18} aria-hidden />,
-        className: 'bg-content-primary text-content-on-action',
+        className: 'bg-content-primary text-content-on-dark',
     },
     error: {
         icon: <XCircleIcon size={18} aria-hidden />,
-        className: 'bg-feedback-error text-content-on-action',
+        className: 'bg-feedback-error text-content-on-dark',
     },
     info: {
         icon: <InfoIcon size={18} aria-hidden />,
-        className: 'bg-content-primary text-content-on-action',
+        className: 'bg-content-primary text-content-on-dark',
     },
 }
 
