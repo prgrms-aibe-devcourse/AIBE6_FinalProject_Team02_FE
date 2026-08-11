@@ -78,7 +78,7 @@ export function LogitHome({ dexId, title, onBack, onOpenInfo, onRecord, onEditRe
                 {feed.loading && !feed.feed && (
                     <div className="space-y-3 pt-5" aria-hidden>
                         <div className="h-5 w-20 animate-pulse rounded-full bg-neutral-100" />
-                        <div className="aspect-[4/3] w-4/5 animate-pulse rounded-2xl bg-neutral-100" />
+                        <div className="aspect-square w-4/5 animate-pulse rounded-2xl bg-neutral-100" />
                     </div>
                 )}
 

@@ -68,6 +68,8 @@ export function useRecordForm({ madeDexId, recordId, initialSlotId, initialDate 
                         photoId: photo.photoId,
                         url: photo.url,
                         caption: photo.caption ?? '',
+                        cropX: photo.cropX,
+                        cropY: photo.cropY,
                     })),
                 )
             }
@@ -160,6 +162,8 @@ export function useRecordForm({ madeDexId, recordId, initialSlotId, initialDate 
                 file,
                 previewUrl: URL.createObjectURL(file),
                 caption: '',
+                cropX: 50,
+                cropY: 50,
             }))
 
             applyPhotos((current) => [...current, ...accepted])
@@ -170,6 +174,10 @@ export function useRecordForm({ madeDexId, recordId, initialSlotId, initialDate 
 
     const writeCaption = (id: string, caption: string) => {
         applyPhotos((current) => current.map((photo) => (photo.id === id ? { ...photo, caption } : photo)))
+    }
+
+    const writeCrop = (id: string, cropX: number, cropY: number) => {
+        applyPhotos((current) => current.map((photo) => (photo.id === id ? { ...photo, cropX, cropY } : photo)))
     }
 
     const removePhoto = (id: string) => {
@@ -184,6 +192,16 @@ export function useRecordForm({ madeDexId, recordId, initialSlotId, initialDate 
             const target = current.find((photo) => photo.id === id)
             if (!target) return current
             return [target, ...current.filter((photo) => photo.id !== id)]
+        })
+    }
+
+    const movePhoto = (fromIndex: number, toIndex: number) => {
+        applyPhotos((current) => {
+            if (fromIndex === toIndex) return current
+            const next = [...current]
+            const [moved] = next.splice(fromIndex, 1)
+            next.splice(toIndex, 0, moved)
+            return next
         })
     }
 
@@ -284,7 +302,9 @@ export function useRecordForm({ madeDexId, recordId, initialSlotId, initialDate 
         failed,
         addFiles,
         writeCaption,
+        writeCrop,
         makeCover,
+        movePhoto,
         removePhoto,
         retryPhoto,
         submit,

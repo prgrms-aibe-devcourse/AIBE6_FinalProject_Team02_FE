@@ -90,7 +90,7 @@ export function RecordDetailSheet({ madeDexId, recordIds, onClose, onEdit, onDel
                 )}
 
                 {loading && !error && (
-                    <div className="aspect-[4/3] w-full animate-pulse rounded-2xl bg-neutral-100" aria-hidden />
+                    <div className="aspect-square w-full animate-pulse rounded-2xl bg-neutral-100" aria-hidden />
                 )}
 
                 {record && !loading && !error && (

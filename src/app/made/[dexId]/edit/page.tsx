@@ -7,7 +7,7 @@ import type { CoverImage } from '@/features/made/MadeDexFormFields'
 import { fetchMadeDexDetail, updateMadeDex } from '@/features/made/api'
 import { madeErrorMessage } from '@/features/made/errors'
 import { parseMadeDexId } from '@/features/made/types'
-import type { MadeDexDetail, MadeDexVisibility } from '@/features/made/types'
+import type { MadeDexDetail } from '@/features/made/types'
 import { ROUTES } from '@/shared/lib/routes'
 import { uploadImageToS3 } from '@/shared/lib/upload'
 
@@ -50,11 +50,12 @@ export default function MadeDexEditPage() {
 
     if (!dexId) notFound()
 
-    const save = async (name: string, description: string, visibility: MadeDexVisibility, image: CoverImage) => {
+    const save = async (name: string, description: string, image: CoverImage) => {
         await updateMadeDex(dexId, {
             name,
             description: description || null,
-            visibility,
+            // 로그잇 도감은 모두 비공개다. 서버도 PRIVATE로 강제한다
+            visibility: 'PRIVATE',
             imageKey: await resolveImageKey(image),
         })
         router.replace(ROUTES.madeInfo(dexId))
@@ -68,5 +69,5 @@ export default function MadeDexEditPage() {
         )
     }
 
-    return <MadeDexEditForm detail={detail} onSave={save} onBack={() => router.push(ROUTES.madeManage(dexId))} />
+    return <MadeDexEditForm detail={detail} onSave={save} onBack={() => router.push(ROUTES.madeInfo(dexId))} />
 }

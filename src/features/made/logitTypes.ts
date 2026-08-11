@@ -26,6 +26,8 @@ export interface LogitFeedCard {
     me: boolean
     recordCount: number
     thumbnailUrl: string | null
+    thumbnailCropX: number
+    thumbnailCropY: number
     foodNames: string[]
     recordIds: number[]
     /** 대표 사진을 낸 기록의 먹은 시각. 빈 카드이거나 적지 않았으면 null */
@@ -61,6 +63,8 @@ interface LogitRecordFields {
 export interface LogitPhotoInput {
     imageKey: string
     caption: string | null
+    cropX: number | null
+    cropY: number | null
 }
 
 export interface LogitRecordCreateRequest extends LogitRecordFields {
@@ -69,7 +73,7 @@ export interface LogitRecordCreateRequest extends LogitRecordFields {
 
 /** 유지할 기존 사진과 새로 올린 것을 나눠 보낸다. 최종 순서는 keep 다음에 new */
 export interface LogitRecordUpdateRequest extends LogitRecordFields {
-    keepPhotos: Array<{ photoId: number; caption: string | null }>
+    keepPhotos: Array<{ photoId: number; caption: string | null; cropX: number | null; cropY: number | null }>
     newPhotos: LogitPhotoInput[]
 }
 
@@ -87,6 +91,8 @@ export interface DayCardPhoto {
     photoId: number
     caption: string | null
     imageUrl: string | null
+    cropX: number
+    cropY: number
 }
 
 /** 카드에 놓이는 아이템 = 기록 하나
@@ -151,6 +157,8 @@ export interface LogitRecordPhoto {
     /** 서명된 조회 URL. 원본 S3 key는 서버가 내보내지 않는다 */
     url: string
     caption: string | null
+    cropX: number
+    cropY: number
 }
 
 export interface LogitRecordDetail {

@@ -57,7 +57,7 @@ export function DayCardContent({ dayCard, loading, error, onReload, onRecord }: 
         return (
             <div className="space-y-3 pt-5" aria-hidden>
                 <div className="h-5 w-24 animate-pulse rounded-full bg-neutral-100" />
-                <div className="aspect-[4/3] w-full animate-pulse rounded-2xl bg-neutral-100" />
+                <div className="aspect-square w-full animate-pulse rounded-2xl bg-neutral-100" />
             </div>
         )
     }

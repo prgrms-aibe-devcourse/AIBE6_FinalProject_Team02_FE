@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { ArrowLeftIcon } from 'lucide-react'
+import { ArrowLeftIcon, ClockIcon } from 'lucide-react'
 import { PhotoSourceSheet } from './PhotoSourceSheet'
 import { RecordPhotoPicker } from './RecordPhotoPicker'
 import { TimePickerSheet } from './TimePickerSheet'
@@ -58,7 +58,9 @@ export function RecordForm({ madeDexId, recordId, slotId, date, onBack, onDone }
                     photos={form.photos}
                     onAdd={() => setSourceOpen(true)}
                     onCaption={form.writeCaption}
+                    onCrop={form.writeCrop}
                     onCover={form.makeCover}
+                    onMove={form.movePhoto}
                     onRemove={form.removePhoto}
                     onRetry={form.retryPhoto}
                 />
@@ -93,8 +95,13 @@ export function RecordForm({ madeDexId, recordId, slotId, date, onBack, onDone }
                         <button
                             type="button"
                             onClick={() => setTimeOpen(true)}
-                            className="min-h-touch rounded-xl bg-neutral-50 px-4 text-sm font-bold text-content-primary"
+                            className={`flex min-h-touch items-center gap-2 rounded-xl border px-4 text-sm font-bold shadow-sm transition-colors ${
+                                form.loggedTime
+                                    ? 'border-action-primary/30 bg-neutral-100 text-content-primary'
+                                    : 'border-edge-default bg-neutral-100 text-content-muted'
+                            }`}
                         >
+                            <ClockIcon size={16} aria-hidden />
                             {form.loggedTime ? timeText(form.loggedTime) : '시간 입력'}
                         </button>
                         {form.loggedTime && (

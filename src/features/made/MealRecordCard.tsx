@@ -43,11 +43,16 @@ export function MealRecordCard({ card, readOnly = false, onOpen, onRecord }: Pro
                     aria-label={`${card.me ? '내' : `${name}님의`} 기록 ${card.recordCount}개 보기`}
                     className="block w-full overflow-hidden rounded-2xl bg-neutral-100 shadow-card transition-transform active:scale-[0.98]"
                 >
-                    <span className="relative block aspect-[4/3] w-full bg-neutral-100">
+                    <span className="relative block aspect-square w-full bg-neutral-100">
                         {card.thumbnailUrl && (
                             // presigned URL이라 next/image의 도메인 설정 대상이 아니다
                             // eslint-disable-next-line @next/next/no-img-element
-                            <img src={card.thumbnailUrl} alt="" className="h-full w-full object-cover" />
+                            <img
+                                src={card.thumbnailUrl}
+                                alt=""
+                                className="h-full w-full object-cover"
+                                style={{ objectPosition: `${card.thumbnailCropX}% ${card.thumbnailCropY}%` }}
+                            />
                         )}
                         {/* 사진 밝기를 가리지 않으려고 그라데이션 대신 알약 하나만 얹는다 */}
                         {card.loggedAt && (
@@ -74,13 +79,13 @@ export function MealRecordCard({ card, readOnly = false, onOpen, onRecord }: Pro
                 <button
                     type="button"
                     onClick={onRecord}
-                    className="flex aspect-[4/3] w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-edge-default bg-white transition-transform active:scale-[0.98]"
+                    className="flex aspect-square w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-edge-default bg-white transition-transform active:scale-[0.98]"
                 >
                     <PlusIcon size={22} aria-hidden className="text-content-link" />
                     <span className="text-sm font-bold text-content-link">기록하기</span>
                 </button>
             ) : (
-                <div className="flex aspect-[4/3] w-full items-center justify-center rounded-2xl border-2 border-dashed border-edge-default bg-white px-4">
+                <div className="flex aspect-square w-full items-center justify-center rounded-2xl border-2 border-dashed border-edge-default bg-white px-4">
                     <span className="break-keep text-center text-sm font-medium text-content-muted">
                         친구가 아직 기록하지 않았어요!
                     </span>
