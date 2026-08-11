@@ -12,14 +12,27 @@
  * - **1번 이후** — 나머지 한글 음절을 코드포인트 순서로 쪼갠다.
  *   음식 이름·닉네임처럼 서버에서 오는 글자가 여기서 걸린다. 보통 한두 조각만 더 받는다.
  *
+ * ## 바뀐 게 없으면 다시 만들지 않는다
+ *
+ * woff2 인코딩이 **결정적이지 않다.** 같은 입력으로 다시 돌리면 바이트가 달라져서
+ * 아무 것도 안 바뀌었는데 **67개 파일이 변경으로 잡힌다.** 두 사람이 각자 돌리면
+ * 매번 바이너리 충돌이 난다.
+ *
+ * 그래서 입력(원본 폰트 + 조각 크기 + 0번 조각에 넣을 글자)의 지문을 `fonts.css` 머리에
+ * 적어 두고, 같으면 건너뛴다. 강제로 다시 만들려면 `npm run build:font -- --force`.
+ *
  * 실행: `npm run build:font`
  * 결과: `public/fonts/dinggul-*.woff2` + `src/app/fonts.css`
  */
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, statSync, rmSync, existsSync } from 'node:fs'
+import { createHash } from 'node:crypto'
 import { join, extname } from 'node:path'
 import subsetFont from 'subset-font'
 
-const SOURCE = process.argv[2] ?? 'assets/fonts/온글잎 딩궁딩굴.ttf'
+const args = process.argv.slice(2)
+/** 지문이 같아도 강제로 다시 만든다 */
+const FORCE = args.includes('--force')
+const SOURCE = args.find((arg) => !arg.startsWith('--')) ?? 'assets/fonts/온글잎 딩궁딩굴.ttf'
 const OUT_DIR = 'public/fonts'
 const CSS_PATH = 'src/app/fonts.css'
 const FAMILY = 'Dinggul'
@@ -141,6 +154,47 @@ function toUnicodeRange(text) {
     return parts.join(', ')
 }
 
+/**
+ * 입력 지문. 이게 같으면 결과도 같아야 하는데 woff2 인코딩이 결정적이지 않아
+ * 바이트가 달라진다. 그래서 **결과를 비교하는 대신 입력을 비교**한다.
+ */
+const FINGERPRINT = createHash('sha256')
+    .update(original)
+    .update(String(CHUNK))
+    .update(chunks[0]) // 0번 조각 = 소스에 등장하는 글자. 화면 문구가 늘면 이게 바뀐다
+    .digest('hex')
+    .slice(0, 16)
+
+const STAMP = `/* fingerprint: ${FINGERPRINT} */`
+
+/**
+ * **`--force` 없이는 절대 다시 만들지 않는다.**
+ *
+ * 재빌드는 71개 바이너리를 모두 갈아 치운다. 여럿이 작업하는 동안 누군가 무심코 돌리면
+ * 병합으로 풀 수 없는 충돌이 생긴다(바이너리라 diff가 없다).
+ *
+ * 그래서 지문이 달라도 **알리기만 하고 끝낸다.** 안 만들어도 글자는 정상으로 보인다 —
+ * 한글 11,172자가 71조각에 전부 들어 있어서, 0번 조각에 없는 글자는 다른 조각에서 온다.
+ * 낡아서 잃는 건 **조각 하나(약 40KB)를 더 받는 것**뿐이다.
+ *
+ * 다시 만들 때는 **한 사람이 · 다른 작업과 섞지 않은 별도 커밋으로** 한다.
+ */
+if (!FORCE) {
+    const stamped = existsSync(CSS_PATH) && readFileSync(CSS_PATH, 'utf8').includes(STAMP)
+    if (stamped) {
+        console.log(`입력이 그대로입니다 — 할 일이 없습니다. (지문 ${FINGERPRINT}, 조각 ${chunks.length}개)`)
+    } else {
+        console.log('0번 조각이 낡았습니다 — 화면 문구가 늘었거나 폰트 원본이 바뀌었습니다.')
+        console.log(`  새 지문 ${FINGERPRINT} · 조각 ${chunks.length}개\n`)
+        console.log('**지금 다시 만들 필요는 없습니다.** 글자는 정상으로 보이고,')
+        console.log('0번 조각에 없는 글자를 담은 조각(약 40KB)을 더 받을 뿐입니다.\n')
+        console.log('다시 만들면 71개 바이너리가 전부 바뀌어 다른 사람과 충돌합니다.')
+        console.log('여럿이 작업하는 중이면 미루고, 정리할 때 한 사람이 한 번만 돌리세요:')
+        console.log('  npm run build:font -- --force')
+    }
+    process.exit(0)
+}
+
 rmSync(OUT_DIR, { recursive: true, force: true })
 mkdirSync(OUT_DIR, { recursive: true })
 
@@ -173,6 +227,8 @@ writeFileSync(
     [
         '/* 자동 생성 — 직접 고치지 않는다. `npm run build:font`로 다시 만든다 */',
         `/* 원본: ${SOURCE} */`,
+        // 다음 실행 때 "다시 만들 필요가 있나"를 판단하는 근거. 지우면 매번 다시 만든다
+        STAMP,
         '',
         ...faces,
         '',
