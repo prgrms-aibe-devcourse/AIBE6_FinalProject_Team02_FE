@@ -1,3 +1,5 @@
+'use client'
+
 import { motion, useDragControls, useReducedMotion } from 'framer-motion'
 import React, { useCallback, useState } from 'react'
 import { useFocusTrap } from '@/shared/ui/hooks/useFocusTrap'

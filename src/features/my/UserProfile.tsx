@@ -2,10 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { ArrowLeftIcon, UserPlusIcon, UserCheckIcon, XIcon, CheckIcon, UtensilsIcon } from 'lucide-react'
-import { BottomNav, NavTab } from '@/shared/ui/molecules/BottomNav'
-import { TabBar } from '@/shared/ui/molecules/TabBar'
-import { ServerBadge } from '@/shared/ui/atoms/ServerBadge'
-import { ProgressBar } from '@/shared/ui/atoms/ProgressBar'
+import { BottomNav, NavTab, ProgressBar, ServerBadge, TabBar } from '@/shared/ui'
 import {
     PublicProfile,
     RelationStatus,

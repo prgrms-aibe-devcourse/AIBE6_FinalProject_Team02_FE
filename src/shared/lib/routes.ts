@@ -1,5 +1,5 @@
 import type { MadeDexId } from '@/features/made/types'
-import type { NavTab } from '@/shared/ui/molecules/BottomNav'
+import type { NavTab } from '@/shared/ui'
 
 /**
  * 앱의 모든 URL을 한곳에서 관리.

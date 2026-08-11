@@ -1,9 +1,7 @@
 'use client'
 
 import { CATEGORY_META, DexEntry } from '@/shared/data/dex'
-import { ProgressBar } from '@/shared/ui/atoms/ProgressBar'
-import { BottomNav, NavTab } from '@/shared/ui/molecules/BottomNav'
-import { DexHelpSheet } from '@/shared/ui/molecules/DexHelpSheet'
+import { BottomNav, DexHelpSheet, NavTab, ProgressBar } from '@/shared/ui'
 import { ChevronRightIcon, LayoutGridIcon, PlusIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import type { CategoryFilter } from './useDexFilter'

@@ -1,7 +1,7 @@
 import { AuthProvider } from '@/features/auth/AuthContext'
 import { AuthGate } from '@/features/auth/AuthGate'
 import { AppStateProvider } from '@/shared/store/AppStateProvider'
-import { ToastProvider } from '@/shared/ui/feedback/ToastProvider'
+import { ToastProvider } from '@/shared/ui'
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
 

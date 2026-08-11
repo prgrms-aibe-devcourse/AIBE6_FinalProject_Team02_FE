@@ -3,7 +3,7 @@ import { LocationInput } from '@/features/register/confirmApi'
 import { geocodeAddress } from '@/features/register/placeApi'
 import { resolveBadgeImage } from '@/shared/data/badgeAssets'
 import { useAppState } from '@/shared/store/AppStateProvider'
-import { Badge } from '@/shared/ui/atoms/Badge'
+import { Badge } from '@/shared/ui'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
     ArrowLeftIcon,

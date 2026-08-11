@@ -7,7 +7,7 @@ import { uploadImageToS3 } from '@/shared/lib/upload'
 import { useAppState } from '@/shared/store/AppStateProvider'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { Dialog } from '@/shared/ui/molecules/Dialog'
+import { Dialog } from '@/shared/ui'
 
 const MONTHLY_LIMIT = 3
 

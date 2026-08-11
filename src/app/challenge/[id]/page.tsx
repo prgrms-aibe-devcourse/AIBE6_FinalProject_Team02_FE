@@ -18,7 +18,7 @@ import { uploadImageToS3 } from '@/shared/lib/upload'
 import { useAppState } from '@/shared/store/AppStateProvider'
 import { notFound, useParams, useRouter } from 'next/navigation'
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
-import { Dialog } from '@/shared/ui/molecules/Dialog'
+import { Dialog } from '@/shared/ui'
 
 function ddayLabel(endsAt: string) {
     const days = Math.ceil((new Date(endsAt).getTime() - Date.now()) / 86_400_000)

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useId, useRef, useState } from 'react'
-import { BottomSheet } from '@/shared/ui/molecules/BottomSheet'
+import { BottomSheet } from '@/shared/ui'
 
 interface Props {
     /** `HH:mm` (24시간). 비어 있으면 아직 안 적은 것 */

@@ -13,7 +13,7 @@ import {
     UsersIcon,
 } from 'lucide-react'
 
-import { Dialog } from '@/shared/ui/molecules/Dialog'
+import { Dialog } from '@/shared/ui'
 import { inviteDaysLeft, INVITE_CODE_LENGTH, memberInitial, memberName } from './types'
 import type { MadeDexMember, MadeDexRole } from './types'
 
@@ -285,7 +285,7 @@ export function MadeDexInvite({
             </main>
 
             {confirm && (
-                <ConfirmDialog
+                <MemberActionDialog
                     confirm={confirm}
                     dexTitle={dexTitle}
                     onCancel={() => setConfirm(null)}
@@ -326,15 +326,18 @@ function MemberAvatar({ member }: { member: MadeDexMember }) {
     )
 }
 
-interface ConfirmDialogProps {
+interface MemberActionDialogProps {
     confirm: Confirm
     dexTitle: string
     onCancel: () => void
     onConfirm: () => void
 }
 
-// 확인을 누르면 바로 닫는다. 진행 상태와 실패는 목록 쪽에서 알린다
-function ConfirmDialog({ confirm, dexTitle, onCancel, onConfirm }: ConfirmDialogProps) {
+/**
+ * 내보내기·위임·나가기의 문구를 고르는 얇은 래퍼. 창 자체는 공통 `Dialog`가 그린다.
+ * 확인을 누르면 바로 닫는다 — 진행 상태와 실패는 목록 쪽에서 알린다
+ */
+function MemberActionDialog({ confirm, dexTitle, onCancel, onConfirm }: MemberActionDialogProps) {
     const copy =
         confirm.kind === 'kick'
             ? {

@@ -1,11 +1,6 @@
 'use client'
 
-import { Badge } from '@/shared/ui/atoms/Badge'
-import { HelpIcon } from '@/shared/ui/atoms/HelpIcon'
-import { ProgressBar } from '@/shared/ui/atoms/ProgressBar'
-import { BottomNav, NavTab } from '@/shared/ui/molecules/BottomNav'
-import { DexHelpSheet } from '@/shared/ui/molecules/DexHelpSheet'
-import { TabBar } from '@/shared/ui/molecules/TabBar'
+import { Badge, BottomNav, DexHelpSheet, HelpIcon, NavTab, ProgressBar, TabBar } from '@/shared/ui'
 import { CrownIcon, MedalIcon, PlusIcon, TrophyIcon } from 'lucide-react'
 import { useState } from 'react'
 import { ChallengeSort } from './api'

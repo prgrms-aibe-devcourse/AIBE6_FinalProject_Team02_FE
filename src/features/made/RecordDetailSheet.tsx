@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
-import { BottomSheet } from '@/shared/ui/molecules/BottomSheet'
-import { Dialog } from '@/shared/ui/molecules/Dialog'
+import { BottomSheet, Dialog } from '@/shared/ui'
 import { PhotoCarousel } from './PhotoCarousel'
 import { deleteRecord, fetchRecord } from './logitApi'
 import { madeErrorMessage } from './errors'

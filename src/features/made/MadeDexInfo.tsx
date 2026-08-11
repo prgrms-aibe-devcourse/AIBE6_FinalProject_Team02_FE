@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { ArrowLeftIcon, ChevronRightIcon, KeyRoundIcon, LockIcon, SettingsIcon, UsersIcon } from 'lucide-react'
 
-import { BottomSheet } from '@/shared/ui/molecules/BottomSheet'
+import { BottomSheet } from '@/shared/ui'
 import { DEFAULT_MADE_DEX_COVER, madeDexDayCount, MadeDexDetail } from './types'
 
 interface Props {

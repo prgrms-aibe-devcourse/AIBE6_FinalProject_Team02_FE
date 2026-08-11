@@ -3,8 +3,7 @@ import { HeartIcon, LockIcon, PencilIcon, StarIcon, Trash2Icon } from 'lucide-re
 import { Review, ReviewWritePayload, deleteReview, editReview, toggleReviewLike } from './api'
 import { useRouter } from 'next/navigation'
 import { ROUTES } from '@/shared/lib/routes'
-import { ServerBadge } from '@/shared/ui/atoms/ServerBadge'
-import { Dialog } from '@/shared/ui/molecules/Dialog'
+import { Dialog, ServerBadge } from '@/shared/ui'
 
 interface Props {
     load: () => Promise<Review[]>

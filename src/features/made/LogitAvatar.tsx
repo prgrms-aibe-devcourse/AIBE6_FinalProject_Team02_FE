@@ -1,5 +1,5 @@
 import React from 'react'
-import { Avatar } from '@/shared/ui/atoms/Avatar'
+import { Avatar } from '@/shared/ui'
 
 interface Props {
     name: string

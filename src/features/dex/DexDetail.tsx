@@ -1,7 +1,6 @@
 import { DexEntry } from '@/shared/data/dex'
 import { getLocalDexIllustrationUrl } from '@/shared/lib/dexIllustrations'
-import { StarRank } from '@/shared/ui/atoms/StarRank'
-import { BottomNav, NavTab } from '@/shared/ui/molecules/BottomNav'
+import { BottomNav, NavTab, StarRank } from '@/shared/ui'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
     ArrowLeftIcon,

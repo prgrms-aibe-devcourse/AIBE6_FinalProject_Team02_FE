@@ -13,7 +13,7 @@ import {
 import { ChallengeData } from '@/features/challenge/types'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
-import { Dialog } from '@/shared/ui/molecules/Dialog'
+import { Dialog } from '@/shared/ui'
 
 const MONTHLY_LIMIT = 3
 const PAGE_SIZE = 10
