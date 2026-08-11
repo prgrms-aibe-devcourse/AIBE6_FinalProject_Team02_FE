@@ -258,6 +258,8 @@ export function RecordPhotoPicker({
 // ---------------------------------------------------------------------------
 
 const THUMB_SIZE = 56
+/** 스트립의 gap-2 */
+const THUMB_GAP = 8
 const LONG_PRESS_MS = 400
 
 interface ThumbnailStripProps {
@@ -281,6 +283,13 @@ function ThumbnailStrip({ photos, activeIndex, onTap, onMove }: ThumbnailStripPr
             longPressTimer.current = null
         }
     }
+
+    // 사진을 지워 스트립이 사라져도 타이머는 남는다. 그대로 두면 없는 UI 때문에 진동이 울린다
+    useEffect(() => {
+        return () => {
+            if (longPressTimer.current) clearTimeout(longPressTimer.current)
+        }
+    }, [])
 
     const handlePointerDown = useCallback((e: React.PointerEvent, idx: number) => {
         pointerStart.current = { x: e.clientX, y: e.clientY }
@@ -309,9 +318,12 @@ function ThumbnailStrip({ photos, activeIndex, onTap, onMove }: ThumbnailStripPr
 
         const strip = stripRef.current
         if (!strip) return
-        const rect = strip.getBoundingClientRect()
-        const x = e.clientX - rect.left + strip.scrollLeft
-        const targetIdx = Math.max(0, Math.min(photos.length - 1, Math.floor(x / (THUMB_SIZE + 8))))
+        // 컨테이너에 px-5(20px)가 있어 rect.left로 재면 그만큼 밀린다.
+        // 첫 썸네일의 화면 좌표를 원점으로 쓰면 패딩도 스크롤도 함께 상쇄된다
+        const first = strip.firstElementChild?.getBoundingClientRect()
+        const originX = first ? first.left : strip.getBoundingClientRect().left
+        const x = e.clientX - originX
+        const targetIdx = Math.max(0, Math.min(photos.length - 1, Math.floor(x / (THUMB_SIZE + THUMB_GAP))))
         setDragOver(targetIdx)
     }, [dragFrom, photos.length])
 

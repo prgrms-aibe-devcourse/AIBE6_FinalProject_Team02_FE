@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { MAX_PHOTOS, putToS3, requestUploadTargets, validatePhotoFile } from '@/shared/lib/upload'
 import { createRecord, fetchFeed, fetchRecord, fetchSlots, setDayCardCover, updateRecord } from './logitApi'
-import { isPastDate, madeErrorMessage } from './errors'
+import { isPastDate, isSlotTaken, madeErrorMessage } from './errors'
 import { RECORD_MAX_PHOTOS, timeLabel } from './logitTypes'
 import { hasFailure, newPhotoId, newPhotosOf, readyCount, updatePayloadOf } from './recordPhotos'
 import type { LogitFeed, LogitSlot } from './logitTypes'
@@ -211,6 +211,11 @@ export function useRecordForm({ madeDexId, recordId, initialSlotId, initialDate 
     const movePhoto = (fromIndex: number, toIndex: number) => {
         applyPhotos((current) => {
             if (fromIndex === toIndex) return current
+            // 드래그 도중 실패한 사진이 빠지면 잡아 둔 인덱스가 어긋난다.
+            // 범위 밖이면 splice가 빈 배열을 돌려주고 undefined가 목록에 꽂힌다
+            const inRange = (index: number) => index >= 0 && index < current.length
+            if (!inRange(fromIndex) || !inRange(toIndex)) return current
+
             const next = [...current]
             const [moved] = next.splice(fromIndex, 1)
             next.splice(toIndex, 0, moved)
@@ -291,11 +296,25 @@ export function useRecordForm({ madeDexId, recordId, initialSlotId, initialDate 
                 await moveToToday(failure)
                 return false
             }
+            if (isSlotTaken(failure)) {
+                await rereadTaken(failure)
+                return false
+            }
             setError(madeErrorMessage(failure, '기록을 남기지 못했어요.'))
             return false
         } finally {
             setSubmitting(false)
         }
+    }
+
+    /**
+     * 선점 목록을 갈아 끼운다.
+     * 이미 찬 끼니가 골라진 채로 남으면 칩이 잠기지 않아(잠금 조건이 !selected다)
+     * 사용자가 그대로 다시 눌러 또 거절당한다. 그래서 선택을 놓아 준다.
+     */
+    const applyTaken = (next: number[]) => {
+        setTaken(next)
+        setSlotId((current) => (current !== null && next.includes(current) ? null : current))
     }
 
     /**
@@ -308,11 +327,26 @@ export function useRecordForm({ madeDexId, recordId, initialSlotId, initialDate 
             const feed = await fetchFeed(madeDexId)
             setToday(feed.today)
             setLoggedOn(feed.today)
-            setTaken(takenSlotIds(feed, recordId))
+            applyTaken(takenSlotIds(feed, recordId))
         } catch {
             // 기준일을 못 받아도 아래 문구는 띄운다. 사용자가 상황은 알아야 한다
         }
         setError(madeErrorMessage(failure, '날짜가 바뀌었어요. 오늘 기록으로 다시 올려 주세요.'))
+    }
+
+    /**
+     * 그 끼니는 이미 찼다. 유니크 키에 author_id가 들어가므로 남이 채운 게 아니라
+     * 내가 다른 기기·탭에서 먼저 올린 경우다. 화면의 선점 목록이 낡았다는 뜻이라 다시 읽는다.
+     */
+    const rereadTaken = async (failure: unknown) => {
+        try {
+            const feed = await fetchFeed(madeDexId, loggedOn || undefined)
+            setToday(feed.today)
+            applyTaken(takenSlotIds(feed, recordId))
+        } catch {
+            // 목록을 못 받아도 아래 문구는 띄운다
+        }
+        setError(madeErrorMessage(failure, '이미 기록한 끼니예요.'))
     }
 
     // 올리는 중인 사진을 세면 상한을 넘긴 채로 제출된다

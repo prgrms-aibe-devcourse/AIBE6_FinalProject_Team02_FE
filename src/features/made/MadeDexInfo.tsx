@@ -34,7 +34,7 @@ export function MadeDexInfo({
     const MENU = [
         {
             label: '도감 정보 변경하기',
-            hint: '표지·이름·소개말·공개 여부',
+            hint: '표지·이름·소개말',
             Icon: SettingsIcon,
             onClick: onEditInfo,
         },
