@@ -252,12 +252,7 @@ function CoverThumb({ url, size = 44 }: { url?: string | null; size?: number }) 
     if (url) {
         return (
             // eslint-disable-next-line @next/next/no-img-element
-            <img
-                src={url}
-                alt=""
-                className="shrink-0 rounded-xl object-cover"
-                style={{ width: size, height: size }}
-            />
+            <img src={url} alt="" className="shrink-0 rounded-xl object-cover" style={{ width: size, height: size }} />
         )
     }
     return (

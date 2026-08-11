@@ -107,9 +107,7 @@ export default function ChallengeCreatePage() {
                 onCustomBadge={() => router.push(ROUTES.challengeNewBadge)}
                 onUsePreset={() => setCustomBadge(null)}
             />
-            {alertMessage && (
-                <Dialog title="개설 실패" message={alertMessage} onClose={() => setAlertMessage(null)} />
-            )}
+            {alertMessage && <Dialog title="개설 실패" message={alertMessage} onClose={() => setAlertMessage(null)} />}
         </>
     )
 }

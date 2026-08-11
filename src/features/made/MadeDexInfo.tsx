@@ -126,7 +126,11 @@ export function MadeDexInfo({
                                             </span>
                                             <span className="mt-0.5 block text-xs text-content-secondary">{hint}</span>
                                         </span>
-                                        <ChevronRightIcon size={18} aria-hidden className="shrink-0 text-content-muted" />
+                                        <ChevronRightIcon
+                                            size={18}
+                                            aria-hidden
+                                            className="shrink-0 text-content-muted"
+                                        />
                                     </button>
                                 </li>
                             ))}

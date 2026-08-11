@@ -133,7 +133,12 @@ export function UserProfile({ userId, onBack, onTab }: Props) {
                                             className="h-2/3 w-2/3 object-contain"
                                         />
                                     ) : (
-                                        <UtensilsIcon size={22} strokeWidth={1.5} aria-hidden className="text-neutral-400" />
+                                        <UtensilsIcon
+                                            size={22}
+                                            strokeWidth={1.5}
+                                            aria-hidden
+                                            className="text-neutral-400"
+                                        />
                                     )}
                                     <span className="px-1 text-center text-xs text-neutral-800">{d.name}</span>
                                 </div>

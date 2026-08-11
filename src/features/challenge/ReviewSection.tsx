@@ -245,7 +245,9 @@ export function ReviewSection({
                                         <ReviewerAvatar
                                             nickname={r.reviewerNickname}
                                             imageUrl={r.reviewerProfileImageUrl}
-                                            onClick={() => router.push(r.mine ? ROUTES.my : ROUTES.userProfile(r.reviewerId))}
+                                            onClick={() =>
+                                                router.push(r.mine ? ROUTES.my : ROUTES.userProfile(r.reviewerId))
+                                            }
                                         />
                                         <span className="flex min-w-0 items-center gap-1">
                                             {r.reviewerEquippedBadge && (

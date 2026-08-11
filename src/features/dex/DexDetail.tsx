@@ -353,7 +353,9 @@ export function DexDetail({
                                 <MapPinIcon size={15} className="text-watermelon-500" />
                                 {currentCard.location || '위치 없음'} · {currentCard.date} 수집
                             </p>
-                            {currentCard.memo && <p className="mt-2 text-sm text-neutral-900">메모: {currentCard.memo}</p>}
+                            {currentCard.memo && (
+                                <p className="mt-2 text-sm text-neutral-900">메모: {currentCard.memo}</p>
+                            )}
                         </div>
                     </div>
                 </div>

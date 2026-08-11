@@ -140,15 +140,7 @@ interface TextProps extends React.HTMLAttributes<HTMLElement> {
  * 여백(`mt-*`)·정렬(`text-center`)·`flex-1` 같은 **배치**는 덮어도 된다.
  * 글꼴·크기·굵기는 덮지 않는다 — 필요한 역할이 없으면 `TextVariant`를 늘린다.
  */
-export function Text({
-    variant = 'body',
-    tone,
-    as,
-    truncate = false,
-    className = '',
-    children,
-    ...rest
-}: TextProps) {
+export function Text({ variant = 'body', tone, as, truncate = false, className = '', children, ...rest }: TextProps) {
     const Tag = as ?? DEFAULT_TAG[variant]
     const color = TONE[tone ?? DEFAULT_TONE[variant]]
     const wrap = truncate ? 'truncate' : 'break-keep'
