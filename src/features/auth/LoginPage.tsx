@@ -1,7 +1,6 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import Image from 'next/image'
 
 // 환경변수 없으면 로컬 BE(8080)로 폴백
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8080'
@@ -68,56 +67,34 @@ export function LoginPage({ errorMessage }: { errorMessage?: string }) {
 
     return (
         <main className="flex h-full flex-col justify-between py-12 px-6 bg-white select-none overflow-y-auto no-scrollbar">
-            {/* 상단 로고 및 서비스 타이틀 */}
-            <header className="flex flex-col items-center text-center mt-6">
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{
-                        opacity: 1,
-                        y: [0, -12, 0, -6, 0]
-                    }}
-                    transition={{
-                        opacity: { duration: 0.6 },
-                        y: {
-                            duration: 0.7,
-                            repeat: Infinity,
-                            repeatDelay: 3.2,
-                            ease: "easeInOut",
-                            delay: 0.3
-                        }
-                    }}
-                >
-                    <h1 className="font-display text-4xl text-neutral-900 tracking-wide">
-                        캣칫 <span className="text-watermelon-500 font-display">CatchEat</span>
+            {/* 상단 서비스 타이틀 */}
+            <header className="mt-8 flex flex-col items-center text-center">
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6 }}>
+                    <h1 className="font-display text-4xl tracking-wide text-neutral-900">
+                        캣칫 <span className="font-display text-watermelon-500">CatchEat</span>
                     </h1>
-                    <p className="mt-2.5 text-sm text-neutral-800 font-medium">먹을수록 채워지는 나의 도감</p>
+                    <p className="mt-2.5 text-sm font-medium text-neutral-800">먹을수록 채워지는 나의 도감</p>
                 </motion.div>
             </header>
 
-            {/* 마스코트 이미지 (통통 튀는 애니메이션) */}
-            <div className="relative flex items-center justify-center flex-1 my-4">
-                <motion.div
-                    animate={{
-                        y: [0, -20, 0, -10, 0]
-                    }}
+            {/* 마스코트 — 통통 튀는 무한 애니메이션 (긴 주기) */}
+            <div className="flex flex-1 items-center justify-center py-6">
+                <motion.img
+                    src="/images/mascot.png"
+                    alt="캣칫 마스코트"
+                    draggable={false}
+                    className="h-64 w-auto select-none"
+                    initial={{ opacity: 0, scale: 0.92 }}
+                    animate={{ opacity: 1, scale: 1, y: [0, -18, 0] }}
                     transition={{
-                        duration: 0.8,
-                        repeat: Infinity,
-                        repeatDelay: 2.5,
-                        ease: "easeInOut"
+                        opacity: { duration: 0.5, ease: 'easeOut' },
+                        scale: { duration: 0.5, ease: 'easeOut' },
+                        // 통통 튀는 느낌: 올라갈 땐 감속, 내려올 땐 가속 / 무한 반복 + 긴 주기
+                        y: { repeat: Infinity, duration: 3.6, ease: ['easeOut', 'easeIn'] },
                     }}
-                >
-                    <Image
-                        src="/images/mascot.png"
-                        alt="캣칫 마스코트"
-                        width={300}
-                        height={300}
-                        priority
-                        /* 오른쪽 숟가락/꼬리 비대칭으로 인해 몸통이 쏠려보이는 것을 보정 (ml-5) */
-                        className="w-full max-w-[300px] h-auto object-contain drop-shadow-sm ml-5"
-                    />
-                </motion.div>
+                />
             </div>
+
             {/* 하단 소셜 로그인 가입 섹션 */}
             <footer className="w-full flex flex-col items-center gap-6 mt-4">
                 <div className="w-full max-w-xs flex flex-col gap-3">
