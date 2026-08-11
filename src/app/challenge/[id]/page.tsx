@@ -41,6 +41,7 @@ function toChallengeData(d: ChallengeDetailData): ChallengeData {
         owner: '',
         joined: d.joined,
         completed: d.completed,
+        coverUrl: d.imageUrl ?? undefined,
         ended: d.periodType === 'LIMITED' && !!d.endsAt && new Date(d.endsAt).getTime() <= Date.now(),
         mine: `나 ${unlocked}/${total}`,
         progress: total ? unlocked / total : 0, // ProgressBar는 0~1 비율

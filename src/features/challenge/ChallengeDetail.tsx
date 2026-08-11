@@ -85,7 +85,15 @@ export function ChallengeDetail({
                 )}
             </header>
             <main className="no-scrollbar flex-1 overflow-y-auto px-5">
-                <section className="rounded-3xl bg-white p-4 shadow-soft">
+                {challenge.coverUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                        src={challenge.coverUrl}
+                        alt=""
+                        className="mt-4 aspect-[16/9] w-full rounded-3xl object-cover shadow-soft"
+                    />
+                )}
+                <section className="mt-4 rounded-3xl bg-white p-4 shadow-soft">
                     <div className="flex items-center gap-3">
                         <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-watermelon-50 text-watermelon-500">
                             <TrophyIcon size={26} strokeWidth={1.75} aria-hidden />
