@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { ChevronLeftIcon, ChevronRightIcon, MapPinIcon } from 'lucide-react'
+import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
 import { BottomSheet } from '@/shared/ui/molecules/BottomSheet'
 import { ConfirmDialog } from '@/shared/ui/molecules/ConfirmDialog'
 import { PhotoCarousel } from './PhotoCarousel'
@@ -97,24 +97,6 @@ export function RecordDetailSheet({ madeDexId, recordIds, onClose, onEdit, onDel
                     <>
                         <PhotoCarousel photos={record.photos} />
 
-                        <div className="flex flex-wrap gap-1 pt-3">
-                            {record.foodNames.map((food) => (
-                                <span
-                                    key={food}
-                                    className="rounded-full bg-watermelon-100 px-2 py-1 text-xs font-bold text-watermelon-600"
-                                >
-                                    {food}
-                                </span>
-                            ))}
-                        </div>
-
-                        {record.locationName && (
-                            <p className="flex items-center gap-1 pt-2 text-xs text-content-secondary">
-                                <MapPinIcon size={14} aria-hidden />
-                                {record.locationName}
-                            </p>
-                        )}
-
                         <p className="pt-3 text-xs text-content-muted">
                             {record.loggedAt && `${timeLabel(record.loggedAt)} · `}
                             {record.mine ? '내' : `${record.authorNickname ?? '이름 없는 참여자'}님의`} 기록
@@ -145,7 +127,7 @@ export function RecordDetailSheet({ madeDexId, recordIds, onClose, onEdit, onDel
             {confirming && (
                 <ConfirmDialog
                     title="기록을 지울까요?"
-                    message="사진과 음식 이름이 함께 사라져요. 되돌릴 수 없어요."
+                    message="사진과 사진에 붙인 글이 함께 사라져요. 되돌릴 수 없어요."
                     actionText="삭제하기"
                     onCancel={() => setConfirming(false)}
                     onConfirm={() => void remove()}

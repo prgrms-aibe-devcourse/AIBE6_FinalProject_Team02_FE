@@ -12,14 +12,10 @@ interface Props {
     onRecord: () => void
 }
 
-const CHIP_LIMIT = 3
-
 /** §3.2 로그잇 홈 기록 카드 — filled / empty-mine / empty-other */
 export function MealRecordCard({ card, readOnly = false, onOpen, onRecord }: Props) {
     const name = cardName(card)
     const filled = card.recordCount > 0
-    const chips = card.foodNames.slice(0, CHIP_LIMIT)
-    const folded = card.foodNames.length - chips.length
 
     // 다음 카드가 살짝 보여야 가로로 더 있다는 게 드러난다 (§2.1)
     return (
@@ -61,19 +57,6 @@ export function MealRecordCard({ card, readOnly = false, onOpen, onRecord }: Pro
                             </span>
                         )}
                     </span>
-                    {chips.length > 0 && (
-                        <span className="flex flex-wrap items-center gap-1 p-3">
-                            {chips.map((food) => (
-                                <span
-                                    key={food}
-                                    className="max-w-full truncate rounded-full bg-watermelon-100 px-2 py-1 text-xs font-bold text-watermelon-600"
-                                >
-                                    {food}
-                                </span>
-                            ))}
-                            {folded > 0 && <span className="text-xs font-bold text-content-muted">+{folded}</span>}
-                        </span>
-                    )}
                 </button>
             ) : card.me && !readOnly ? (
                 <button

@@ -18,8 +18,6 @@ export default function MadeDexCreatePage() {
         const madeDexId = await createMadeDex({
             name,
             description: description || undefined,
-            // 로그잇 도감은 모두 비공개다. 서버도 PRIVATE로 강제한다
-            visibility: 'PRIVATE',
             imageKey,
         })
         router.replace(ROUTES.madeDex(madeDexId))

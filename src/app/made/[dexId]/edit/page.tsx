@@ -54,8 +54,6 @@ export default function MadeDexEditPage() {
         await updateMadeDex(dexId, {
             name,
             description: description || null,
-            // 로그잇 도감은 모두 비공개다. 서버도 PRIVATE로 강제한다
-            visibility: 'PRIVATE',
             imageKey: await resolveImageKey(image),
         })
         router.replace(ROUTES.madeInfo(dexId))

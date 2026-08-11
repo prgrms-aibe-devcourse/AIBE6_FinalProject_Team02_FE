@@ -14,10 +14,22 @@ interface Props {
     onMove: (fromIndex: number, toIndex: number) => void
     onRemove: (id: string) => void
     onRetry: (id: string) => void
+    /** 지난 기록. 사진 구성은 잠그고 글만 받는다 */
+    captionOnly?: boolean
 }
 
 /** 사진을 넘겨 가며 그 사진에 붙일 글을 적는다 */
-export function RecordPhotoPicker({ photos, onAdd, onCaption, onCrop, onCover, onMove, onRemove, onRetry }: Props) {
+export function RecordPhotoPicker({
+    photos,
+    onAdd,
+    onCaption,
+    onCrop,
+    onCover,
+    onMove,
+    onRemove,
+    onRetry,
+    captionOnly = false,
+}: Props) {
     const trackRef = useRef<HTMLDivElement>(null)
     const [index, setIndex] = useState(0)
     const [cropping, setCropping] = useState(false)
@@ -100,7 +112,7 @@ export function RecordPhotoPicker({ photos, onAdd, onCaption, onCrop, onCover, o
                                 </button>
                             )}
 
-                            {!cropping && (
+                            {!cropping && !captionOnly && (
                                 <button
                                     type="button"
                                     onClick={() => onRemove(photo.id)}
@@ -117,7 +129,7 @@ export function RecordPhotoPicker({ photos, onAdd, onCaption, onCrop, onCover, o
                                     <span className="absolute left-2 top-2 rounded-full bg-action-primary px-2 py-1 text-xs font-bold text-content-on-action">
                                         대표
                                     </span>
-                                ) : (
+                                ) : captionOnly ? null : (
                                     <button
                                         type="button"
                                         onClick={() => setCoverConfirmId(photo.id)}
@@ -128,7 +140,7 @@ export function RecordPhotoPicker({ photos, onAdd, onCaption, onCrop, onCover, o
                                 ))}
 
                             {/* 위치 조정 / 완료 버튼 */}
-                            {isCurrent && !failed && !(photo.kind === 'new' && photo.status === 'uploading') && (
+                            {isCurrent && !failed && !captionOnly && !(photo.kind === 'new' && photo.status === 'uploading') && (
                                 <button
                                     type="button"
                                     onClick={() => setCropping(!cropping)}
@@ -157,7 +169,7 @@ export function RecordPhotoPicker({ photos, onAdd, onCaption, onCrop, onCover, o
             </div>
 
             {/* 번호 붙은 썸네일 스트립 — 꾹 눌러 드래그로 순서 변경 */}
-            {count > 1 && (
+            {count > 1 && !captionOnly && (
                 <>
                     <ThumbnailStrip
                         photos={photos}
@@ -187,7 +199,7 @@ export function RecordPhotoPicker({ photos, onAdd, onCaption, onCrop, onCover, o
                 <p className="text-xs text-content-muted">
                     {count} / {RECORD_MAX_PHOTOS}장
                 </p>
-                {!full && (
+                {!full && !captionOnly && (
                     <button
                         type="button"
                         onClick={onAdd}
