@@ -39,7 +39,6 @@
 
     /* --- 1.1 Primitive: Utility --- */
     --white: 255 255 255; /* #FFFFFF */
-    --gray-200: 226 224 220; /* #E2E0DC 앱 셸 바깥(데스크톱 여백) */
     --red-500: 217 83 79; /* #D9534F 에러/삭제 */
     --green-500: 90 158 111; /* #5A9E6F 성공/완료 */
     --blue-300: 168 203 232; /* #A8CBE8 최근 해금 강조 */
@@ -54,8 +53,6 @@
     --surface-card-locked: var(--cream-200);
     --surface-raised: var(--white);
     --surface-accent: var(--orange-400);
-    /* 앱 셸 바깥. 데스크톱에서만 보이며, 셸이 "화면"으로 읽히게 한다 */
-    --surface-shell-outside: var(--gray-200);
 
     /* --- 1.2 Semantic: Text --- */
     --text-primary: var(--brown-900);
@@ -99,10 +96,9 @@
     /* --- 2 Layout --- */
     --layout-touch-min: 44px; /* §5 최소 터치 타깃 */
     --layout-cta-height: 52px; /* §2 고정 CTA */
-    /* 앱 셸 최대 폭. 이 앱은 웹 전용 기능이 없어 데스크톱에서도 모바일과 같은 규격으로 낸다.
-     430px = iPhone 15 Pro Max 논리 폭. 3열 카드가 116px가 되어 390px 기준보다 여유가 있다.
-     이 값을 100%로 되돌리면 셸이 풀려 데스크톱 레이아웃이 필요해진다 — 그건 기획 결정이다. */
-    --layout-max: 430px;
+    /* 앱 셸 최대 폭. 100% = 뷰포트 전체.
+     데스크톱에서 모바일 폭으로 가두려면 이 값만 바꾸면 됨 (예: 480px) */
+    --layout-max: 100%;
 }
 
 /* ===========================================================================
@@ -133,9 +129,7 @@ body {
     font-family: 'Jua', 'Pretendard', sans-serif;
 }
 
-/* 앱 셸 — 모든 라우트가 루트 layout.tsx를 거쳐 이 안에 들어온다.
-   데스크톱에서는 --layout-max로 가두고 좌우 여백만 늘어난다. 폭이 그보다 좁으면(실제 폰)
-   width:100%가 이겨서 여백이 0이 되므로 모바일에는 아무 영향이 없다.
+/* 앱 셸 — 뷰포트 전체를 채움 (모바일 목업 제거).
    자식(화면 컴포넌트 루트)이 셸 높이를 그대로 상속하도록 h-full 전제 유지 */
 .app-shell {
     display: flex;
@@ -143,25 +137,12 @@ body {
     width: 100%;
     height: 100dvh;
     overflow: hidden;
-    background: rgb(var(--surface-shell-outside));
+    background: rgb(var(--surface-app));
 }
 .app-shell > * {
-    /* 오버레이의 기준. 화면 안 딤·바텀시트는 absolute inset-0으로 이 박스에 갇힌다.
-       이게 없으면 positioned 조상을 못 찾아 뷰포트 전체로 새어 나간다 (§레이아웃 규칙) */
-    position: relative;
     width: 100%;
     max-width: var(--layout-max);
     height: 100%;
-    /* 화면 루트에 배경이 없더라도 셸 바깥색이 비쳐 보이지 않게 */
-    background: rgb(var(--surface-app));
-}
-/* 여백이 생기는 폭에서만 셸 경계를 세운다 — 폰에서는 그림자가 보일 자리가 없다 */
-@media (min-width: 431px) {
-    .app-shell > * {
-        box-shadow:
-            0 0 0 1px rgb(var(--border-default)),
-            0 8px 32px rgba(62, 45, 24, 0.12);
-    }
 }
 
 /* §2 스크롤 영역 마지막 요소가 고정 CTA에 가리지 않도록 */

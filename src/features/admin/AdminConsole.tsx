@@ -213,7 +213,7 @@ export function AdminConsole() {
             {/* 반려 사유 모달 */}
             {rejectTarget && (
                 <div
-                    className="absolute inset-0 z-50 flex items-center justify-center bg-black/40 p-6"
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-6"
                     onClick={closeReject}
                 >
                     <div

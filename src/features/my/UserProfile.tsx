@@ -120,7 +120,7 @@ export function UserProfile({ userId, onBack, onTab }: Props) {
                     />
                 </div>
                 {tab === '기본도감' && (
-                    <div className="grid grid-cols-3 gap-3 px-5 py-5">
+                    <div className="grid grid-cols-3 gap-3 px-5 py-5 sm:grid-cols-4">
                         {basicDex
                             .filter((d) => d.unlocked)
                             .map((d) => (

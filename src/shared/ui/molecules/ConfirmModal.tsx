@@ -24,8 +24,7 @@ export function ConfirmModal({
     const reduceMotion = useReducedMotion()
 
     return (
-        // absolute — 앱 셸에 갇힌다 (AlertModal과 같은 이유)
-        <div className="absolute inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <button type="button" aria-label="닫기" className="absolute inset-0 bg-black/35" onClick={onCancel} />
             <motion.section
                 role="alertdialog"
