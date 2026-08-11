@@ -8,6 +8,16 @@ interface BottomSheetProps {
     showTitle?: boolean
     onClose: () => void
     children: React.ReactNode
+    /**
+     * 지금 닫을 수 있는지. 기본 true.
+     *
+     * false면 딤·Escape·손잡이 드래그가 모두 무시된다 — 되돌릴 수 없는 요청이 진행 중일 때
+     * (탈퇴처럼) 시트가 닫혀 결과를 못 보는 것을 막는다.
+     *
+     * "어떻게 닫는가"(§3.2.1 전역 계약)와는 축이 다르다. 그건 시트마다 달라선 안 되지만,
+     * "지금 닫을 수 있는가"는 일시적 상태라 호출부만 알 수 있다.
+     */
+    dismissible?: boolean
     className?: string
     /** 패널 높이 제한. 기본은 내용만큼 */
     maxHeightClass?: string
@@ -59,6 +69,7 @@ export function BottomSheet({
     showTitle = true,
     onClose,
     children,
+    dismissible = true,
     className = '',
     maxHeightClass = 'max-h-[80%]',
 }: BottomSheetProps) {
@@ -72,12 +83,16 @@ export function BottomSheet({
      * 모션을 끈 사용자에겐 기다릴 이유가 없어 바로 닫는다.
      */
     const requestClose = useCallback(() => {
+        // 진행 중인 요청이 있으면 어떤 경로로도 닫지 않는다.
+        // 호출부에서 onClose를 무시하는 방식으로는 안 된다 — 내려가는 연출은 이미 끝난 뒤라
+        // 화면 밖으로 내려간 채 마운트만 남는다
+        if (!dismissible) return
         if (reduceMotion) {
             onClose()
             return
         }
         setClosing(true)
-    }, [onClose, reduceMotion])
+    }, [dismissible, onClose, reduceMotion])
 
     /**
      * 아래 effect를 마운트 1회로 묶기 위한 통로.
@@ -139,6 +154,9 @@ export function BottomSheet({
             <motion.button
                 type="button"
                 aria-label={`${title} 닫기`}
+                // 닫을 수 없는 동안은 스크린리더에도 그렇게 알린다
+                disabled={!dismissible}
+                aria-disabled={!dismissible}
                 className="no-touch-expand absolute inset-0 bg-black/35"
                 onClick={requestClose}
                 initial={reduceMotion ? false : { opacity: 0 }}
@@ -177,8 +195,11 @@ export function BottomSheet({
                     딤 누르기·Escape라는 동등한 대안이 있어 44px까지는 요구되지 않는다
                 */}
                 <div
-                    className="flex shrink-0 cursor-grab touch-none flex-col items-center py-3 active:cursor-grabbing"
-                    onPointerDown={(event) => dragControls.start(event)}
+                    className={`flex shrink-0 flex-col items-center py-3 ${
+                        dismissible ? 'cursor-grab touch-none active:cursor-grabbing' : 'cursor-default opacity-40'
+                    }`}
+                    // 못 끄는 동안은 드래그를 시작하지도 않는다 — 끌렸다가 되돌아오면 고장으로 읽힌다
+                    onPointerDown={dismissible ? (event) => dragControls.start(event) : undefined}
                 >
                     <span aria-hidden className="h-1 w-10 rounded-full bg-cream-300" />
                 </div>
