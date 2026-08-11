@@ -185,10 +185,19 @@ export function fetchRewardBadge(badgeId: number | string) {
     return apiFetch<RewardBadgeInfo>(`/api/v1/challenges/reward-badges/${badgeId}`)
 }
 
+/** 리뷰 작성자의 대표 뱃지 표시 정보(서버) */
+export interface ReviewerBadge {
+    name: string
+    code: string | null
+    imageUrl: string | null
+}
+
 export interface Review {
     id: number
     reviewerId: number
     reviewerNickname: string | null
+    reviewerProfileImageUrl: string | null
+    reviewerEquippedBadge: ReviewerBadge | null
     content: string | null
     rating: number | null
     likeCount: number
