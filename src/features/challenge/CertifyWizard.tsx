@@ -181,7 +181,7 @@ export function CertifyWizard({ name, placeName, onUnlock, onSubmitReview, onClo
                                     </p>
                                     <div className="mt-3">
                                         {coords ? (
-                                            <p className="flex items-center gap-1 text-sm font-bold text-lime-text">
+                                            <p className="flex items-center gap-1 text-sm font-bold text-rind-text">
                                                 <CheckCircleIcon size={16} /> 현재 위치 확인됨
                                             </p>
                                         ) : (

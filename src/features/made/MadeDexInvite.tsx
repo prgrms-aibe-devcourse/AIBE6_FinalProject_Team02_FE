@@ -279,7 +279,7 @@ export function MadeDexInvite({
                 {canManage && (
                     <section className="mt-5 rounded-2xl bg-white p-4 text-sm text-neutral-800 shadow-soft">
                         <ClipboardIcon size={18} className="mb-2 text-watermelon-500" />
-                        코드를 받은 친구는 제작 도감 목록 위쪽 <strong className="text-neutral-900">초대코드</strong>를
+                        코드를 받은 친구는 로그잇 목록 위쪽 <strong className="text-neutral-900">초대코드</strong>를
                         눌러 {INVITE_CODE_LENGTH}
                         자리 코드를 입력하면 돼요. 링크를 보냈다면 누르는 것만으로 코드가 채워져요.
                     </section>
@@ -456,7 +456,7 @@ export function MadeDexCodeEntry({
                             ? '이미 참여하고 있는 도감이에요'
                             : groupName
                               ? `${groupName}에 참여할까요?`
-                              : '친구의 제작 도감에 참여해요'}
+                              : '친구의 로그잇에 참여해요'}
                     </h1>
                     <p className="mt-2 text-sm leading-5 text-neutral-400">
                         {alreadyJoined ? (

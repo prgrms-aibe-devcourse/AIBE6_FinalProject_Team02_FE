@@ -41,6 +41,9 @@ export { FoodCard } from './molecules/FoodCard'
 export { LoadingView } from './molecules/LoadingView'
 export { TabBar } from './molecules/TabBar'
 export type { TabItem } from './molecules/TabBar'
+/* 여러 단계로 만드는 화면(로그잇 개설·챌린짓 개설)이 같은 머리글을 쓴다.
+   단계 전환 상수는 배럴이 아니라 shared/lib/wizardMotion 에 있다 — 이유는 그 파일에 적었다 */
+export { WizardHeader } from './molecules/WizardHeader'
 export type { LoadingSceneName } from './molecules/loadingScenes'
 
 /* --- 피드백 --- */

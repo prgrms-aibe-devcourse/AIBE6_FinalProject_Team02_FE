@@ -77,9 +77,9 @@ export function UnlockReveal({ cards, awaitingReview, collectedCount, totalSlots
                     >
                         {
                             [
-                                <Sparkles key="a" size={22} className="text-lime-500" fill="currentColor" />,
-                                <Star key="b" size={22} className="text-lime-500" fill="currentColor" />,
-                                <Sparkles key="c" size={22} className="text-lime-500" fill="currentColor" />,
+                                <Sparkles key="a" size={22} className="text-rind-500" fill="currentColor" />,
+                                <Star key="b" size={22} className="text-rind-500" fill="currentColor" />,
+                                <Sparkles key="c" size={22} className="text-rind-500" fill="currentColor" />,
                             ][index % 3]
                         }
                     </motion.span>

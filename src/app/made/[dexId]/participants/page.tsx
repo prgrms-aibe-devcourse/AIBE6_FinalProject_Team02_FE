@@ -159,7 +159,7 @@ export default function MadeDexParticipantsPage() {
 
     return (
         <MadeDexInvite
-            dexTitle={group?.name ?? '제작 도감'}
+            dexTitle={group?.name ?? '로그잇'}
             code={invite?.code ?? null}
             expiresAt={invite?.expiresAt ?? null}
             inviteLink={inviteLink}

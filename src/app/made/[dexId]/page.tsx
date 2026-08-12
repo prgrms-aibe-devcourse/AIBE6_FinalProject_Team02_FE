@@ -33,6 +33,8 @@ export default function LogitHomePage() {
             onOpenInfo={() => router.push(ROUTES.madeInfo(dexId))}
             onRecord={(date, slotId) => router.push(ROUTES.madeRecordNew(dexId, date, slotId))}
             onEditRecord={(recordId) => router.push(ROUTES.madeRecordEdit(dexId, recordId))}
+            // 내 아바타는 마이페이지로 — 남의 프로필 화면에서 내 것만 볼 수 있는 게 없다
+            onOpenProfile={(userId, me) => router.push(me ? ROUTES.my : ROUTES.userProfile(userId))}
             onTab={(tab) => router.push(getTabHref(tab))}
         />
     )

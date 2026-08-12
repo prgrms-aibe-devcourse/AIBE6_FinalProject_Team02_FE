@@ -6,15 +6,18 @@ interface Props {
     slot: LogitFeedSlot
     /** 오늘이 아니면 기록을 받지 않는다. 지난 날은 열람만 */
     canRecord: boolean
+    /** 빈 칸에 띄울 글. 하루 단위로 정한다 */
+    emptyCaption: string
     onOpen: (card: LogitFeedCard) => void
     onRecord: (slot: LogitFeedSlot) => void
+    onOpenProfile: (card: LogitFeedCard) => void
 }
 
 /** 점이 이보다 많아지면 세지 못한다 — 숫자로 바꾼다 */
 const DOT_LIMIT = 6
 
 /** §2.1 세로축은 슬롯, 가로축은 사람. 이 축을 뒤집지 않는다 */
-export function MealSlotSection({ slot, canRecord, onOpen, onRecord }: Props) {
+export function MealSlotSection({ slot, canRecord, emptyCaption, onOpen, onRecord, onOpenProfile }: Props) {
     const trackRef = useRef<HTMLDivElement>(null)
     const [index, setIndex] = useState(0)
 
@@ -63,8 +66,10 @@ export function MealSlotSection({ slot, canRecord, onOpen, onRecord }: Props) {
                         key={card.userId}
                         card={card}
                         readOnly={slot.hidden || !canRecord}
+                        emptyCaption={emptyCaption}
                         onOpen={() => onOpen(card)}
                         onRecord={() => onRecord(slot)}
+                        onOpenProfile={() => onOpenProfile(card)}
                     />
                 ))}
             </div>

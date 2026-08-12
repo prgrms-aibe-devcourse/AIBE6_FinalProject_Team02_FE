@@ -116,7 +116,7 @@ export function ChallengeDetail({
                             <ProgressBar
                                 value={challenge.progress ?? 0}
                                 animate={false}
-                                tone="lime"
+                                tone="point"
                                 label="챌린지 진행률"
                             />
                         </div>

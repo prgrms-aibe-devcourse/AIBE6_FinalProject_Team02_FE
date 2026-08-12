@@ -3,10 +3,10 @@ import { LocationInput } from '@/features/register/confirmApi'
 import { geocodeAddress } from '@/features/register/placeApi'
 import { resolveBadgeImage } from '@/shared/data/badgeAssets'
 import { useAppState } from '@/shared/store/AppStateProvider'
-import { Badge } from '@/shared/ui'
+import { WIZARD_STEP_TRANSITION, wizardStepVariants } from '@/shared/lib/wizardMotion'
+import { Badge, WizardHeader } from '@/shared/ui'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
-    ArrowLeftIcon,
     CameraIcon,
     CheckIcon,
     MapPinIcon,
@@ -44,12 +44,6 @@ const FOODS = 3
 const BADGE = 4
 const DONE = 5
 const STEP_LABEL = ['제목', '대표 사진', '기한', '음식', '보상']
-
-const variants = {
-    enter: (dir: number) => ({ x: dir > 0 ? 48 : -48, opacity: 0 }),
-    center: { x: 0, opacity: 1 },
-    exit: (dir: number) => ({ x: dir > 0 ? -48 : 48, opacity: 0 }),
-}
 
 export function ChallengeCreate({
     createdThisMonth,
@@ -202,32 +196,19 @@ export function ChallengeCreate({
 
     return (
         <div className="flex h-full flex-col bg-white">
-            {step !== DONE && (
-                <header className="flex items-center gap-3 px-5 pb-2 pt-4">
-                    <button onClick={headerBack} aria-label="뒤로가기">
-                        <ArrowLeftIcon size={22} className="text-neutral-900" />
-                    </button>
-                    <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-watermelon-100">
-                        <motion.div
-                            className="h-full rounded-full bg-watermelon-500"
-                            animate={{ width: `${((step + 1) / 5) * 100}%` }}
-                            transition={{ type: 'spring', stiffness: 220, damping: 30 }}
-                        />
-                    </div>
-                    <span className="text-xs font-bold text-watermelon-500">{step + 1}/5</span>
-                </header>
-            )}
+            {/* 로그잇 개설과 같은 머리글을 쓴다 — 예전에는 이 블록을 각자 갖고 있어서 갈렸다 */}
+            {step !== DONE && <WizardHeader step={step} total={5} onBack={headerBack} label="챌린짓 개설" />}
 
             <main className="no-scrollbar relative flex-1 overflow-y-auto px-5 pt-4">
                 <AnimatePresence mode="wait" custom={dir}>
                     <motion.div
                         key={step}
                         custom={dir}
-                        variants={variants}
+                        variants={wizardStepVariants}
                         initial="enter"
                         animate="center"
                         exit="exit"
-                        transition={{ type: 'spring', stiffness: 320, damping: 32 }}
+                        transition={WIZARD_STEP_TRANSITION}
                     >
                         {step === TITLE && (
                             <div>
@@ -415,7 +396,7 @@ export function ChallengeCreate({
                                             <p className="mt-1.5 text-xs font-medium text-red-500">{addressError}</p>
                                         )}
                                         {placeReady && targetPlace && (
-                                            <p className="mt-1.5 flex items-center gap-1 text-xs font-medium text-lime-text">
+                                            <p className="mt-1.5 flex items-center gap-1 text-xs font-medium text-rind-text">
                                                 <MapPinIcon size={13} /> {targetPlace.name} 위치 확인됨
                                             </p>
                                         )}

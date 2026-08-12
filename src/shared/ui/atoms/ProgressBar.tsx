@@ -9,20 +9,26 @@ interface ProgressBarProps {
     animate?: boolean
     /** 스크린리더용 설명. 예: "기본 도감 수집률" */
     label?: string
-    /** 채움 색. 달성/완료 진행(챌린지 등)은 lime, 그 외는 primary (핸드오프 §Colors) */
-    tone?: 'primary' | 'lime'
+    /**
+     * 채움 색. **기본이 초록(`point`)이다.**
+     *
+     * 진행·달성·수집은 §1.1의 구분에서 "된 것"이라 초록을 쓴다. 예전 기본값은
+     * 핑크였는데, 화면이 온통 핑크여서 바가 어디까지 찼는지 눈에 잘 안 들어왔다.
+     * 핑크로 되돌려야 할 자리(주 액션의 일부로 보여야 할 때)만 `primary`를 준다
+     */
+    tone?: 'point' | 'primary'
 }
 
 /**
  * §3.2 진행률 바. 기본 도감·챌린지 도감 전용.
  * 제작 도감에서는 사용 금지 (§6).
  */
-export function ProgressBar({ value, className = '', animate = true, label, tone = 'primary' }: ProgressBarProps) {
+export function ProgressBar({ value, className = '', animate = true, label, tone = 'point' }: ProgressBarProps) {
     const reduceMotion = useReducedMotion()
     const ratio = Math.max(0, Math.min(1, value))
     const pct = ratio * 100
     const shouldAnimate = animate && !reduceMotion
-    const fillClass = tone === 'lime' ? 'bg-lime-500' : 'bg-action-primary'
+    const fillClass = tone === 'primary' ? 'bg-action-primary' : 'bg-rind-500'
 
     return (
         <div
