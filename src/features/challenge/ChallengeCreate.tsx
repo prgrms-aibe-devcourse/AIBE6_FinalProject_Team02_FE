@@ -1,18 +1,16 @@
 import { PlacePicker } from '@/features/register/PlacePicker'
 import { LocationInput } from '@/features/register/confirmApi'
 import { geocodeAddress } from '@/features/register/placeApi'
-import { resolveBadgeImage } from '@/shared/data/badgeAssets'
 import { useAppState } from '@/shared/store/AppStateProvider'
 import { dateOnlyLabel } from '@/shared/lib/dateOnly'
 import { WIZARD_STEP_TRANSITION, wizardStepVariants } from '@/shared/lib/wizardMotion'
-import { Button, TextArea, TextField, WizardHeader } from '@/shared/ui'
+import { Button, Dialog, TextArea, TextField, WizardHeader } from '@/shared/ui'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
     CalendarIcon,
     CameraIcon,
     CheckIcon,
     MapPinIcon,
-    MedalIcon,
     PencilIcon,
     Trash2Icon,
     TrophyIcon,
@@ -29,24 +27,12 @@ interface Props {
     onBack: () => void
     onCreate: (challenge: ChallengeData) => void | Promise<void>
     onCustomBadge: () => void
-    onUsePreset: () => void
 }
 
-const PRESETS = [
-    { code: 'CHALLENGE_PRESET_EXPLORER', name: '맛집 탐험가' },
-    { code: 'CHALLENGE_PRESET_FINISHER', name: '챌린짓 완주자' },
-    { code: 'CHALLENGE_PRESET_PIONEER', name: '동네 개척자' },
-]
 const MIN_TARGETS = 5
 /** 제목·소개글 길이 제한. 예전에는 소개글에만 있어서 제목이 무한히 길어질 수 있었다 */
 const TITLE_MAX = 30
 const DESC_MAX = 200
-/** 보상 뱃지 이름. BadgeCustom의 NAME_MAX와 같은 값이어야 한다 */
-const BADGE_NAME_MAX = 18
-
-/** 보상 뱃지 후보 네 칸. 높이를 고정해야 위·아래 줄이 어긋나지 않는다 (§개설 4) */
-const BADGE_OPTION = 'flex h-24 items-center gap-3 rounded-2xl border-2 p-3 text-left'
-
 // 스텝 인덱스
 const TITLE = 0
 const COVER = 1
@@ -56,14 +42,7 @@ const BADGE = 4
 const DONE = 5
 const STEP_LABEL = ['제목', '대표 사진', '기한', '음식', '보상']
 
-export function ChallengeCreate({
-    createdThisMonth,
-    customBadge,
-    onBack,
-    onCreate,
-    onCustomBadge,
-    onUsePreset,
-}: Props) {
+export function ChallengeCreate({ createdThisMonth, customBadge, onBack, onCreate, onCustomBadge }: Props) {
     const { challengeDraft, setChallengeDraft } = useAppState()
     const patchDraft = (patch: Partial<typeof challengeDraft>) => setChallengeDraft({ ...challengeDraft, ...patch })
 
@@ -164,18 +143,22 @@ export function ChallengeCreate({
         setAddressInput('')
     }
 
-    // 보상 뱃지(로컬)
-    const [selectedCode, setSelectedCode] = useState(PRESETS[0].code)
-    const [presetName, setPresetName] = useState(PRESETS[0].name)
+    // 보상 뱃지 — 직접 만든 것뿐이다 (프리셋 제거, BADGE 단계 주석 참고)
     const [submitting, setSubmitting] = useState(false)
-    const selectedPreset = PRESETS.find((p) => p.code === selectedCode) ?? PRESETS[0]
-    const rewardName = customBadge ? customBadge.name : presetName
-    const rewardImage = customBadge?.customImage ?? resolveBadgeImage(selectedPreset.code, undefined) ?? undefined
+    /** 뱃지 없이 개설하려 했을 때 뜨는 안내 */
+    const [badgeAlert, setBadgeAlert] = useState(false)
+    const rewardName = customBadge?.name ?? ''
+    const rewardImage = customBadge?.customImage ?? undefined
 
     const enough = targets.length >= MIN_TARGETS
     const periodOk = periodType === 'PERMANENT' || endsAt.trim().length > 0
 
     const create = async () => {
+        // 보상 뱃지는 필수다. 버튼을 잠그는 대신 눌렀을 때 왜 안 되는지 알려 준다
+        if (!customBadge) {
+            setBadgeAlert(true)
+            return
+        }
         if (submitting || !title.trim() || !enough || !periodOk || !canCreate) return
         setSubmitting(true)
         try {
@@ -196,12 +179,8 @@ export function ChallengeCreate({
                 target: targets.length,
                 targetRestaurants: targets,
                 completedTargetIds: [],
-                rewardBadge: customBadge ?? {
-                    emoji: '🏆',
-                    name: presetName.trim() || selectedPreset.name,
-                    tone: 'bg-watermelon-100 text-watermelon-700',
-                    code: selectedPreset.code,
-                },
+                // 위 가드를 통과했으므로 여기서는 반드시 있다
+                rewardBadge: customBadge,
             })
             go(DONE)
         } finally {
@@ -531,87 +510,25 @@ export function ChallengeCreate({
                                 <h1 className="mt-1 font-display text-2xl leading-snug text-neutral-900">
                                     완주 보상 뱃지
                                 </h1>
-                                <p className="mt-2 text-sm text-neutral-400">프리셋을 고르거나 직접 만들어요.</p>
+                                <p className="mt-2 text-sm text-neutral-400">
+                                    직접 만든 뱃지 하나가 완주의 증표가 돼요. 꼭 만들어야 개설할 수 있어요.
+                                </p>
 
                                 {/*
-                                 * 네 칸의 높이를 `h-24`로 고정한다.
+                                 * **프리셋 세 칸을 없앴다.**
                                  *
-                                 * 예전에는 프리셋 세 칸이 한 줄 글자, 커스텀 칸만 두 줄이라
-                                 * **아래 줄이 위 줄보다 높았다.** 격자의 줄 높이는 서로 독립이라
-                                 * 내용에 맡기면 이렇게 어긋난다
-                                 */}
-                                <div className="mt-5 grid grid-cols-2 gap-3">
-                                    {PRESETS.map((preset) => {
-                                        const selected = !customBadge && selectedCode === preset.code
-                                        const image = resolveBadgeImage(preset.code, undefined)
-                                        return (
-                                            <button
-                                                key={preset.code}
-                                                type="button"
-                                                onClick={() => {
-                                                    setSelectedCode(preset.code)
-                                                    setPresetName(preset.name)
-                                                    onUsePreset()
-                                                }}
-                                                aria-pressed={selected}
-                                                className={`${BADGE_OPTION} ${selected ? 'border-watermelon-500 bg-watermelon-50' : 'border-neutral-100 bg-white'}`}
-                                            >
-                                                <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-watermelon-50">
-                                                    {image ? (
-                                                        <img
-                                                            src={image}
-                                                            alt=""
-                                                            className="h-full w-full object-cover"
-                                                        />
-                                                    ) : (
-                                                        <MedalIcon
-                                                            size={22}
-                                                            strokeWidth={1.5}
-                                                            aria-hidden
-                                                            className="text-watermelon-500"
-                                                        />
-                                                    )}
-                                                </span>
-                                                <span className="min-w-0 flex-1 text-sm font-bold text-content-primary">
-                                                    {preset.name}
-                                                </span>
-                                            </button>
-                                        )
-                                    })}
-                                    <button
-                                        type="button"
-                                        onClick={onCustomBadge}
-                                        aria-pressed={Boolean(customBadge)}
-                                        className={`${BADGE_OPTION} border-dashed ${customBadge ? 'border-watermelon-500 bg-watermelon-50' : 'border-watermelon-300 bg-white text-content-link'}`}
-                                    >
-                                        <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-watermelon-100 text-xl">
-                                            {customBadge?.customImage ? (
-                                                <img
-                                                    src={customBadge.customImage}
-                                                    alt="커스텀"
-                                                    className="h-full w-full object-cover"
-                                                />
-                                            ) : (
-                                                <PencilIcon size={20} strokeWidth={1.5} aria-hidden />
-                                            )}
-                                        </span>
-                                        <span className="min-w-0 flex-1">
-                                            <strong className="line-clamp-2 block text-sm">
-                                                {customBadge ? customBadge.name : '커스텀하기'}
-                                            </strong>
-                                            <small className="text-xs">직접 그리거나 이미지로</small>
-                                        </span>
-                                    </button>
-                                </div>
-
-                                {/*
-                                 * 미리보기를 **이름 입력보다 위**로 올리고 크게 키웠다.
-                                 * 예전에는 이름 아래에 작은 뱃지로 붙어 있어서, 고른 프리셋이
-                                 * 어떻게 보이는지 확인하려면 아래까지 내려가야 했다.
-                                 * 커스텀 뱃지 만들기 화면과 같은 배치·크기다
+                                 * 셋 중 하나를 고르면 어느 챌린짓이든 같은 그림이 걸린다 — 완주
+                                 * 보상이 "내가 이걸 해냈다"의 증표인데, 남과 똑같으면 증표 구실을
+                                 * 못 한다. 직접 만들면 그 챌린짓에만 있는 뱃지가 되고, 그리기가
+                                 * 부담이면 사진 한 장으로도 만들 수 있다.
+                                 *
+                                 * 서버는 `rewardBadgeId`를 **선택**으로 받지만 화면에서는 **필수**로 막는다.
+                                 * 보상 없는 챌린짓은 완주해도 남는 것이 없어서, 만들다 만 상태로
+                                 * 개설되면 되돌릴 방법이 없다. 서버보다 화면이 더 엄격한 쪽이라
+                                 * 서버 계약을 어기지는 않는다
                                  */}
                                 <section className="flex flex-col items-center gap-3 pt-6">
-                                    <span className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-full border-4 border-white bg-watermelon-50 shadow-card">
+                                    <span className="flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border-4 border-white bg-watermelon-50 shadow-card">
                                         {rewardImage ? (
                                             // eslint-disable-next-line @next/next/no-img-element
                                             <img
@@ -621,28 +538,39 @@ export function ChallengeCreate({
                                             />
                                         ) : (
                                             <TrophyIcon
-                                                size={44}
+                                                size={48}
                                                 strokeWidth={1.5}
                                                 aria-hidden
-                                                className="text-watermelon-500"
+                                                className="text-content-muted"
                                             />
                                         )}
                                     </span>
-                                    <strong className="text-base text-content-primary">{rewardName}</strong>
-                                    <p className="text-xs text-content-muted">완주하면 이 뱃지를 받아요</p>
+                                    {customBadge ? (
+                                        <>
+                                            <strong className="text-base text-content-primary">{rewardName}</strong>
+                                            <p className="text-xs text-content-muted">완주하면 이 뱃지를 받아요</p>
+                                        </>
+                                    ) : (
+                                        <p className="text-xs text-content-muted">아직 만든 뱃지가 없어요</p>
+                                    )}
                                 </section>
 
+                                <button
+                                    type="button"
+                                    onClick={onCustomBadge}
+                                    className="mt-6 flex min-h-touch w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-watermelon-300 bg-watermelon-50 py-4 text-sm font-bold text-content-link"
+                                >
+                                    <PencilIcon size={18} strokeWidth={1.75} aria-hidden />
+                                    {customBadge ? '뱃지 다시 만들기' : '뱃지 만들기'}
+                                </button>
+                                <p className="mt-2 text-center text-xs text-content-muted">
+                                    직접 그리거나 사진으로 만들 수 있어요
+                                </p>
+
                                 {!customBadge && (
-                                    <div className="pt-5">
-                                        <TextField
-                                            label="보상 뱃지 이름"
-                                            value={presetName}
-                                            onChange={(e) => setPresetName(e.target.value)}
-                                            placeholder={selectedPreset.name}
-                                            count={{ current: presetName.length, max: BADGE_NAME_MAX }}
-                                            maxLength={BADGE_NAME_MAX}
-                                        />
-                                    </div>
+                                    <p className="mt-5 rounded-2xl bg-surface-accent px-4 py-3 text-xs leading-5 text-content-secondary">
+                                        완주한 사람에게 줄 보상이라 <b>뱃지를 만들어야 개설할 수 있어요.</b>
+                                    </p>
                                 )}
                             </div>
                         )}
@@ -707,6 +635,29 @@ export function ChallengeCreate({
                     value={endsAt}
                     onPick={(picked) => patchDraft({ endsAt: picked })}
                     onClose={() => setEndDateOpen(false)}
+                />
+            )}
+
+            {/*
+                뱃지 없이 개설하려 할 때. **버튼을 잠그지 않고 눌리게 둔 뒤 여기서 막는다** —
+                잠긴 버튼은 왜 안 되는지 말해 주지 않아서, 사용자가 앞 단계를 되짚으며
+                무엇이 빠졌는지 찾게 된다. 여기서는 바로 만들러 갈 수도 있다
+            */}
+            {badgeAlert && (
+                <Dialog
+                    title="보상 뱃지를 디자인해 주세요!"
+                    message={
+                        '완주한 사람에게 줄 뱃지가 있어야 챌린짓을 열 수 있어요.\n직접 그리거나 사진으로 만들 수 있어요.'
+                    }
+                    action={{
+                        label: '뱃지 만들기',
+                        onClick: () => {
+                            setBadgeAlert(false)
+                            onCustomBadge()
+                        },
+                    }}
+                    cancelText="닫기"
+                    onClose={() => setBadgeAlert(false)}
                 />
             )}
         </div>

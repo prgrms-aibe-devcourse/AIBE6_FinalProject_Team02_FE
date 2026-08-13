@@ -23,6 +23,13 @@ interface ProgressBarProps {
      * `animate={false}`거나 모션을 끈 사용자에게는 무시된다
      */
     delay?: number
+    /**
+     * 차오르기 **시작점**(0..1). 기본은 0.
+     *
+     * 해금 연출처럼 "원래 여기까지였는데 이만큼 늘었다"를 보여 줘야 할 때 쓴다.
+     * 0에서 시작하면 늘어난 몫이 얼마인지가 안 보인다
+     */
+    from?: number
 }
 
 /**
@@ -36,10 +43,12 @@ export function ProgressBar({
     label,
     tone = 'point',
     delay = 0,
+    from = 0,
 }: ProgressBarProps) {
     const reduceMotion = useReducedMotion()
     const ratio = Math.max(0, Math.min(1, value))
     const pct = ratio * 100
+    const fromPct = Math.max(0, Math.min(1, from)) * 100
     const shouldAnimate = animate && !reduceMotion
     const fillClass = tone === 'primary' ? 'bg-action-primary' : 'bg-rind-500'
 
@@ -54,7 +63,7 @@ export function ProgressBar({
         >
             <motion.div
                 className={`h-full rounded-full ${fillClass}`}
-                initial={shouldAnimate ? { width: 0 } : false}
+                initial={shouldAnimate ? { width: `${fromPct}%` } : false}
                 animate={{ width: `${pct}%` }}
                 transition={shouldAnimate ? { duration: 0.8, ease: 'easeOut', delay } : { duration: 0 }}
             />

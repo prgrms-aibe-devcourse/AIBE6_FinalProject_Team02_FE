@@ -38,6 +38,11 @@ export { Dialog } from './molecules/Dialog'
 export { DexHelpSheet } from './molecules/DexHelpSheet'
 export { EmptyState } from './molecules/EmptyState'
 export { FoodCard } from './molecules/FoodCard'
+/* 사진을 끌어 옮기고 확대해 정사각으로 자르는 창.
+   프로필·챌린짓 대표·로그잇 표지·커스텀 뱃지가 전부 이걸 쓴다 — 자르는 규칙이
+   화면마다 달라지면 사용자가 매번 다시 배워야 한다 */
+export { ImageCropper } from './molecules/ImageCropper'
+export type { ImageCropperHandle } from './molecules/ImageCropper'
 export { LoadingView } from './molecules/LoadingView'
 export { TabBar } from './molecules/TabBar'
 export type { TabItem } from './molecules/TabBar'

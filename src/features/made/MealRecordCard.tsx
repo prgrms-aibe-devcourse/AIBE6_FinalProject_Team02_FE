@@ -14,16 +14,31 @@ interface Props {
     onRecord: () => void
     /** 아바타·이름을 누르면 그 사람 프로필로. 내 카드면 마이페이지로 */
     onOpenProfile: () => void
+    /**
+     * 이 끼니의 참여자가 나 하나뿐. **옆을 비워 둘 이유가 없다.**
+     *
+     * `w-4/5`는 "옆에 카드가 더 있다"를 보여 주려고 일부러 좁힌 폭인데,
+     * 혼자면 엿보일 것이 없어서 그냥 오른쪽이 빈 채로 치우쳐 보였다
+     */
+    solo?: boolean
 }
 
 /** §3.2 로그잇 홈 기록 카드 — filled / empty-mine / empty-other */
-export function MealRecordCard({ card, readOnly = false, emptyCaption, onOpen, onRecord, onOpenProfile }: Props) {
+export function MealRecordCard({
+    card,
+    readOnly = false,
+    emptyCaption,
+    onOpen,
+    onRecord,
+    onOpenProfile,
+    solo = false,
+}: Props) {
     const name = cardName(card)
     const filled = card.recordCount > 0
 
     // 다음 카드가 살짝 보여야 가로로 더 있다는 게 드러난다 (§2.1)
     return (
-        <article className="w-4/5 max-w-80 shrink-0 snap-start">
+        <article className={`max-w-80 shrink-0 snap-start ${solo ? 'w-full' : 'w-4/5'}`}>
             {/* 아바타와 이름을 한 단추로 묶는다. 동그라미만 누르게 하면 표적이 너무 작다 */}
             <button
                 type="button"

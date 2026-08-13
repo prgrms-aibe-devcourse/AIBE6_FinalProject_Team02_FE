@@ -55,11 +55,20 @@ export function MealSlotSection({ slot, canRecord, emptyCaption, onOpen, onRecor
                     ))}
             </header>
 
+            {/*
+                참여자가 **한 명이면 가운데**, 둘부터는 지금처럼 왼쪽에서 시작한다.
+
+                가로 캐러셀은 "옆으로 더 있다"를 말하려고 카드를 왼쪽에 붙이고 폭을 좁혀
+                다음 카드를 엿보이게 한다(§2.1). 혼자일 때는 엿보일 것이 없어서 그 규칙이
+                **오른쪽만 텅 빈 화면**으로 남았다. 넘길 것이 없으면 스냅도 끈다
+            */}
             <div
                 ref={trackRef}
                 onScroll={trackScrolled}
                 // scroll-px가 없으면 스냅이 걸릴 때 카드가 화면 왼쪽 끝에 붙어 버린다
-                className="no-scrollbar -mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 scroll-px-5"
+                className={`no-scrollbar -mx-5 flex gap-3 overflow-x-auto px-5 ${
+                    count > 1 ? 'snap-x snap-mandatory scroll-px-5' : 'justify-center'
+                }`}
             >
                 {slot.cards.map((card) => (
                     <MealRecordCard
@@ -67,6 +76,7 @@ export function MealSlotSection({ slot, canRecord, emptyCaption, onOpen, onRecor
                         card={card}
                         readOnly={slot.hidden || !canRecord}
                         emptyCaption={emptyCaption}
+                        solo={count === 1}
                         onOpen={() => onOpen(card)}
                         onRecord={() => onRecord(slot)}
                         onOpenProfile={() => onOpenProfile(card)}

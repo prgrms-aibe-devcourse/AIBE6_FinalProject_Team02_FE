@@ -66,19 +66,16 @@ export default function ChallengeCreatePage() {
                             }),
                         )
 
-                        // 보상 뱃지는 개설 확정 시점에 생성 (중도 이탈 시 뱃지 row 안 생기게)
+                        /*
+                         * 보상 뱃지는 개설 확정 시점에 생성 (중도 이탈 시 뱃지 row 안 생기게).
+                         *
+                         * 프리셋 분기는 없앴다 — 개설에서 프리셋을 고를 수 없게 됐다
+                         * (`ChallengeCreate`의 BADGE 단계 주석). 안 만들었으면 null 그대로 보내고,
+                         * 서버는 `rewardBadgeId`를 선택으로 받는다
+                         */
                         const badge = challenge.rewardBadge
                         let rewardBadgeId: number | null = null
-                        if (badge?.code) {
-                            // 프리셋 복제
-                            rewardBadgeId = (
-                                await createRewardBadge({
-                                    name: badge.name,
-                                    presetCode: badge.code,
-                                })
-                            ).badgeId
-                        } else if (badge?.customImage) {
-                            // 유저 제작(이미지 S3 업로드 후 key로 생성)
+                        if (badge?.customImage) {
                             const blob = dataUrlToBlob(badge.customImage)
                             const { key } = await uploadImageToS3(blob, 'reward-badge.png')
                             rewardBadgeId = (await createRewardBadge({ name: badge.name, imageKey: key })).badgeId
@@ -110,7 +107,6 @@ export default function ChallengeCreatePage() {
                 onCustomBadge={() => {
                     pushInApp(router, ROUTES.challengeNewBadge)
                 }}
-                onUsePreset={() => setCustomBadge(null)}
             />
             {alertMessage && <Dialog title="개설 실패" message={alertMessage} onClose={() => setAlertMessage(null)} />}
         </>

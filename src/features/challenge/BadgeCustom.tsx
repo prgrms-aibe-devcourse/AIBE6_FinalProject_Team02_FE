@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { EraserIcon, ImagePlusIcon, PaintbrushIcon, RotateCcwIcon, Sparkles } from 'lucide-react'
-import { Button, PageHeader, TextField } from '@/shared/ui'
+import { Button, ImageCropper, ImageCropperHandle, PageHeader, TextField } from '@/shared/ui'
 import { RewardBadge } from './types'
 
 type BadgeTab = '그림으로 그리기' | '이미지로 만들기'
@@ -33,6 +33,16 @@ const BACKGROUNDS = ['#FFF8ED', '#FFFFFF', '#FFE0E7', '#D6EFE0', '#CFE1F5', '#F2
 /** 캔버스 실제 해상도. 그림판을 키워도 저장 크기는 이 값으로 고정한다 */
 const CANVAS_PX = 480
 
+/**
+ * 굵기 범위. 미리보기 점을 실제 크기로 그리므로 **최댓값이 미리보기 칸(40px)과 같다.**
+ * 더 키우면 점이 칸을 넘친다
+ */
+const SIZE_MIN = 2
+const SIZE_MAX = 40
+/** 지우개는 펜보다 굵은 쪽이 기본 — 지울 때는 대개 넓게 쓸어낸다 */
+const PEN_DEFAULT = 10
+const ERASER_DEFAULT = 24
+
 const NAME_MAX = 18
 const DEFAULT_NAME = '나만의 완주 뱃지'
 
@@ -42,11 +52,24 @@ export function BadgeCustom({ onBack, onSave }: Props) {
     const [tab, setTab] = useState<BadgeTab>('그림으로 그리기')
     const [color, setColor] = useState(COLORS[0])
     const [background, setBackground] = useState(BACKGROUNDS[0])
-    const [size, setSize] = useState(10)
+    /**
+     * 굵기를 **도구별로 따로 기억한다.**
+     *
+     * 예전에는 굵기가 하나였고, 굵기 버튼을 누르면 `setEraser(false)`가 같이 돌았다.
+     * 그래서 **지우개 굵기는 아예 바꿀 수 없었다** — 바꾸려고 누르는 순간 펜으로 돌아갔다.
+     * 따로 두면 지우개를 굵게 써 두고 펜으로 돌아와도 내 펜 굵기가 그대로다
+     */
+    const [penSize, setPenSize] = useState(PEN_DEFAULT)
+    const [eraserSize, setEraserSize] = useState(ERASER_DEFAULT)
     const [eraser, setEraser] = useState(false)
+    const size = eraser ? eraserSize : penSize
+    const setSize = (value: number) => (eraser ? setEraserSize(value) : setPenSize(value))
+    /** 고른 원본. 자르기가 끝나기 전까지는 결과가 아니다 */
+    const [picked, setPicked] = useState<string | null>(null)
     const [uploaded, setUploaded] = useState<string | null>(null)
     const [preview, setPreview] = useState<string | null>(null)
     const [name, setName] = useState(DEFAULT_NAME)
+    const cropper = useRef<ImageCropperHandle>(null)
 
     /**
      * 배경 + 선을 한 장으로 합친다. 캔버스는 선만 갖고 있으므로
@@ -118,16 +141,32 @@ export function BadgeCustom({ onBack, onSave }: Props) {
         setPreview(flatten())
     }
 
+    /**
+     * 고르면 **바로 쓰지 않고 자르기 창을 연다.**
+     *
+     * 예전에는 고른 파일을 그대로 뱃지로 썼다. 뱃지는 원형으로 잘려 보이는데
+     * 가로·세로가 다른 사진은 가운데만 남아, 정작 보여 주고 싶은 부분이 잘려 나갔다.
+     * 프로필·챌린짓 대표 사진과 같은 창(`ImageCropper`)을 써서 규칙을 하나로 맞춘다
+     */
     const upload = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0]
         if (!file) return
+        setPicked(URL.createObjectURL(file))
+        event.target.value = '' // 같은 파일 다시 고르기 허용
+    }
+
+    const applyCrop = async () => {
+        // png — 뱃지는 원형으로 잘려 보이므로 투명이 살아 있어야 모서리가 깨끗하다
+        const blob = await cropper.current?.crop()
+        if (!blob) return
         const reader = new FileReader()
         reader.onload = () => {
             const result = String(reader.result)
             setUploaded(result)
             setPreview(result)
+            setPicked(null)
         }
-        reader.readAsDataURL(file)
+        reader.readAsDataURL(blob)
     }
 
     const save = () => {
@@ -283,58 +322,96 @@ export function BadgeCustom({ onBack, onSave }: Props) {
                                 ))}
                             </div>
 
-                            <div className="mt-4 flex items-center gap-3">
-                                <span className="text-xs font-bold text-content-secondary">굵기</span>
-                                {[6, 12, 22].map((value) => (
-                                    <button
-                                        key={value}
-                                        type="button"
-                                        onClick={() => {
-                                            setSize(value)
-                                            setEraser(false)
-                                        }}
-                                        aria-label={`굵기 ${value}`}
-                                        aria-pressed={size === value && !eraser}
-                                        className={`no-touch-expand flex h-10 w-10 items-center justify-center rounded-full ${
-                                            size === value && !eraser
-                                                ? 'bg-action-primary text-content-on-action'
-                                                : 'bg-neutral-100 text-content-secondary'
-                                        }`}
-                                    >
-                                        <span
-                                            aria-hidden
-                                            className="rounded-full bg-current"
-                                            style={{ width: value, height: value }}
-                                        />
-                                    </button>
-                                ))}
-                                <button
-                                    type="button"
-                                    onClick={() => setEraser(true)}
-                                    aria-pressed={eraser}
-                                    className={`ml-auto flex min-h-touch items-center gap-1 rounded-full px-3 text-xs font-bold ${
-                                        eraser
-                                            ? 'bg-action-primary text-content-on-action'
-                                            : 'bg-neutral-100 text-content-secondary'
-                                    }`}
-                                >
-                                    <EraserIcon size={14} aria-hidden />
+                            <p className="mt-4 text-xs font-bold text-content-secondary">도구</p>
+                            <div className="mt-2 grid grid-cols-2 gap-2">
+                                <ToolButton active={!eraser} onClick={() => setEraser(false)}>
+                                    <PaintbrushIcon size={15} aria-hidden />펜
+                                </ToolButton>
+                                <ToolButton active={eraser} onClick={() => setEraser(true)}>
+                                    <EraserIcon size={15} aria-hidden />
                                     지우개
-                                </button>
+                                </ToolButton>
                             </div>
+
+                            {/*
+                             * 굵기는 슬라이더 하나로, **지금 고른 도구의 굵기**를 바꾼다.
+                             * 6·12·22 세 단추뿐이라 그 사이 굵기를 못 썼고, 지우개는 굵기를
+                             * 고를 방법 자체가 없었다 (`penSize`/`eraserSize` 주석 참고)
+                             */}
+                            <div className="mt-4 flex items-center justify-between">
+                                <span className="text-xs font-bold text-content-secondary">
+                                    {eraser ? '지우개' : '펜'} 굵기
+                                </span>
+                                <span className="flex items-center gap-2">
+                                    {/* 실제 굵기로 그린 점 — 숫자만으로는 얼마나 굵은지 안 잡힌다 */}
+                                    <span aria-hidden className="flex h-10 w-10 items-center justify-center">
+                                        <span
+                                            className={`rounded-full ${
+                                                eraser ? 'border-2 border-dashed border-neutral-300' : ''
+                                            }`}
+                                            style={{
+                                                width: size,
+                                                height: size,
+                                                // 흰 선도 흰 카드 위에서 보이도록 테두리를 두른다
+                                                backgroundColor: eraser ? 'transparent' : color,
+                                                boxShadow: eraser ? undefined : 'inset 0 0 0 1px rgb(0 0 0 / 0.12)',
+                                            }}
+                                        />
+                                    </span>
+                                    <span className="w-6 text-right text-xs font-bold tabular-nums text-content-primary">
+                                        {size}
+                                    </span>
+                                </span>
+                            </div>
+                            <input
+                                type="range"
+                                min={SIZE_MIN}
+                                max={SIZE_MAX}
+                                value={size}
+                                onChange={(event) => setSize(Number(event.target.value))}
+                                aria-label={`${eraser ? '지우개' : '펜'} 굵기`}
+                                // h-11 — 트랙은 얇아도 잡히는 높이는 44px이어야 한다 (§5 최소 터치 타깃).
+                                // accent-*로 브랜드 색을 입히면 채워진 구간과 손잡이가 같이 물든다
+                                className="h-11 w-full cursor-pointer accent-watermelon-500"
+                            />
                         </section>
                     </>
                 ) : (
                     <section className="mt-5 rounded-2xl bg-white p-4 shadow-soft">
                         <p className="text-sm font-bold text-content-primary">이미지로 만들기</p>
-                        <p className="mt-1 text-xs leading-5 text-content-muted">
-                            사진을 선택하면 원형 프레임 중앙에 맞춰 잘려 보여요.
-                        </p>
-                        <label className="mt-3 flex min-h-touch cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-watermelon-300 bg-watermelon-50 text-sm font-bold text-content-link">
-                            <ImagePlusIcon size={17} aria-hidden />
-                            {uploaded ? '이미지 다시 선택' : '이미지 선택'}
-                            <input type="file" accept="image/*" onChange={upload} className="sr-only" />
-                        </label>
+                        {picked ? (
+                            <>
+                                <p className="mt-1 text-xs leading-5 text-content-muted">
+                                    끌어서 위치를, 막대로 크기를 맞춰요. 원 밖은 뱃지에서 잘려요.
+                                </p>
+                                <ImageCropper
+                                    ref={cropper}
+                                    src={picked}
+                                    size={240}
+                                    mimeType="image/png"
+                                    className="mt-3"
+                                />
+                                <div className="mt-3 grid grid-cols-2 gap-2">
+                                    <Button variant="secondary" size="md" onClick={() => setPicked(null)}>
+                                        취소
+                                    </Button>
+                                    <Button size="md" onClick={applyCrop}>
+                                        이 사진 사용
+                                    </Button>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <p className="mt-1 text-xs leading-5 text-content-muted">
+                                    사진을 고르면 위치와 크기를 맞출 수 있어요.
+                                </p>
+                                <label className="mt-3 flex min-h-touch cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-watermelon-300 bg-watermelon-50 text-sm font-bold text-content-link">
+                                    <ImagePlusIcon size={17} aria-hidden />
+                                    {uploaded ? '이미지 다시 선택' : '이미지 선택'}
+                                    <input type="file" accept="image/*" onChange={upload} className="sr-only" />
+                                </label>
+                            </>
+                        )}
                     </section>
                 )}
             </main>
@@ -345,5 +422,29 @@ export function BadgeCustom({ onBack, onSave }: Props) {
                 </Button>
             </div>
         </div>
+    )
+}
+
+/** 펜·지우개 둘 중 하나. 지금 무엇으로 그리는지가 늘 보여야 한다 */
+function ToolButton({
+    active,
+    onClick,
+    children,
+}: {
+    active: boolean
+    onClick: () => void
+    children: React.ReactNode
+}) {
+    return (
+        <button
+            type="button"
+            onClick={onClick}
+            aria-pressed={active}
+            className={`flex min-h-touch items-center justify-center gap-1.5 rounded-xl text-sm font-bold ${
+                active ? 'bg-action-primary text-content-on-action' : 'bg-neutral-100 text-content-secondary'
+            }`}
+        >
+            {children}
+        </button>
     )
 }
