@@ -17,13 +17,26 @@ interface ProgressBarProps {
      * 핑크로 되돌려야 할 자리(주 액션의 일부로 보여야 할 때)만 `primary`를 준다
      */
     tone?: 'point' | 'primary'
+    /**
+     * 차오르기 시작을 늦춘다(초). 목록에서 여러 개가 나란히 있을 때 쓴다 —
+     * 열 줄이 동시에 차면 하나가 커진 것처럼 보여 움직임이 안 읽힌다.
+     * `animate={false}`거나 모션을 끈 사용자에게는 무시된다
+     */
+    delay?: number
 }
 
 /**
  * §3.2 진행률 바. 기본 도감·챌린지 도감 전용.
  * 제작 도감에서는 사용 금지 (§6).
  */
-export function ProgressBar({ value, className = '', animate = true, label, tone = 'point' }: ProgressBarProps) {
+export function ProgressBar({
+    value,
+    className = '',
+    animate = true,
+    label,
+    tone = 'point',
+    delay = 0,
+}: ProgressBarProps) {
     const reduceMotion = useReducedMotion()
     const ratio = Math.max(0, Math.min(1, value))
     const pct = ratio * 100
@@ -43,7 +56,7 @@ export function ProgressBar({ value, className = '', animate = true, label, tone
                 className={`h-full rounded-full ${fillClass}`}
                 initial={shouldAnimate ? { width: 0 } : false}
                 animate={{ width: `${pct}%` }}
-                transition={shouldAnimate ? { duration: 0.8, ease: 'easeOut' } : { duration: 0 }}
+                transition={shouldAnimate ? { duration: 0.8, ease: 'easeOut', delay } : { duration: 0 }}
             />
         </div>
     )

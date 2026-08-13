@@ -79,7 +79,19 @@
     --surface-card: var(--white);
     --surface-card-locked: var(--neutral-100);
     --surface-raised: var(--white);
-    --surface-accent: var(--watermelon-500);
+    /**
+     * 옅은 강조 면 — 안내 상자, 목록의 hover·선택 줄, 작은 칩.
+     *
+     * **`watermelon-500`(주 액션 핑크)을 가리키고 있었다.** 이름은 "면"인데 값이
+     * 버튼 색이라, 이 위에 강조로 얹은 `content-link`(#C04358)가 **1.82:1**로
+     * 사실상 안 보였다 — AI 분석 안내의 "재분석 기회 3번", "검토 후" 같은
+     * 핵심 낱말이 전부 그 강조였다. 본문(`content-secondary` 5.21:1)만 겨우 읽히고
+     * 정작 봐야 할 부분이 사라지는 상태였다.
+     *
+     * 쓰이는 11곳이 전부 "옅은 바탕"을 기대한다(안내 상자 4 · hover/선택 줄 5 · 칩 2).
+     * 옅은 톤으로 되돌리면 그 자리에서 링크 4.54:1 · 본문 12.99:1이 된다
+     */
+    --surface-accent: var(--watermelon-50);
 
     /* --- 1.2 Semantic: Text --- */
     --text-primary: var(--neutral-900);

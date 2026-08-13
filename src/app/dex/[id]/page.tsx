@@ -6,6 +6,7 @@ import { DexDetail } from '@/features/dex/DexDetail'
 import type { CategoryFilter } from '@/features/dex/useDexFilter'
 import { fetchMyBasicDexDetail } from '@/features/dex/api'
 import { useDexState } from '@/shared/store/AppStateProvider'
+import { goBackOr } from '@/shared/lib/backNav'
 import { getTabHref, ROUTES } from '@/shared/lib/routes'
 import { useAppState } from '@/shared/store/AppStateProvider'
 import { CATEGORY_META, DexEntry } from '@/shared/data/dex'
@@ -72,7 +73,7 @@ export default function DexDetailPage() {
             entries={entries}
             collectedEntries={collectedEntries}
             activeCategory={activeCategory}
-            onBack={() => router.push(ROUTES.basicDex(activeCategory))}
+            onBack={() => goBackOr(router, ROUTES.basicDex(activeCategory))}
             onRegister={() => {
                 startRegistration('basic')
                 setSelectedFoodId(entry.id)

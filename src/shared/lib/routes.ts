@@ -53,6 +53,12 @@ export const ROUTES = {
     admin: '/admin',
 
     register: '/register',
+    /**
+     * 등록을 시작한 자리를 들고 간다. **←로 나올 때 그 자리로 돌아가기 위해서다.**
+     * 없으면 베이짓 카테고리 목록으로 떨어져, 그리드를 보다 등록을 누른 사람이
+     * 목록 맨 처음으로 튕긴다 (`useRegistrationExit`)
+     */
+    registerFrom: (from: string) => `/register?from=${encodeURIComponent(from)}`,
     registerWithFood: (foodId: number, from?: string) =>
         from ? `/register?foodId=${foodId}&from=${encodeURIComponent(from)}` : `/register?foodId=${foodId}`,
     registerAnalyze: '/register/analyze',

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useState } from 'react'
 import { ArrowLeftIcon, UserPlusIcon, UserCheckIcon, XIcon, CheckIcon, UtensilsIcon } from 'lucide-react'
@@ -18,7 +18,7 @@ import {
 } from '@/features/friend/api'
 import type { ChallengeSummary, MyChallengeRelation } from '@/features/challenge/api'
 
-const TABS = ['기본도감', '챌린짓도감'] as const
+const TABS = ['베이짓', '챌린짓'] as const
 const SUBTABS = ['개설한', '참여 중', '완료한'] as const
 const RELATION: Record<(typeof SUBTABS)[number], MyChallengeRelation> = {
     개설한: 'CREATED',
@@ -35,7 +35,7 @@ interface Props {
 
 export function UserProfile({ userId, onBack, onTab }: Props) {
     const [profile, setProfile] = useState<PublicProfile | null>(null)
-    const [tab, setTab] = useState<(typeof TABS)[number]>('기본도감')
+    const [tab, setTab] = useState<(typeof TABS)[number]>('베이짓')
     const [subtab, setSubtab] = useState<(typeof SUBTABS)[number]>('참여 중')
     const [basicDex, setBasicDex] = useState<UserBasicDexItem[]>([])
     const [challenges, setChallenges] = useState<ChallengeSummary[]>([])
@@ -49,13 +49,13 @@ export function UserProfile({ userId, onBack, onTab }: Props) {
         reload()
     }, [userId])
     useEffect(() => {
-        if (tab === '기본도감')
+        if (tab === '베이짓')
             fetchUserBasicDex(userId)
                 .then(setBasicDex)
                 .catch(() => setBasicDex([]))
     }, [tab, userId])
     useEffect(() => {
-        if (tab === '챌린짓도감')
+        if (tab === '챌린짓')
             fetchUserChallenges(userId, RELATION[subtab])
                 .then(setChallenges)
                 .catch(() => setChallenges([]))
@@ -116,7 +116,7 @@ export function UserProfile({ userId, onBack, onTab }: Props) {
                         onChange={(v) => setTab(v as (typeof TABS)[number])}
                     />
                 </div>
-                {tab === '기본도감' && (
+                {tab === '베이짓' && (
                     <div className="grid grid-cols-[repeat(auto-fill,minmax(104px,1fr))] gap-3 px-5 py-5">
                         {basicDex
                             .filter((d) => d.unlocked)
@@ -150,7 +150,7 @@ export function UserProfile({ userId, onBack, onTab }: Props) {
                         )}
                     </div>
                 )}
-                {tab === '챌린짓도감' && (
+                {tab === '챌린짓' && (
                     <>
                         <div className="mt-3 px-5">
                             <TabBar

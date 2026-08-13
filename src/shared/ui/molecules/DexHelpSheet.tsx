@@ -11,7 +11,7 @@ interface Props {
 
 const helpCopy: Record<HelpKind, { title: string; items: Array<{ icon: React.ReactNode; text: string }> }> = {
     basic: {
-        title: '기본 도감 사용법',
+        title: '베이짓 사용법',
         items: [
             {
                 icon: <SparklesIcon size={17} aria-hidden />,
@@ -28,7 +28,7 @@ const helpCopy: Record<HelpKind, { title: string; items: Array<{ icon: React.Rea
         ],
     },
     made: {
-        title: '제작 도감 사용법',
+        title: '로그잇 사용법',
         items: [
             {
                 icon: <UsersIcon size={17} aria-hidden />,

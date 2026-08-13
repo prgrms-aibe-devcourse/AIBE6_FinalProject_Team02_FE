@@ -60,8 +60,8 @@ export const BADGE_GROUP_ORDER: BadgeGroup[] = ['CHALLENGE', 'MADE_DEX', 'SPOON'
 /** 섹션 제목 */
 export const BADGE_GROUP_LABEL: Record<BadgeGroup, string> = {
     CHALLENGE: '챌린짓',
-    MADE_DEX: '제작 도감',
-    SPOON: '기본 도감 수집률',
-    CATEGORY: '기본 도감 카테고리',
+    MADE_DEX: '로그잇',
+    SPOON: '베이짓 수집률',
+    CATEGORY: '베이짓 카테고리',
     ETC: '기타',
 }

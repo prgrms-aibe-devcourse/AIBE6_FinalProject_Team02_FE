@@ -4,6 +4,7 @@ import { DexCategoryList } from '@/features/dex/DexCategoryList'
 import { DexGrid } from '@/features/dex/DexGrid'
 import type { CategoryFilter } from '@/features/dex/useDexFilter'
 import { CATEGORY_META } from '@/shared/data/dex'
+import { pushInApp } from '@/shared/lib/backNav'
 import { getTabHref, rememberBasicDexRoute, ROUTES } from '@/shared/lib/routes'
 import { useAppState, useDexState } from '@/shared/store/AppStateProvider'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
@@ -30,9 +31,11 @@ function BasicDexContent() {
         rememberBasicDexRoute(query ? `${pathname}?${query}` : pathname)
     }, [pathname, searchParams])
 
+    /** 지금 보고 있는 주소를 그대로 들고 간다 — 카테고리·검색 상태까지 그 자리로 돌아온다 */
     const openRegister = () => {
         startRegistration('basic')
-        router.push(ROUTES.register)
+        const query = searchParams.toString()
+        pushInApp(router, ROUTES.registerFrom(query ? `${pathname}?${query}` : pathname))
     }
 
     if (entriesLoading) {
@@ -64,7 +67,7 @@ function BasicDexContent() {
             onCategoryChange={(selectedCategory) => {
                 router.replace(ROUTES.basicDex(selectedCategory))
             }}
-            onOpenEntry={(id, selectedCategory) => router.push(ROUTES.dexDetail(id, selectedCategory))}
+            onOpenEntry={(id, selectedCategory) => pushInApp(router, ROUTES.dexDetail(id, selectedCategory))}
             onRegister={openRegister}
             onTab={(tab) => router.push(getTabHref(tab))}
         />

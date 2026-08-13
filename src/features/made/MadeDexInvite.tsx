@@ -102,7 +102,9 @@ export function MadeDexInvite({
                 <button onClick={onBack} aria-label="뒤로가기">
                     <ArrowLeftIcon size={22} />
                 </button>
-                <span className="font-display text-lg text-neutral-900">참여자 관리</span>
+                {/* 이 화면은 코드 발급과 참여자 관리를 함께 한다. 제목이 절반만 말하면
+                    "초대 코드는 어디 있지"가 된다 — 도감 정보의 메뉴 이름과 맞춰 둔다 */}
+                <span className="font-display text-lg text-neutral-900">초대 코드 · 참여자 관리</span>
             </header>
 
             <main className="no-scrollbar flex-1 overflow-y-auto px-5">

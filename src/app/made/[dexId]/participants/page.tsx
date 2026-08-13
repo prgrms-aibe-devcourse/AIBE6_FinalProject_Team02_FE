@@ -15,6 +15,7 @@ import { MADE_DEX_MAX_MEMBERS, parseMadeDexId } from '@/features/made/types'
 import type { MadeDexInvite as Invite, MadeDexMember, MadeDexMembers } from '@/features/made/types'
 import { isNotOwner, madeErrorMessage } from '@/features/made/errors'
 import { copyToClipboard } from '@/shared/lib/clipboard'
+import { goBackOr } from '@/shared/lib/backNav'
 import { ROUTES } from '@/shared/lib/routes'
 
 function messageOf(failure: unknown): string {
@@ -175,7 +176,7 @@ export default function MadeDexParticipantsPage() {
             membersFailed={membersFailed}
             memberBusy={memberBusy}
             memberError={memberError}
-            onBack={() => router.push(ROUTES.madeInfo(dexId))}
+            onBack={() => goBackOr(router, ROUTES.madeInfo(dexId))}
             onIssue={() => void issue()}
             onRetry={() => void load(dexId)}
             onCopy={copyToClipboard}
