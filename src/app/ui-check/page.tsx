@@ -42,7 +42,7 @@ import {
 const TEXT_ROLES = [
     ['display', '해금! 삼겹살'],
     ['screenTitle', '나의 음식 도감'],
-    ['sectionTitle', '이번 주 챌린지'],
+    ['sectionTitle', '이번 주 챌린짓'],
     ['body', '오늘 먹은 음식을 기록하면 도감이 채워져요.'],
     ['bodyStrong', '본문 중 강조하고 싶은 문장'],
     ['secondary', '사진은 최대 5장까지 올릴 수 있어요'],
@@ -249,11 +249,11 @@ export default function UiCheckPage() {
                     <Text variant="sectionTitle">SearchBar · TabBar</Text>
                     <SearchBar label="음식 검색" value={search} onChange={setSearch} placeholder="음식 이름" />
                     <TabBar
-                        label="챌린지 구분"
+                        label="챌린짓 구분"
                         value={segment}
                         onChange={setSegment}
                         items={[
-                            { id: 'mine', label: '내 챌린지' },
+                            { id: 'mine', label: '내 챌린짓' },
                             { id: 'explore', label: '탐색' },
                         ]}
                     />
@@ -304,7 +304,7 @@ export default function UiCheckPage() {
             )}
 
             {dialog === 'alert' && (
-                <Dialog title="개설 실패" message="같은 이름의 챌린지가 이미 있어요." onClose={() => setDialog(null)} />
+                <Dialog title="개설 실패" message="같은 이름의 챌린짓이 이미 있어요." onClose={() => setDialog(null)} />
             )}
             {dialog === 'confirm' && (
                 <Dialog

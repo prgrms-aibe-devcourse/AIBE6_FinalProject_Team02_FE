@@ -60,6 +60,12 @@ interface AppStore {
         targets: ChallengeTarget[]
         periodType: 'PERMANENT' | 'LIMITED'
         endsAt: string
+        /**
+         * 개설 마법사가 머물던 단계. 뱃지 커스텀 화면(/challenge/new/badge)에 갔다가
+         * **저장하지 않고 뒤로 와도** 보상 단계로 돌아오게 하려고 둔다.
+         * 예전에는 customBadge가 있는지로 추측해서, 취소하면 1단계로 튕겼다
+         */
+        step: number
     }
     setChallengeDraft: (draft: {
         title: string
@@ -67,6 +73,12 @@ interface AppStore {
         targets: ChallengeTarget[]
         periodType: 'PERMANENT' | 'LIMITED'
         endsAt: string
+        /**
+         * 개설 마법사가 머물던 단계. 뱃지 커스텀 화면(/challenge/new/badge)에 갔다가
+         * **저장하지 않고 뒤로 와도** 보상 단계로 돌아오게 하려고 둔다.
+         * 예전에는 customBadge가 있는지로 추측해서, 취소하면 1단계로 튕겼다
+         */
+        step: number
     }) => void
     resetChallengeDraft: () => void
 
@@ -137,7 +149,13 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         targets: ChallengeTarget[]
         periodType: 'PERMANENT' | 'LIMITED'
         endsAt: string
-    }>({ title: '', description: '', targets: [], periodType: 'PERMANENT', endsAt: '' })
+        /**
+         * 개설 마법사가 머물던 단계. 뱃지 커스텀 화면(/challenge/new/badge)에 갔다가
+         * **저장하지 않고 뒤로 와도** 보상 단계로 돌아오게 하려고 둔다.
+         * 예전에는 customBadge가 있는지로 추측해서, 취소하면 1단계로 튕겼다
+         */
+        step: number
+    }>({ title: '', description: '', targets: [], periodType: 'PERMANENT', endsAt: '', step: 0 })
     const resetChallengeDraft = useCallback(
         () =>
             setChallengeDraft({
@@ -146,6 +164,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
                 targets: [],
                 periodType: 'PERMANENT',
                 endsAt: '',
+                step: 0,
             }),
         [],
     )

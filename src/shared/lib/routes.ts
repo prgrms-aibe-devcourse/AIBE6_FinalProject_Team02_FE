@@ -65,7 +65,7 @@ export const ROUTES = {
 export const TAB_HREF: Record<NavTab, string> = {
     기본: ROUTES.basicDex(),
     제작: ROUTES.made,
-    챌린지: ROUTES.challenge,
+    챌린짓: ROUTES.challenge,
     마이: ROUTES.my,
 }
 

@@ -18,7 +18,7 @@ import {
 } from '@/features/friend/api'
 import type { ChallengeSummary, MyChallengeRelation } from '@/features/challenge/api'
 
-const TABS = ['기본도감', '챌린지도감'] as const
+const TABS = ['기본도감', '챌린짓도감'] as const
 const SUBTABS = ['개설한', '참여 중', '완료한'] as const
 const RELATION: Record<(typeof SUBTABS)[number], MyChallengeRelation> = {
     개설한: 'CREATED',
@@ -55,7 +55,7 @@ export function UserProfile({ userId, onBack, onTab }: Props) {
                 .catch(() => setBasicDex([]))
     }, [tab, userId])
     useEffect(() => {
-        if (tab === '챌린지도감')
+        if (tab === '챌린짓도감')
             fetchUserChallenges(userId, RELATION[subtab])
                 .then(setChallenges)
                 .catch(() => setChallenges([]))
@@ -150,11 +150,11 @@ export function UserProfile({ userId, onBack, onTab }: Props) {
                         )}
                     </div>
                 )}
-                {tab === '챌린지도감' && (
+                {tab === '챌린짓도감' && (
                     <>
                         <div className="mt-3 px-5">
                             <TabBar
-                                label="챌린지 상태"
+                                label="챌린짓 상태"
                                 variant="pill"
                                 items={SUBTABS.map((t) => ({ id: t, label: t }))}
                                 value={subtab}
@@ -174,7 +174,7 @@ export function UserProfile({ userId, onBack, onTab }: Props) {
                                 </article>
                             ))}
                             {challenges.length === 0 && (
-                                <p className="py-10 text-center text-sm text-neutral-800">해당 챌린지가 없어요</p>
+                                <p className="py-10 text-center text-sm text-neutral-800">해당 챌린짓이 없어요</p>
                             )}
                         </div>
                     </>

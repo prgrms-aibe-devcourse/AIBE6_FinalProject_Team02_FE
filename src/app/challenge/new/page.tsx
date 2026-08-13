@@ -2,6 +2,7 @@
 
 import { ChallengeCreate } from '@/features/challenge/ChallengeCreate'
 import { createChallenge, createRewardBadge, fetchCreationTickets } from '@/features/challenge/api'
+import { goBackOr, pushInApp } from '@/shared/lib/backNav'
 import { ROUTES } from '@/shared/lib/routes'
 import { uploadImageToS3 } from '@/shared/lib/upload'
 import { useAppState } from '@/shared/store/AppStateProvider'
@@ -43,7 +44,9 @@ export default function ChallengeCreatePage() {
                 onBack={() => {
                     setCustomBadge(null)
                     resetChallengeDraft()
-                    router.push(ROUTES.challenge)
+                    // 왔던 목록의 그 자리로. 개설 완료 후 '확인'도 이 경로다 —
+                    // push였을 때는 목록이 하나 더 쌓여 브라우저 뒤로가기가 다 쓴 위저드로 되돌아갔다
+                    goBackOr(router, ROUTES.challenge)
                 }}
                 onCreate={async (challenge) => {
                     try {
@@ -101,10 +104,12 @@ export default function ChallengeCreatePage() {
                         })
                         // 성공 → 위저드가 완료 화면을 보여주고, '확인'(onBack)에서 초기화·목록 이동
                     } catch (e) {
-                        setAlertMessage(e instanceof Error ? e.message : '챌린지 개설에 실패했어요')
+                        setAlertMessage(e instanceof Error ? e.message : '챌린짓 개설에 실패했어요')
                     }
                 }}
-                onCustomBadge={() => router.push(ROUTES.challengeNewBadge)}
+                onCustomBadge={() => {
+                    pushInApp(router, ROUTES.challengeNewBadge)
+                }}
                 onUsePreset={() => setCustomBadge(null)}
             />
             {alertMessage && <Dialog title="개설 실패" message={alertMessage} onClose={() => setAlertMessage(null)} />}

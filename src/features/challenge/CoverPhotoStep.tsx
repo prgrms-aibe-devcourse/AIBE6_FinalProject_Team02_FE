@@ -112,7 +112,7 @@ export function CoverPhotoStep({ preview, onApply, onClear }: Props) {
     return (
         <div>
             <p className="text-sm font-bold text-watermelon-500">대표 사진</p>
-            <h1 className="mt-1 font-display text-2xl leading-snug text-neutral-900">챌린지 대표 사진을 골라요</h1>
+            <h1 className="mt-1 font-display text-2xl leading-snug text-neutral-900">챌린짓 대표 사진을 골라요</h1>
             <p className="mt-2 text-sm text-neutral-400">
                 선택 사항이에요. 드래그로 위치, 슬라이더로 확대를 조절할 수 있어요.
             </p>
@@ -171,7 +171,7 @@ export function CoverPhotoStep({ preview, onApply, onClear }: Props) {
                             <button
                                 type="button"
                                 onClick={apply}
-                                className="flex-1 rounded-full bg-watermelon-500 py-2.5 text-sm font-bold text-white"
+                                className="flex-1 rounded-full bg-watermelon-500 py-2.5 text-sm font-bold text-content-on-action"
                             >
                                 이 사진 사용
                             </button>

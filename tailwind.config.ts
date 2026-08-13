@@ -97,6 +97,13 @@ const config: Config = {
                     error: token('red-500'),
                     success: token('rind-text'),
                 },
+                /* §1.7 메달 색 — 순위 단상의 1·2·3위에만 쓴다.
+                   글자는 text-content-primary 하나로 충분하다 (금 10.38 · 은 11.13 · 동 6.25) */
+                medal: {
+                    gold: token('medal-gold'),
+                    silver: token('medal-silver'),
+                    bronze: token('medal-bronze'),
+                },
                 /* §1.6 사람 색 — 사진 없는 아바타를 구분한다.
                    글자는 항상 text-content-primary 하나로 충분하다 (7색 전부 12.2:1 이상) */
                 person: {
