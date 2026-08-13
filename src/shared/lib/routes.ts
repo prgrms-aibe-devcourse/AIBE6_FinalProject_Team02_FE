@@ -12,7 +12,6 @@ export const ROUTES = {
      * 첫 화면을 바꿀 때 여기저기 고치지 않으려고 한 겹 둔 것
      */
     home: '/',
-    onboarding: '/onboarding',
     //로그인 경로
     login: '/login',
     oauthCallback: '/oauth/callback',

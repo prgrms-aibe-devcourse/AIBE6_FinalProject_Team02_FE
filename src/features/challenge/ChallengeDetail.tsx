@@ -248,35 +248,22 @@ export function ChallengeDetail({
                                     const unlocked = isUnlocked(target.id)
                                     // 여는 주소는 하나다. 해금됨 → 내 기록 / 미해금 → 미리보기는 데이터가 가른다
                                     return (
-                                        // FoodCard가 <button>(잠금 시 disabled)이라 클릭을 먹음 →
-                                        // 카드는 pointer-events-none로 통과시키고, 바깥 div가 클릭을 받는다
-                                        <div
+                                        // FoodCard가 미해금이어도 눌리게 바뀌어(FoodCard 주석),
+                                        // 클릭을 받으려고 덮어 두던 div 두 겹이 필요 없어졌다
+                                        <FoodCard
                                             key={target.id}
-                                            role="button"
-                                            tabIndex={0}
-                                            onClick={() => openFood(target)}
-                                            aria-label={
-                                                unlocked ? `${target.name} 기록 보기` : `${target.name} 미리보기`
+                                            name={target.name}
+                                            store={target.storeName ?? target.placeName ?? undefined}
+                                            illustrationUrl={
+                                                target.myImageUrl || target.imageUrl || '/images/default_food.png'
                                             }
-                                            className="cursor-pointer"
-                                        >
-                                            <div className="pointer-events-none">
-                                                <FoodCard
-                                                    name={target.name}
-                                                    store={target.storeName ?? target.placeName ?? undefined}
-                                                    illustrationUrl={
-                                                        target.myImageUrl ||
-                                                        target.imageUrl ||
-                                                        '/images/default_food.png'
-                                                    }
-                                                    state={unlocked ? 'unlocked' : 'locked'}
-                                                    accessibleName={
-                                                        unlocked ? `${target.name}, 인증 완료` : '미인증 목표 음식'
-                                                    }
-                                                    footer={<span aria-hidden />}
-                                                />
-                                            </div>
-                                        </div>
+                                            state={unlocked ? 'unlocked' : 'locked'}
+                                            accessibleName={
+                                                unlocked ? `${target.name}, 인증 완료` : `${target.name}, 미인증 목표 음식`
+                                            }
+                                            onClick={() => openFood(target)}
+                                            footer={<span aria-hidden />}
+                                        />
                                     )
                                 })}
                             </div>

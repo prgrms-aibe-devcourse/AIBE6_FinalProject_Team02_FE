@@ -14,6 +14,7 @@ import {
 } from '@/shared/ui'
 import { ArrowLeftIcon, ChevronDownIcon, PlusIcon } from 'lucide-react'
 import { useState } from 'react'
+import { DexLockedSheet } from './DexLockedSheet'
 import type { CategoryFilter } from './useDexFilter'
 import { useDexFilter } from './useDexFilter'
 interface DexGridProps {
@@ -22,7 +23,16 @@ interface DexGridProps {
     initialCategory?: CategoryFilter
     onBackToList: () => void
     onCategoryChange?: (category: CategoryFilter) => void
+    /** 해금된 칸을 눌렀을 때. 미해금은 시트로 뜨므로 여기 오지 않는다 */
     onOpenEntry: (id: number, category: CategoryFilter) => void
+    /**
+     * 미해금 시트를 열 칸. **URL이 들고 있다**(`?food=`) — 페이지가 정해서 내려준다.
+     * 시트를 여닫는 것이 히스토리 항목이라 뒤로가기로 닫힌다 (backNav.ts 주석)
+     */
+    lockedEntry: DexEntry | null
+    onOpenLocked: (id: number, category: CategoryFilter) => void
+    onCloseLocked: () => void
+    onRegisterFood: (entry: DexEntry) => void
     onRegister: () => void
     onTab: (tab: NavTab) => void
 }
@@ -67,6 +77,10 @@ export function DexGrid({
     onBackToList,
     onCategoryChange,
     onOpenEntry,
+    lockedEntry,
+    onOpenLocked,
+    onCloseLocked,
+    onRegisterFood,
     onRegister,
     onTab,
 }: DexGridProps) {
@@ -285,7 +299,13 @@ export function DexGrid({
                                         ]
                                             .filter(Boolean)
                                             .join(', ')}
-                                        onClick={() => onOpenEntry(entry.id, activeCategory)}
+                                        // 무엇이 열릴지는 **칸의 상태가 정한다** — 해금은 내 기록 상세,
+                                        // 미해금은 등록으로 이어지는 시트. 챌린짓 목표 격자와 같은 규칙이다
+                                        onClick={() =>
+                                            unlocked
+                                                ? onOpenEntry(entry.id, activeCategory)
+                                                : onOpenLocked(entry.id, activeCategory)
+                                        }
                                         corner={<CornerStickers isNew={isNew} awaitingReview={isAwaitingReview} />}
                                         footer={
                                             unlocked ? (
@@ -306,6 +326,13 @@ export function DexGrid({
 
             <BottomNav active="기본" onTab={onTab} />
             {helpOpen && <DexHelpSheet kind="basic" onClose={() => setHelpOpen(false)} />}
+            {lockedEntry && (
+                <DexLockedSheet
+                    entry={lockedEntry}
+                    onClose={onCloseLocked}
+                    onRegister={() => onRegisterFood(lockedEntry)}
+                />
+            )}
         </div>
     )
 }

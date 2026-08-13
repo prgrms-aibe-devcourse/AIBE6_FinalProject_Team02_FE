@@ -89,7 +89,7 @@ export function UserProfile({ userId, onBack, onTab }: Props) {
                                 <span>{user.nickname.charAt(0) || '?'}</span>
                             )}
                         </span>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1">
                             {user.equippedBadge && (
                                 <ServerBadge
                                     code={user.equippedBadge.code}
