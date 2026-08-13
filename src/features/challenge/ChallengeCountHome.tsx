@@ -1,6 +1,17 @@
 'use client'
 
-import { Badge, BottomNav, DexHelpSheet, HelpIcon, LoadingView, NavTab, ProgressBar, Skeleton, TabBar } from '@/shared/ui'
+import {
+    Badge,
+    BottomNav,
+    DexHelpSheet,
+    HelpIcon,
+    LoadingView,
+    NavTab,
+    ProgressBar,
+    SearchBar,
+    Skeleton,
+    TabBar,
+} from '@/shared/ui'
 import { motion, useReducedMotion } from 'framer-motion'
 import { CrownIcon, MedalIcon, PlusIcon, TrophyIcon } from 'lucide-react'
 import { useState } from 'react'
@@ -173,24 +184,18 @@ export function ChallengeCountHome({
                     </>
                 ) : (
                     <>
-                        <div className="flex items-center justify-between">
-                            <p className="text-sm font-bold text-neutral-900">전체 챌린짓</p>
-                            <TabBar
-                                label="진행 상태"
-                                variant="pill"
-                                items={STATUS_TABS}
-                                value={exploreStatus}
-                                onChange={onExploreStatusChange}
-                            />
-                        </div>
-                        {ended ? (
-                            <p className="mt-3 text-xs text-neutral-400">최근 완료순</p>
-                        ) : (
-                        <SearchBox value={exploreQuery} onChange={onExploreQueryChange} />
+                        {/* 공통 SearchBar를 쓴다 — 이 파일에 있던 SearchBox는 같은 것을 다시 그린 것이었다 */}
+                        <SearchBar
+                            label="챌린짓 이름 검색"
+                            placeholder="챌린짓 이름으로 검색해보세요"
+                            value={exploreQuery}
+                            onChange={onExploreQueryChange}
+                        />
+                        {/* 검색 중에는 상태·정렬·순위를 감춘다 — 검색 결과에는 랭킹 개념이 없다 */}
                         {!searching && (
                             <>
                                 <div className="mt-3 flex items-center justify-between">
-                                    <p className="text-sm font-bold text-neutral-900">전체 챌린지</p>
+                                    <p className="text-sm font-bold text-neutral-900">전체 챌린짓</p>
                                     <TabBar
                                         label="진행 상태"
                                         variant="pill"
@@ -254,13 +259,13 @@ export function ChallengeCountHome({
                                 </div>
                             ) : (
                                 <div className="rounded-2xl bg-white p-6 text-center shadow-soft">
+                                    {/* 세 경우가 서로 다른 말을 한다 — 머지 때 두 줄이 겹쳐 둘 다 찍히고 있었다 */}
                                     <p className="text-sm font-bold text-neutral-900">
-                                        {ended ? '종료된 챌린짓이 없어요' : '아직 진행 중인 챌린짓이 없어요'}
                                         {searching
                                             ? '검색 결과가 없어요'
                                             : ended
-                                              ? '종료된 챌린지가 없어요'
-                                              : '아직 진행 중인 챌린지가 없어요'}
+                                              ? '종료된 챌린짓이 없어요'
+                                              : '아직 진행 중인 챌린짓이 없어요'}
                                     </p>
                                 </div>
                             )}
@@ -296,32 +301,6 @@ function ExploreRowsSkeleton() {
     )
 }
 
-/** 챌린지 이름 검색 입력 (입력하면 무한스크롤 검색으로 전환) */
-function SearchBox({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-    return (
-        <div className="flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-4 shadow-soft">
-            <SearchIcon size={16} className="shrink-0 text-neutral-400" aria-hidden />
-            <input
-                type="search"
-                value={value}
-                onChange={(e) => onChange(e.target.value)}
-                placeholder="챌린지 이름 검색"
-                aria-label="챌린지 이름 검색"
-                className="min-h-touch flex-1 bg-transparent text-sm text-neutral-900 outline-none placeholder:text-neutral-400"
-            />
-            {value && (
-                <button
-                    type="button"
-                    onClick={() => onChange('')}
-                    aria-label="검색어 지우기"
-                    className="shrink-0 text-neutral-400"
-                >
-                    <XIcon size={16} />
-                </button>
-            )}
-        </div>
-    )
-}
 /** 챌린지 대표 사진 썸네일(없으면 트로피 아이콘) */
 function CoverThumb({ url, size = 44 }: { url?: string | null; size?: number }) {
     if (url) {

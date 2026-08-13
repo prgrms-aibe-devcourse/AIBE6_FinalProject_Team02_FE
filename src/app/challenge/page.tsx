@@ -123,7 +123,6 @@ function ChallengeHome() {
              * 비워 두면 실제 순위가 도착하는 순간이 곧 등장 시점이 된다
              */
             if (!append) setExploreItems([])
-            fetchChallenges(status, sort, page, PAGE_SIZE)
             const request = query.trim()
                 ? searchChallenges(query.trim(), page, PAGE_SIZE) // 검색어 있으면 검색 API
                 : fetchChallenges(status, sort, page, PAGE_SIZE) // 없으면 기존 탐색

@@ -259,7 +259,9 @@ export function ChallengeDetail({
                                             }
                                             state={unlocked ? 'unlocked' : 'locked'}
                                             accessibleName={
-                                                unlocked ? `${target.name}, 인증 완료` : `${target.name}, 미인증 목표 음식`
+                                                unlocked
+                                                    ? `${target.name}, 인증 완료`
+                                                    : `${target.name}, 미인증 목표 음식`
                                             }
                                             onClick={() => openFood(target)}
                                             footer={<span aria-hidden />}

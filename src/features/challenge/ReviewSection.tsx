@@ -275,10 +275,7 @@ export function ReviewSection({
                                             // pushInApp — 그냥 push하면 도착한 프로필 화면의 ←가
                                             // 되돌아갈 자리를 몰라 목록을 새로 push한다(히스토리가 는다)
                                             onClick={() =>
-                                                pushInApp(
-                                                    router,
-                                                    r.mine ? ROUTES.my : ROUTES.userProfile(r.reviewerId),
-                                                )
+                                                pushInApp(router, r.mine ? ROUTES.my : ROUTES.userProfile(r.reviewerId))
                                             }
                                         />
                                         <span className="flex min-w-0 items-center gap-1">
