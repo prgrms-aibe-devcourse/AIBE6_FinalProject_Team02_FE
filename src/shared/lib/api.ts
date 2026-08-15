@@ -37,13 +37,25 @@ export class ApiError extends Error {
     }
 }
 
-/** refresh 재발급 요청. 성공하면 새 쿠키가 자동으로 세팅된다. */
-async function reissue(): Promise<boolean> {
-    const res = await fetch(`${API_BASE}/api/v1/auth/reissue`, {
-        method: 'POST',
-        credentials: 'include',
-    })
-    return res.ok
+/**
+ * refresh 재발급 요청 (single-flight).
+ * access 만료 시 여러 요청이 동시에 401을 받아도 재발급은 한 번만 나가도록
+ * 진행 중인 재발급 Promise를 공유한다. (동시 재발급 → refresh 회전 경쟁 → 세션 드롭 방지)
+ */
+let reissueInFlight: Promise<boolean> | null = null
+function reissue(): Promise<boolean> {
+    if (!reissueInFlight) {
+        reissueInFlight = fetch(`${API_BASE}/api/v1/auth/reissue`, {
+            method: 'POST',
+            credentials: 'include',
+        })
+            .then((res) => res.ok)
+            .catch(() => false)
+            .finally(() => {
+                reissueInFlight = null
+            })
+    }
+    return reissueInFlight
 }
 
 /**
@@ -69,7 +81,10 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
         const refreshed = await reissue()
         if (refreshed) res = await doFetch()
         // 재발급 실패했거나, 재시도했는데도 401이면 인증 만료로 처리
-        if (!refreshed || res.status === 401) throw new UnauthorizedError()
+        if (!refreshed || res.status === 401) {
+            try { console.warn('[auth] involuntary_logout', { path }) } catch {}
+            throw new UnauthorizedError()
+        }
     }
 
     const body = (await res.json()) as ApiResponse<T>
