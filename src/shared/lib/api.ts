@@ -58,18 +58,41 @@ function reissue(): Promise<boolean> {
     return reissueInFlight
 }
 
+// 쿠키 파싱 유틸리티 함수
+function getCsrfTokenFromCookie(): string | null {
+    if (typeof document === 'undefined') return null; // SSR(서버 사이드) 방어
+    
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; XSRF-TOKEN=`);
+    if (parts.length === 2) {
+        return decodeURIComponent(parts.pop()?.split(';').shift() || '');
+    }
+    return null;
+}
+
 /**
  * 공용 요청 함수.
- * @param path  "/api/v1/..." 형태의 경로
- * @param init  fetch 옵션 (method, body 등)
  */
 export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
+    
+    // GET 요청이 아닐 경우에만 CSRF 토큰을 헤더에 추가
+    const method = init.method?.toUpperCase() || 'GET';
+    const csrfHeaders: Record<string, string> = {};
+    
+    if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(method)) {
+        const csrfToken = getCsrfTokenFromCookie();
+        if (csrfToken) {
+            csrfHeaders['X-XSRF-TOKEN'] = csrfToken;
+        }
+    }
+
     const doFetch = () =>
         fetch(`${API_BASE}${path}`, {
             ...init,
-            credentials: 'include', // 쿠키 전송 필수
+            credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
+                ...csrfHeaders, // CSRF 헤더 병합
                 ...init.headers,
             },
         })
