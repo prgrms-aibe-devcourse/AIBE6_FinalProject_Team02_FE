@@ -63,7 +63,12 @@ function getCsrfTokenFromCookie(): string | null {
     if (typeof document === 'undefined') return null; // SSR(서버 사이드) 방어
     
     const value = `; ${document.cookie}`;
-    const parts = value.split(`; XSRF-TOKEN=`);
+    // 운영(HTTPS) 환경의 __Host- 쿠키를 먼저 찾고, 없으면 로컬(HTTP) 환경의 일반 쿠키를 찾는다.
+    let parts = value.split(`; __Host-XSRF-TOKEN=`);
+    if (parts.length !== 2) {
+        parts = value.split(`; XSRF-TOKEN=`);
+    }
+    
     if (parts.length === 2) {
         return decodeURIComponent(parts.pop()?.split(';').shift() || '');
     }
