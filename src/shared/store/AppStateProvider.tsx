@@ -107,16 +107,16 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     const userId = me?.id
 
     // 도감은 로그인 사용자만 조회한다(/me/basic). 비로그인은 AuthGate가 /login으로
-// 보내므로 여기서 요청 자체를 하지 않는다 — 공개 /basic 엔드포인트는 없다.
-const refreshEntries = useCallback(async () => {
-    if (!userId) return
-    try {
-        const basicEntries = await fetchMyBasicDexEntries()
-        if (basicEntries.length > 0) setEntries(basicEntries)
-    } catch {
-        // 실패하면 이전 목록을 그대로 유지한다.
-    }
-}, [userId])
+    // 보내므로 여기서 요청 자체를 하지 않는다 — 공개 /basic 엔드포인트는 없다.
+    const refreshEntries = useCallback(async () => {
+        if (!userId) return
+        try {
+            const basicEntries = await fetchMyBasicDexEntries()
+            if (basicEntries.length > 0) setEntries(basicEntries)
+        } catch {
+            // 실패하면 이전 목록을 그대로 유지한다.
+        }
+    }, [userId])
 
     // 로그인 여부가 확정된 뒤에만 최초 요청한다: 확정 전에 먼저 쐈다가 로그인
     // 상태가 뒤늦게 밝혀져 다시 쏘면 화면이 한 번 더 바뀌므로 그냥 기다린다.

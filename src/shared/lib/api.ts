@@ -60,34 +60,33 @@ function reissue(): Promise<boolean> {
 
 // 쿠키 파싱 유틸리티 함수
 function getCsrfTokenFromCookie(): string | null {
-    if (typeof document === 'undefined') return null; // SSR(서버 사이드) 방어
-    
-    const value = `; ${document.cookie}`;
+    if (typeof document === 'undefined') return null // SSR(서버 사이드) 방어
+
+    const value = `; ${document.cookie}`
     // 운영(HTTPS) 환경의 __Host- 쿠키를 먼저 찾고, 없으면 로컬(HTTP) 환경의 일반 쿠키를 찾는다.
-    let parts = value.split(`; __Host-XSRF-TOKEN=`);
+    let parts = value.split(`; __Host-XSRF-TOKEN=`)
     if (parts.length !== 2) {
-        parts = value.split(`; XSRF-TOKEN=`);
+        parts = value.split(`; XSRF-TOKEN=`)
     }
-    
+
     if (parts.length === 2) {
-        return decodeURIComponent(parts.pop()?.split(';').shift() || '');
+        return decodeURIComponent(parts.pop()?.split(';').shift() || '')
     }
-    return null;
+    return null
 }
 
 /**
  * 공용 요청 함수.
  */
 export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
-    
     // GET 요청이 아닐 경우에만 CSRF 토큰을 헤더에 추가
-    const method = init.method?.toUpperCase() || 'GET';
-    const csrfHeaders: Record<string, string> = {};
-    
+    const method = init.method?.toUpperCase() || 'GET'
+    const csrfHeaders: Record<string, string> = {}
+
     if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(method)) {
-        const csrfToken = getCsrfTokenFromCookie();
+        const csrfToken = getCsrfTokenFromCookie()
         if (csrfToken) {
-            csrfHeaders['X-XSRF-TOKEN'] = csrfToken;
+            csrfHeaders['X-XSRF-TOKEN'] = csrfToken
         }
     }
 
@@ -110,7 +109,9 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
         if (refreshed) res = await doFetch()
         // 재발급 실패했거나, 재시도했는데도 401이면 인증 만료로 처리
         if (!refreshed || res.status === 401) {
-            try { console.warn('[auth] involuntary_logout', { path }) } catch {}
+            try {
+                console.warn('[auth] involuntary_logout', { path })
+            } catch {}
             throw new UnauthorizedError()
         }
     }
