@@ -66,6 +66,60 @@ export function getMyBadges(): Promise<MyBadge[]> {
     return apiFetch<MyBadge[]>('/api/v1/my/badges')
 }
 
+/**
+ * GET /api/v1/users/me/reviews 항목 (BE `MyReviewResponseDTO`와 일치).
+ *
+ * 대상별 리뷰(`features/challenge/api.ts`의 `Review`)와 다른 타입이다 —
+ * 작성자 정보가 없고(언제나 나) **대상 정보가 있다.** 목록에서는 어느 챌린짓의
+ * 무엇에 남긴 리뷰인지가 먼저 보여야 하고, 그건 대상별 응답에 담겨 있지 않다
+ */
+export interface MyReview {
+    id: number
+    reviewType: 'FOOD' | 'CHALLENGE'
+    challengeId: number
+    challengeName: string
+    slotId: number | null // 챌린짓 리뷰면 null
+    foodName: string | null // 챌린짓 리뷰면 null
+    content: string | null // 별점만 남길 수도 있어 null 가능
+    rating: number | null // 1~5, 내용만 남기면 null
+    likeCount: number
+    createdAt: string // ISO
+    updatedAt: string // ISO
+}
+
+// GET /api/v1/users/me/reviews — 내가 쓴 리뷰(최신순). 삭제된 챌린짓 것은 서버가 걸러 준다
+export function getMyReviews(): Promise<MyReview[]> {
+    return apiFetch<MyReview[]>('/api/v1/users/me/reviews')
+}
+
+/**
+ * GET /api/v1/users/me/liked-reviews 항목 (BE `LikedReviewResponseDTO`와 일치).
+ *
+ * `MyReview`와 갈리는 곳 두 개 — **작성자가 남일 수 있어** 작성자 정보가 있고,
+ * **정렬 기준이 `likedAt`**(내가 누른 시각)이다. 오래전 리뷰를 오늘 좋아요하면 맨 위다
+ */
+export interface LikedReview {
+    id: number
+    reviewType: 'FOOD' | 'CHALLENGE'
+    challengeId: number
+    challengeName: string
+    slotId: number | null // 챌린짓 리뷰면 null
+    foodName: string | null // 챌린짓 리뷰면 null
+    reviewerId: number
+    reviewerNickname: string | null
+    reviewerProfileImageUrl: string | null
+    content: string | null
+    rating: number | null
+    likeCount: number
+    createdAt: string // 리뷰가 쓰인 시각
+    likedAt: string // 내가 좋아요한 시각 (목록 정렬 기준)
+}
+
+// GET /api/v1/users/me/liked-reviews — 좋아요한 리뷰(내가 누른 순). 챌린짓·음식 리뷰 모두
+export function getLikedReviews(): Promise<LikedReview[]> {
+    return apiFetch<LikedReview[]>('/api/v1/users/me/liked-reviews')
+}
+
 // PATCH /api/v1/my/badges/equip — 대표 뱃지 장착/해제 (badgeId=null이면 해제)
 export function equipBadge(badgeId: number | null): Promise<void> {
     return apiFetch<void>('/api/v1/my/badges/equip', {
