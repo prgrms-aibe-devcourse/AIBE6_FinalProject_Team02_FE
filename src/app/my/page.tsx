@@ -67,6 +67,8 @@ export default function MyPageRoute() {
                 onChangePhoto={() => pushInApp(router, ROUTES.myPhoto)}
                 onEditNickname={() => pushInApp(router, ROUTES.myNickname)}
                 onOpenBadges={() => pushInApp(router, ROUTES.myBadges)}
+                onOpenMyReviews={() => pushInApp(router, ROUTES.myReviews)}
+                onOpenLikedReviews={() => pushInApp(router, ROUTES.myLikedReviews)}
                 onOpenFriends={() => pushInApp(router, ROUTES.friends)}
                 onLogout={handleLogout}
                 onWithdraw={() => setConfirmOpen(true)}

@@ -25,6 +25,8 @@ interface Props {
     onChangePhoto: () => void
     onEditNickname: () => void
     onOpenBadges: () => void
+    onOpenMyReviews: () => void
+    onOpenLikedReviews: () => void
     onOpenFriends: () => void
     onLogout: () => void
     onWithdraw: () => void
@@ -54,6 +56,8 @@ export function MyPage({
     onChangePhoto,
     onEditNickname,
     onOpenBadges,
+    onOpenMyReviews,
+    onOpenLikedReviews,
     onOpenFriends,
     onLogout,
     onWithdraw,
@@ -128,9 +132,22 @@ export function MyPage({
                 </button>
 
                 <MenuGroup title="내 활동">
-                    <MenuItem icon={<StarIcon size={18} aria-hidden />} label="내가 쓴 리뷰" comingSoon />
+                    <MenuItem
+                        icon={<StarIcon size={18} aria-hidden />}
+                        label="내가 쓴 리뷰"
+                        onClick={onOpenMyReviews}
+                    />
                     <MenuItem icon={<MessageSquareIcon size={18} aria-hidden />} label="내가 쓴 댓글" comingSoon />
-                    <MenuItem icon={<HeartIcon size={18} aria-hidden />} label="좋아요한 글" comingSoon />
+                    {/*
+                     * 「좋아요한 글」이 아니라 「좋아요한 리뷰」다 — 지금 좋아요가 실제로 붙는
+                     * 곳은 챌린짓 리뷰뿐이고, 로그잇 기록 좋아요는 아직 목업이다. 이름을 넓게
+                     * 잡으면 로그잇 좋아요가 여기 없는 게 빠뜨린 것처럼 보인다
+                     */}
+                    <MenuItem
+                        icon={<HeartIcon size={18} aria-hidden />}
+                        label="좋아요한 리뷰"
+                        onClick={onOpenLikedReviews}
+                    />
                 </MenuGroup>
 
                 <MenuGroup title="소셜">
