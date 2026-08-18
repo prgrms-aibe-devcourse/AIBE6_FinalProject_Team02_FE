@@ -40,11 +40,19 @@ export const ROUTES = {
     challengeNew: '/challenge/new',
     challengeNewBadge: '/challenge/new/badge',
     challengeDetail: (id: string) => `/challenge/${id}`,
+    /**
+     * 리뷰가 달린 자리. 상세가 시트를 URL로 들고 있어서 그 자리를 바로 가리킬 수 있다 —
+     * 음식 리뷰는 그 음식 시트가, 챌린짓 리뷰는 리뷰 탭이 열린 채로 도착한다
+     */
+    challengeReviewTarget: (challengeId: number, slotId: number | null) =>
+        slotId === null ? `/challenge/${challengeId}?tab=review` : `/challenge/${challengeId}?food=${slotId}`,
 
     my: '/my',
     myNickname: '/my/nickname',
     myBadges: '/my/badges',
     myPhoto: '/my/photo',
+    myReviews: '/my/reviews',
+    myLikedReviews: '/my/liked-reviews',
 
     friends: '/friends',
     userProfile: (id: number | 'me') => `/users/${id}`,
