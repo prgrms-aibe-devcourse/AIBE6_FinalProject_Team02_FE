@@ -93,9 +93,7 @@ export function fetchUserBasicDex(id: number | 'me') {
             const category = normalizeCategory(item.category)
             return {
                 ...item,
-                illustrationUrl: category
-                    ? (getLocalDexIllustrationUrl({ name: item.name, category }) ?? null)
-                    : null,
+                illustrationUrl: category ? (getLocalDexIllustrationUrl({ name: item.name, category }) ?? null) : null,
             }
         }),
     )

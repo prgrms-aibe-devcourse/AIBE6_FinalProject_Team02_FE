@@ -36,7 +36,11 @@ for (const dir of readdirSync(ROOT).sort()) {
 
 const sameCount = entries.filter(([k, v]) => k === v).length
 const body = entries
-    .map(([key, real]) => (key === real ? `    ${JSON.stringify(key)},` : `    ${JSON.stringify(key)}, // 디스크: ${real.normalize('NFC')} (정규화 다름)`))
+    .map(([key, real]) =>
+        key === real
+            ? `    ${JSON.stringify(key)},`
+            : `    ${JSON.stringify(key)}, // 디스크: ${real.normalize('NFC')} (정규화 다름)`,
+    )
     .join('\n')
 
 /**

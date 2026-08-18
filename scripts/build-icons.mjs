@@ -160,7 +160,9 @@ async function fillBuffer(size, crop) {
 const box = await contentBox(SOURCE)
 const meta = await sharp(SOURCE).metadata()
 const ratio = (box.width / box.height).toFixed(3)
-console.log(`원본 ${meta.width}x${meta.height} · 내용 ${box.width}x${box.height} (좌 ${box.left} · 상 ${box.top}) · 가로세로비 ${ratio}`)
+console.log(
+    `원본 ${meta.width}x${meta.height} · 내용 ${box.width}x${box.height} (좌 ${box.left} · 상 ${box.top}) · 가로세로비 ${ratio}`,
+)
 if (meta.width < 512) {
     console.log(`  주의: 원본이 512보다 작아 icon-512는 확대본입니다. 더 큰 원본이 생기면 다시 돌려 주세요`)
 }
