@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { ArrowLeftIcon, AwardIcon, MapPinIcon, PlusIcon, SearchIcon, TrophyIcon } from 'lucide-react'
+import { ArrowLeftIcon, AwardIcon, MapPinIcon, PlusIcon, SearchIcon, SettingsIcon, TrophyIcon } from 'lucide-react'
 import { GuideTour } from '@/features/onboarding/GuideTour'
 import { useGuide } from '@/features/onboarding/useGuide'
 import { Badge, BottomSheet, Button, FoodCard, HelpIcon, ProgressBar, TabBar, Text } from '@/shared/ui'
@@ -26,6 +26,8 @@ interface Props {
     // 이 해금으로 챌린지를 완주했을 때 (완주 보상 팝업 트리거)
     onUnlockCompleted?: () => void
     onLeave?: () => void
+    onDelete?: () => void
+    onCloseChallenge?: () => void
 }
 export function ChallengeDetail({
     challenge,
@@ -35,7 +37,10 @@ export function ChallengeDetail({
     onUnlock,
     onUnlockCompleted,
     onLeave,
+    onDelete,
+    onCloseChallenge,
 }: Props) {
+    const [manageOpen, setManageOpen] = useState(false)
     const router = useRouter()
     const pathname = usePathname()
     const searchParams = useSearchParams()
@@ -55,6 +60,8 @@ export function ChallengeDetail({
      * `locked`는 예전 링크를 위해 읽기만 한다
      */
     const foodParam = searchParams.get('food') ?? searchParams.get('locked')
+    const focusReviewId = Number(searchParams.get('reviewId'))
+    const validFocusReviewId = Number.isSafeInteger(focusReviewId) && focusReviewId > 0 ? focusReviewId : null
     // 탭 전환은 히스토리를 늘리지 않는다 — 뒤로가기가 탭 되돌리기로 소모되면 화면을 못 벗어난다
     const activeTab: DetailTab = searchParams.get('tab') === 'review' ? '리뷰' : '해금 목록'
 
@@ -163,24 +170,64 @@ export function ChallengeDetail({
                 </button>
                 <span className="font-display text-lg text-neutral-900">챌린짓 상세</span>
                 <HelpIcon label="챌린짓 상세" onClick={guide.replay} />
-                {joined && onLeave && (
-                    <button
-                        onClick={onLeave}
-                        className="ml-auto rounded-full border border-neutral-200 px-3 py-1 text-xs font-medium text-neutral-400"
-                    >
-                        나가기
-                    </button>
+                {(challenge.isCreator || (joined && onLeave)) && (
+                    <div className="ml-auto flex items-center gap-2">
+                        {joined && onLeave && (
+                            <button
+                                onClick={onLeave}
+                                className="rounded-full border border-watermelon-200 bg-watermelon-50 px-3 py-1 text-xs font-bold text-watermelon-600"
+                            >
+                                포기하기
+                            </button>
+                        )}
+                        {challenge.isCreator && (onDelete || onCloseChallenge) && (
+                            <button
+                                onClick={() => setManageOpen(true)}
+                                aria-label="챌린짓 관리"
+                                className="rounded-full border border-neutral-200 p-2 text-neutral-600"
+                            >
+                                <SettingsIcon size={18} />
+                            </button>
+                        )}
+                    </div>
                 )}
             </header>
+            {manageOpen && (
+                <BottomSheet title="챌린짓 관리" onClose={() => setManageOpen(false)}>
+                    <div className="space-y-2 px-5 pb-8 pt-2">
+                        {!ended && onCloseChallenge && (
+                            <button
+                                onClick={() => {
+                                    setManageOpen(false)
+                                    onCloseChallenge()
+                                }}
+                                className="min-h-touch w-full rounded-xl border border-neutral-200 text-sm font-bold text-neutral-800"
+                            >
+                                챌린짓 종료하기
+                            </button>
+                        )}
+                        {onDelete && (
+                            <button
+                                onClick={() => {
+                                    setManageOpen(false)
+                                    onDelete()
+                                }}
+                                className="min-h-touch w-full rounded-xl border border-watermelon-200 bg-watermelon-50 text-sm font-bold text-watermelon-600"
+                            >
+                                챌린짓 삭제하기
+                            </button>
+                        )}
+                    </div>
+                </BottomSheet>
+            )}
             <main className="no-scrollbar flex-1 overflow-y-auto px-5">
-                {challenge.coverUrl && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                        src={challenge.coverUrl}
-                        alt=""
-                        className="mt-4 aspect-[16/9] w-full rounded-3xl object-cover shadow-soft"
-                    />
-                )}
+                {/* 대표 이미지가 없으면 기본 챌린지 이미지로 대체 */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                    src={challenge.coverUrl || '/images/default_challenge.png'}
+                    alt=""
+                    className="mt-4 aspect-[16/9] w-full rounded-3xl object-cover shadow-soft"
+                />
                 <section className="mt-4 rounded-3xl bg-white p-4 shadow-soft">
                     <div className="flex items-center gap-3">
                         <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-watermelon-50 text-watermelon-500">
@@ -297,6 +344,7 @@ export function ChallengeDetail({
                             lockedReason="챌린짓을 완료하면 리뷰를 쓸 수 있어요"
                             preview={!challenge.completed}
                             previewMessage="챌린짓을 달성하면 볼 수 있어요"
+                            focusReviewId={validFocusReviewId}
                         />
                     </section>
                 )}
@@ -360,6 +408,7 @@ export function ChallengeDetail({
                                 write={(payload) => writeFoodReview(challenge.id, record.id, payload)}
                                 canWrite
                                 lockedReason=""
+                                focusReviewId={validFocusReviewId}
                             />
                         </div>
                     </div>
@@ -406,6 +455,7 @@ export function ChallengeDetail({
                                 lockedReason="인증하면 리뷰를 남길 수 있어요"
                                 previewMessage="해금해야 볼 수 있어요"
                                 preview
+                                focusReviewId={validFocusReviewId}
                             />
                         </div>
                     </div>

@@ -18,7 +18,7 @@ import {
 } from 'lucide-react'
 import React, { useRef, useState } from 'react'
 import { ChallengeData, ChallengeTarget, RewardBadge } from './types'
-import { CoverPhotoStep } from './CoverPhotoStep'
+import { CoverPhotoStep, CoverPhotoStepHandle } from './CoverPhotoStep'
 import { EndDateSheet } from './EndDateSheet'
 
 interface Props {
@@ -29,7 +29,7 @@ interface Props {
     onCustomBadge: () => void
 }
 
-const MIN_TARGETS = 5
+const MIN_TARGETS = 2
 /** 제목·소개글 길이 제한. 예전에는 소개글에만 있어서 제목이 무한히 길어질 수 있었다 */
 const TITLE_MAX = 30
 const DESC_MAX = 200
@@ -83,6 +83,7 @@ export function ChallengeCreate({ createdThisMonth, customBadge, onBack, onCreat
     const [targetPreview, setTargetPreview] = useState('')
     const [coverFile, setCoverFile] = useState<Blob | null>(null) // 대표 사진(정사각 크롭 Blob)
     const [coverPreview, setCoverPreview] = useState('')
+    const coverStepRef = useRef<CoverPhotoStepHandle>(null)
     const [targetPlace, setTargetPlace] = useState<LocationInput | null>(null)
     const [addressInput, setAddressInput] = useState('')
     const [addressError, setAddressError] = useState('')
@@ -198,6 +199,13 @@ export function ChallengeCreate({ createdThisMonth, customBadge, onBack, onCreat
     const stepValid =
         step === TITLE ? title.trim().length > 0 : step === PERIOD ? periodOk : step === FOODS ? enough : true
 
+    // COVER 단계에서 "다음"을 누르면, 크롭에서 "이 사진 사용"을 깜빡했어도 자동 확정한다
+    const handleNext = async () => {
+        if (!stepValid) return
+        if (step === COVER) await coverStepRef.current?.commit()
+        go(step + 1)
+    }
+
     return (
         <div className="flex h-full flex-col bg-white">
             {/* 로그잇 개설과 같은 머리글을 쓴다 — 예전에는 이 블록을 각자 갖고 있어서 갈렸다 */}
@@ -247,16 +255,22 @@ export function ChallengeCreate({ createdThisMonth, customBadge, onBack, onCreat
                                         maxLength={DESC_MAX}
                                     />
                                 </div>
-                                {!canCreate && (
-                                    <p className="mt-4 rounded-2xl bg-watermelon-50 p-3 text-sm text-watermelon-700">
-                                        이번 달 개설 가능 횟수(3회)를 모두 사용했어요.
-                                    </p>
-                                )}
+                                {/* 홈과 동일하게 "남은 개설권" 기준으로 표시 */}
+                                <p
+                                    className={`mt-4 rounded-2xl p-3 text-sm ${
+                                        canCreate ? 'bg-neutral-50 text-neutral-500' : 'bg-watermelon-50 text-watermelon-700'
+                                    }`}
+                                >
+                                    {canCreate
+                                        ? `이번 달 남은 개설권 ${3 - createdThisMonth}/3`
+                                        : '이번 달 개설권을 모두 사용했어요 (0/3)'}
+                                </p>
                             </div>
                         )}
 
                         {step === COVER && (
                             <CoverPhotoStep
+                                ref={coverStepRef}
                                 preview={coverPreview}
                                 onApply={(blob, url) => {
                                     setCoverFile(blob)
@@ -346,7 +360,7 @@ export function ChallengeCreate({ createdThisMonth, customBadge, onBack, onCreat
                                 <h1 className="mt-1 font-display text-2xl leading-snug text-neutral-900">
                                     어떤 음식을 모을까요?
                                 </h1>
-                                <p className="mt-2 text-sm text-neutral-400">최소 5개 · 가게명·음식·주소·사진</p>
+                                <p className="mt-2 text-sm text-neutral-400">최소 2개 · 가게명·음식·주소·사진</p>
 
                                 <div className="mt-5 rounded-2xl border border-neutral-100 bg-white p-4 shadow-soft">
                                     <div className="flex gap-3">
@@ -624,7 +638,7 @@ export function ChallengeCreate({ createdThisMonth, customBadge, onBack, onCreat
                         개설하기
                     </Button>
                 ) : (
-                    <Button fullWidth disabled={!stepValid} onClick={() => stepValid && go(step + 1)}>
+                    <Button fullWidth disabled={!stepValid} onClick={handleNext}>
                         {step === FOODS && !enough ? `음식 ${targets.length}/${MIN_TARGETS}` : '다음'}
                     </Button>
                 )}

@@ -4,6 +4,7 @@ import { useAuth } from '@/features/auth/AuthContext'
 import { getMyBadges, getMyProfile, withdrawAccount } from '@/features/my/api'
 import { MyPage } from '@/features/my/MyPage'
 import { WithdrawConfirmSheet } from '@/features/my/WithdrawConfirmSheet'
+import { useNotifications } from '@/features/notification/NotificationContext'
 import { pushInApp } from '@/shared/lib/backNav'
 import { getTabHref, ROUTES } from '@/shared/lib/routes'
 import { useRouter } from 'next/navigation'
@@ -13,6 +14,7 @@ import { useEffect, useState } from 'react'
 export default function MyPageRoute() {
     const router = useRouter()
     const { me, logout } = useAuth()
+    const { unreadCount } = useNotifications()
     const nickname = me?.nickname ?? ''
 
     // 프로필 사진(표시용 URL) — 없으면 MyPage가 닉네임 첫 글자로 대체
@@ -70,6 +72,8 @@ export default function MyPageRoute() {
                 onOpenMyReviews={() => pushInApp(router, ROUTES.myReviews)}
                 onOpenLikedReviews={() => pushInApp(router, ROUTES.myLikedReviews)}
                 onOpenFriends={() => pushInApp(router, ROUTES.friends)}
+                onOpenNotifications={() => pushInApp(router, ROUTES.myNotifications)}
+                unreadNotificationCount={unreadCount}
                 onLogout={handleLogout}
                 onWithdraw={() => setConfirmOpen(true)}
                 onTab={(tab) => router.push(getTabHref(tab))}

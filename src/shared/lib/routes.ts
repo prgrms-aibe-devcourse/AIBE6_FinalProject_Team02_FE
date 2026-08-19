@@ -35,6 +35,7 @@ export const ROUTES = {
     madeRecordNew: (dexId: MadeDexId, date: string, slotId?: number) =>
         slotId ? `/made/${dexId}/records/new?date=${date}&slotId=${slotId}` : `/made/${dexId}/records/new?date=${date}`,
     madeRecordEdit: (dexId: MadeDexId, recordId: number) => `/made/${dexId}/records/${recordId}/edit`,
+    madeRecord: (dexId: MadeDexId, recordId: number) => `/made/${dexId}?recordId=${recordId}`,
 
     challenge: '/challenge',
     challengeNew: '/challenge/new',
@@ -46,6 +47,9 @@ export const ROUTES = {
      */
     challengeReviewTarget: (challengeId: number, slotId: number | null) =>
         slotId === null ? `/challenge/${challengeId}?tab=review` : `/challenge/${challengeId}?food=${slotId}`,
+    challengeReview: (id: string | number, reviewId: number) => `/challenge/${id}?tab=review&reviewId=${reviewId}`,
+    challengeFoodReview: (id: string | number, slotId: string | number, reviewId: number) =>
+        `/challenge/${id}?tab=unlocks&food=${slotId}&reviewId=${reviewId}`,
 
     my: '/my',
     myNickname: '/my/nickname',
@@ -53,8 +57,11 @@ export const ROUTES = {
     myPhoto: '/my/photo',
     myReviews: '/my/reviews',
     myLikedReviews: '/my/liked-reviews',
+    myNotifications: '/my/notifications',
 
     friends: '/friends',
+    /** 받은 친구 요청 탭을 펼친 채로 연다 */
+    friendRequests: '/friends?tab=received',
     userProfile: (id: number | 'me') => `/users/${id}`,
 
     admin: '/admin',
