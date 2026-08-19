@@ -255,11 +255,16 @@ export function ChallengeCreate({ createdThisMonth, customBadge, onBack, onCreat
                                         maxLength={DESC_MAX}
                                     />
                                 </div>
-                                {!canCreate && (
-                                    <p className="mt-4 rounded-2xl bg-watermelon-50 p-3 text-sm text-watermelon-700">
-                                        이번 달 개설 가능 횟수(3회)를 모두 사용했어요.
-                                    </p>
-                                )}
+                                {/* 홈과 동일하게 "남은 개설권" 기준으로 표시 */}
+                                <p
+                                    className={`mt-4 rounded-2xl p-3 text-sm ${
+                                        canCreate ? 'bg-neutral-50 text-neutral-500' : 'bg-watermelon-50 text-watermelon-700'
+                                    }`}
+                                >
+                                    {canCreate
+                                        ? `이번 달 남은 개설권 ${3 - createdThisMonth}/3`
+                                        : '이번 달 개설권을 모두 사용했어요 (0/3)'}
+                                </p>
                             </div>
                         )}
 

@@ -166,9 +166,9 @@ export function ChallengeDetail({
                 {joined && onLeave && (
                     <button
                         onClick={onLeave}
-                        className="ml-auto rounded-full border border-neutral-200 px-3 py-1 text-xs font-medium text-neutral-400"
+                        className="ml-auto rounded-full border border-watermelon-200 bg-watermelon-50 px-3 py-1 text-xs font-bold text-watermelon-600"
                     >
-                        나가기
+                        포기하기
                     </button>
                 )}
             </header>
