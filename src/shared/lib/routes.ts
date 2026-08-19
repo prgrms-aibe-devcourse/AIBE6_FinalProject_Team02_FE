@@ -35,16 +35,21 @@ export const ROUTES = {
     madeRecordNew: (dexId: MadeDexId, date: string, slotId?: number) =>
         slotId ? `/made/${dexId}/records/new?date=${date}&slotId=${slotId}` : `/made/${dexId}/records/new?date=${date}`,
     madeRecordEdit: (dexId: MadeDexId, recordId: number) => `/made/${dexId}/records/${recordId}/edit`,
+    madeRecord: (dexId: MadeDexId, recordId: number) => `/made/${dexId}?recordId=${recordId}`,
 
     challenge: '/challenge',
     challengeNew: '/challenge/new',
     challengeNewBadge: '/challenge/new/badge',
     challengeDetail: (id: string) => `/challenge/${id}`,
+    challengeReview: (id: string | number, reviewId: number) => `/challenge/${id}?tab=review&reviewId=${reviewId}`,
+    challengeFoodReview: (id: string | number, slotId: string | number, reviewId: number) =>
+        `/challenge/${id}?tab=unlocks&food=${slotId}&reviewId=${reviewId}`,
 
     my: '/my',
     myNickname: '/my/nickname',
     myBadges: '/my/badges',
     myPhoto: '/my/photo',
+    myNotifications: '/my/notifications',
 
     friends: '/friends',
     userProfile: (id: number | 'me') => `/users/${id}`,

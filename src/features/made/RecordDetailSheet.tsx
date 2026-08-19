@@ -110,6 +110,7 @@ export function RecordDetailSheet({ madeDexId, recordIds, onClose, onEdit, onDel
 
                         {/* 내 기록에도 붙인다 — 남이 남긴 반응을 내가 보는 자리이기도 하다 */}
                         <RecordSocial
+                            madeDexId={madeDexId}
                             recordId={record.recordId}
                             expanded={expanded}
                             onExpand={() => setExpanded(true)}
