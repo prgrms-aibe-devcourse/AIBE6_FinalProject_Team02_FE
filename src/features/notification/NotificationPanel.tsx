@@ -17,6 +17,7 @@ interface Props {
     notifications: NotificationItem[] | null // null이면 로딩 중
     onBack: () => void
     onOpen: (notification: NotificationItem) => void
+    onDelete: (notification: NotificationItem) => void
 }
 
 const TYPE_LABEL: Record<NotificationType, string> = {
@@ -62,9 +63,10 @@ function notificationLabel(notification: NotificationItem): string {
 
     const actor = notification.actorNickname?.trim()
     const target = notification.targetName?.trim()
+    const madeDexName = notification.madeDexName?.trim()
 
-    if (notification.type === 'MADE_DEX_JOINED' && actor && target) {
-        return `${actor}님이 ${target}에 참여했어요`
+    if (notification.type === 'MADE_DEX_JOINED' && actor && madeDexName) {
+        return `${madeDexName}에 ${actor}님이 참여했어요`
     }
     if (
         (notification.type === 'MADE_DEX_RECORD_CREATED' ||
@@ -146,7 +148,7 @@ function groupByRecency(notifications: NotificationItem[]): NotificationSection[
 }
 
 /** `/my/notifications` — 마이페이지 알림 탭. 서버가 이미 최신순으로 정렬해 준 목록을 그대로 쌓아 보여준다 */
-export function NotificationPanel({ notifications, onBack, onOpen }: Props) {
+export function NotificationPanel({ notifications, onBack, onOpen, onDelete }: Props) {
     return (
         <div className="flex h-full flex-col bg-surface-app">
             <header className="flex items-center gap-3 px-5 py-4">
@@ -175,42 +177,54 @@ export function NotificationPanel({ notifications, onBack, onOpen }: Props) {
                             <ul className="space-y-2">
                                 {section.items.map((n) => (
                                     <li key={n.notificationId}>
-                                        <button
-                                            type="button"
-                                            onClick={() => onOpen(n)}
-                                            className={`flex w-full items-start gap-3 rounded-2xl p-4 text-left shadow-card ${
+                                        <div
+                                            className={`flex items-stretch gap-1 rounded-2xl shadow-card ${
                                                 n.read ? 'bg-surface-card' : 'bg-watermelon-50'
                                             }`}
                                         >
-                                            <span
-                                                aria-hidden
-                                                className={`mt-0.5 shrink-0 ${
-                                                    n.read ? 'text-content-muted' : 'text-watermelon-500'
-                                                }`}
+                                            <button
+                                                type="button"
+                                                onClick={() => onOpen(n)}
+                                                className="flex min-w-0 flex-1 items-start gap-3 p-4 text-left"
                                             >
-                                                {TYPE_ICON[n.type]}
-                                            </span>
-                                            <span className="min-w-0 flex-1">
-                                                <span
-                                                    className={`block text-sm ${
-                                                        n.read
-                                                            ? 'text-content-secondary'
-                                                            : 'font-medium text-content-primary'
-                                                    }`}
-                                                >
-                                                    {notificationLabel(n)}
-                                                </span>
-                                                <span className="mt-1 block text-xs text-content-muted">
-                                                    {formatRelativeTime(n.createdAt)}
-                                                </span>
-                                            </span>
-                                            {!n.read && (
                                                 <span
                                                     aria-hidden
-                                                    className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-watermelon-500"
-                                                />
-                                            )}
-                                        </button>
+                                                    className={`mt-0.5 shrink-0 ${
+                                                        n.read ? 'text-content-muted' : 'text-watermelon-500'
+                                                    }`}
+                                                >
+                                                    {TYPE_ICON[n.type]}
+                                                </span>
+                                                <span className="min-w-0 flex-1">
+                                                    <span
+                                                        className={`block text-sm ${
+                                                            n.read
+                                                                ? 'text-content-secondary'
+                                                                : 'font-medium text-content-primary'
+                                                        }`}
+                                                    >
+                                                        {notificationLabel(n)}
+                                                    </span>
+                                                    <span className="mt-1 block text-xs text-content-muted">
+                                                        {formatRelativeTime(n.createdAt)}
+                                                    </span>
+                                                </span>
+                                                {!n.read && (
+                                                    <span
+                                                        aria-hidden
+                                                        className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-watermelon-500"
+                                                    />
+                                                )}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => onDelete(n)}
+                                                aria-label="알림 지우기"
+                                                className="flex w-11 shrink-0 items-center justify-center text-content-muted"
+                                            >
+                                                <XIcon size={16} aria-hidden />
+                                            </button>
+                                        </div>
                                     </li>
                                 ))}
                             </ul>

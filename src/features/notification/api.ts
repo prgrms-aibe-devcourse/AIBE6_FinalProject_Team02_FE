@@ -34,6 +34,7 @@ export interface NotificationItem {
     slotId?: number | null
     madeDexId?: number | null
     recordId?: number | null
+    madeDexName?: string | null
 }
 
 /** BE가 실제로 내려주는 원본 모양 — 라우팅용 ID들은 payload 안에 들어있다 */
@@ -43,6 +44,7 @@ interface RawNotificationItem extends NotificationItem {
         slotId?: number
         madeDexId?: number
         recordId?: number
+        madeDexName?: string
     } | null
 }
 
@@ -57,6 +59,7 @@ export function normalizeNotification(raw: RawNotificationItem): NotificationIte
         slotId: raw.slotId ?? payload.slotId ?? null,
         madeDexId: raw.madeDexId ?? payload.madeDexId ?? null,
         recordId: raw.recordId ?? payload.recordId ?? null,
+        madeDexName: raw.madeDexName ?? payload.madeDexName ?? null,
     }
 }
 
@@ -78,4 +81,9 @@ export function markNotificationAsRead(notificationId: number): Promise<void> {
 /** 알림함 진입 시 한 번에 전부 읽음 처리 */
 export function markAllNotificationsAsRead(): Promise<void> {
     return apiFetch<void>('/api/v1/notifications/read-all', { method: 'PATCH' })
+}
+
+/** 삭제. 소프트 삭제라 같은 알림이 다시 오면 새로 쌓인다 */
+export function deleteNotification(notificationId: number): Promise<void> {
+    return apiFetch<void>(`/api/v1/notifications/${notificationId}`, { method: 'DELETE' })
 }

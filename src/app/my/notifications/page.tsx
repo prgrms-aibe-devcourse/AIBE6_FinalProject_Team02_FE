@@ -1,6 +1,6 @@
 'use client'
 
-import { fetchNotifications, type NotificationItem } from '@/features/notification/api'
+import { deleteNotification, fetchNotifications, type NotificationItem } from '@/features/notification/api'
 import { useNotifications } from '@/features/notification/NotificationContext'
 import { NotificationPanel } from '@/features/notification/NotificationPanel'
 import { resolveNotificationRoute } from '@/features/notification/resolveRoute'
@@ -11,7 +11,7 @@ import { useEffect, useState } from 'react'
 /** `/my/notifications` 마이페이지 알림 탭 */
 export default function NotificationsPage() {
     const router = useRouter()
-    const { markAsRead, markAllAsRead } = useNotifications()
+    const { markAsRead, markAllAsRead, refreshUnreadCount } = useNotifications()
     const [notifications, setNotifications] = useState<NotificationItem[] | null>(null)
 
     useEffect(() => {
@@ -47,7 +47,30 @@ export default function NotificationsPage() {
             .catch(() => router.push(ROUTES.myNotifications))
     }
 
+    const handleDelete = (notification: NotificationItem) => {
+        setNotifications((prev) =>
+            prev ? prev.filter((n) => n.notificationId !== notification.notificationId) : prev,
+        )
+        deleteNotification(notification.notificationId)
+            .then(() => {
+                if (!notification.read) void refreshUnreadCount()
+            })
+            .catch(() => {
+                // 실패하면 지운 자리 그대로 되돌린다
+                setNotifications((prev) => (prev ? [...prev, notification].sort(byCreatedAtDesc) : prev))
+            })
+    }
+
     return (
-        <NotificationPanel notifications={notifications} onBack={() => router.push(ROUTES.my)} onOpen={handleOpen} />
+        <NotificationPanel
+            notifications={notifications}
+            onBack={() => router.push(ROUTES.my)}
+            onOpen={handleOpen}
+            onDelete={handleDelete}
+        />
     )
+}
+
+function byCreatedAtDesc(a: NotificationItem, b: NotificationItem): number {
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
 }
