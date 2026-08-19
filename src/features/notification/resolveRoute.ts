@@ -49,7 +49,6 @@ export async function resolveNotificationRoute(notification: NotificationItem): 
             return ROUTES.friends
         case 'FRIEND_REQUEST_ACCEPT':
         case 'FRIEND_REQUEST_REJECT':
-        case 'FRIEND_CARD_REGISTERED':
             return ROUTES.userProfile(notification.actorId)
         case 'MADE_DEX_JOINED':
         case 'MADE_DEX_RECORD_CREATED':
@@ -61,6 +60,9 @@ export async function resolveNotificationRoute(notification: NotificationItem): 
         case 'CHALLENGE_REVIEW_LIKED':
             return (await resolveChallengeReview(notification)) ?? ROUTES.challenge
         case 'MADE_DEX_COMMENT_ADDED':
+        case 'MADE_DEX_COMMENT_LIKED':
+        case 'MADE_DEX_RECORD_LIKED':
+        case 'FRIEND_CARD_REGISTERED':
             if (notification.madeDexId && notification.recordId) {
                 return ROUTES.madeRecord(notification.madeDexId, notification.recordId)
             }

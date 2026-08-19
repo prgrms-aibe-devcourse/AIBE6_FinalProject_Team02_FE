@@ -4,7 +4,7 @@ import { useAuth } from '@/features/auth/AuthContext'
 import { fetchUnreadNotificationCount, markAllNotificationsAsRead, markNotificationAsRead } from '@/features/notification/api'
 import { connectNotificationStream } from '@/features/notification/realtime'
 import { useToast } from '@/shared/ui'
-import { createContext, useCallback, useContext, useEffect, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
 
 interface NotificationContextValue {
     unreadCount: number
@@ -19,6 +19,9 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     const { isAuthenticated } = useAuth()
     const toast = useToast()
     const [unreadCount, setUnreadCount] = useState(0)
+    // 좋아요 토글을 반복하면 BE가 같은 알림 row를 재사용해 같은 notificationId를 다시 push한다.
+    // 한 번 센 id는 다시 세거나 토스트를 띄우지 않는다
+    const seenNotificationIds = useRef(new Set<number>())
 
     const refreshUnreadCount = useCallback(async () => {
         if (!isAuthenticated) {
@@ -41,6 +44,10 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         if (!isAuthenticated) return
 
         return connectNotificationStream((notification) => {
+            const alreadySeen = seenNotificationIds.current.has(notification.notificationId)
+            seenNotificationIds.current.add(notification.notificationId)
+            if (alreadySeen) return
+
             setUnreadCount((count) => count + (notification.read ? 0 : 1))
 
             if (notification.type === 'FRIEND_REQUEST_RECEIVED') {

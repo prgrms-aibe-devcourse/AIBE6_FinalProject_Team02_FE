@@ -27,6 +27,7 @@ const TYPE_LABEL: Record<NotificationType, string> = {
     FRIEND_CARD_REGISTERED: '친구가 오늘의 식단을 기록했어요',
     MADE_DEX_COMMENT_ADDED: '내 기록에 댓글이 달렸어요',
     MADE_DEX_COMMENT_LIKED: '내 댓글을 좋아해요',
+    MADE_DEX_RECORD_LIKED: '내 기록을 좋아해요',
     CHALLENGE_REVIEW_ADDED: '내가 개설한 챌린지에 리뷰가 작성됐어요.',
     CHALLENGE_CARD_REVIEW_ADDED: '내가 개설한 챌린지 카드에 리뷰가 작성됐어요.',
     CHALLENGE_REVIEW_LIKED: '내 리뷰를 좋아해요',
@@ -45,6 +46,7 @@ const TYPE_ICON: Record<NotificationType, React.ReactNode> = {
     FRIEND_CARD_REGISTERED: <UsersIcon size={18} aria-hidden />,
     MADE_DEX_COMMENT_ADDED: <MessageSquareIcon size={18} aria-hidden />,
     MADE_DEX_COMMENT_LIKED: <HeartIcon size={18} aria-hidden />,
+    MADE_DEX_RECORD_LIKED: <HeartIcon size={18} aria-hidden />,
     CHALLENGE_REVIEW_ADDED: <MessageSquareIcon size={18} aria-hidden />,
     CHALLENGE_CARD_REVIEW_ADDED: <MessageSquareIcon size={18} aria-hidden />,
     CHALLENGE_REVIEW_LIKED: <HeartIcon size={18} aria-hidden />,
@@ -72,6 +74,12 @@ function notificationLabel(notification: NotificationItem): string {
         target
     ) {
         return `${actor}님이 ${target}에 기록을 올렸어요`
+    }
+    if (notification.type === 'MADE_DEX_RECORD_LIKED' && actor) {
+        return `${actor}님이 내 기록을 좋아해요`
+    }
+    if (notification.type === 'MADE_DEX_COMMENT_LIKED' && actor) {
+        return `${actor}님이 내 댓글을 좋아해요`
     }
     if (notification.type === 'FRIEND_CARD_REGISTERED' && actor) {
         return `${actor}님이 오늘의 식단을 기록했어요`
@@ -102,6 +110,41 @@ function formatRelativeTime(iso: string): string {
     return new Intl.DateTimeFormat('ko-KR', { month: 'long', day: 'numeric' }).format(new Date(iso))
 }
 
+interface NotificationSection {
+    label: string
+    items: NotificationItem[]
+}
+
+/**
+ * 시간대별 구간으로 나눈다. 서버가 이미 최신순으로 줘서 구간 안에서도 순서가 유지된다.
+ * 파인더·노션의 "오늘/어제/지난 7일/지난 30일" 구간과 같은 감각 — 몇 시간 전인지보다
+ * 어느 묶음인지가 눈에 먼저 들어와야 쭉 훑어보기 편하다
+ */
+function groupByRecency(notifications: NotificationItem[]): NotificationSection[] {
+    const startOfToday = new Date()
+    startOfToday.setHours(0, 0, 0, 0)
+    const dayMs = 24 * 60 * 60 * 1000
+
+    const sections: NotificationSection[] = [
+        { label: '오늘', items: [] },
+        { label: '어제', items: [] },
+        { label: '지난 7일', items: [] },
+        { label: '지난 30일', items: [] },
+        { label: '그 이전', items: [] },
+    ]
+
+    for (const notification of notifications) {
+        const diffDays = Math.floor((startOfToday.getTime() - new Date(notification.createdAt).getTime()) / dayMs)
+        if (diffDays <= 0) sections[0].items.push(notification)
+        else if (diffDays === 1) sections[1].items.push(notification)
+        else if (diffDays <= 7) sections[2].items.push(notification)
+        else if (diffDays <= 30) sections[3].items.push(notification)
+        else sections[4].items.push(notification)
+    }
+
+    return sections.filter((section) => section.items.length > 0)
+}
+
 /** `/my/notifications` — 마이페이지 알림 탭. 서버가 이미 최신순으로 정렬해 준 목록을 그대로 쌓아 보여준다 */
 export function NotificationPanel({ notifications, onBack, onOpen }: Props) {
     return (
@@ -122,48 +165,57 @@ export function NotificationPanel({ notifications, onBack, onOpen }: Props) {
                         <p className="text-sm text-neutral-800">아직 도착한 알림이 없어요.</p>
                     </div>
                 ) : (
-                    <ul className="space-y-2">
-                        {notifications.map((n) => (
-                            <li key={n.notificationId}>
-                                <button
-                                    type="button"
-                                    onClick={() => onOpen(n)}
-                                    className={`flex w-full items-start gap-3 rounded-2xl p-4 text-left shadow-card ${
-                                        n.read ? 'bg-surface-card' : 'bg-watermelon-50'
-                                    }`}
-                                >
-                                    <span
-                                        aria-hidden
-                                        className={`mt-0.5 shrink-0 ${
-                                            n.read ? 'text-content-muted' : 'text-watermelon-500'
-                                        }`}
-                                    >
-                                        {TYPE_ICON[n.type]}
-                                    </span>
-                                    <span className="min-w-0 flex-1">
-                                        <span
-                                            className={`block text-sm ${
-                                                n.read
-                                                    ? 'text-content-secondary'
-                                                    : 'font-medium text-content-primary'
+                    groupByRecency(notifications).map((section, index) => (
+                        <section key={section.label}>
+                            <div className={`flex items-center gap-3 pb-2 ${index === 0 ? 'pt-0' : 'pt-5'}`}>
+                                <span aria-hidden className="h-px flex-1 bg-neutral-100" />
+                                <span className="shrink-0 text-xs font-bold text-content-muted">{section.label}</span>
+                                <span aria-hidden className="h-px flex-1 bg-neutral-100" />
+                            </div>
+                            <ul className="space-y-2">
+                                {section.items.map((n) => (
+                                    <li key={n.notificationId}>
+                                        <button
+                                            type="button"
+                                            onClick={() => onOpen(n)}
+                                            className={`flex w-full items-start gap-3 rounded-2xl p-4 text-left shadow-card ${
+                                                n.read ? 'bg-surface-card' : 'bg-watermelon-50'
                                             }`}
                                         >
-                                            {notificationLabel(n)}
-                                        </span>
-                                        <span className="mt-1 block text-xs text-content-muted">
-                                            {formatRelativeTime(n.createdAt)}
-                                        </span>
-                                    </span>
-                                    {!n.read && (
-                                        <span
-                                            aria-hidden
-                                            className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-watermelon-500"
-                                        />
-                                    )}
-                                </button>
-                            </li>
-                        ))}
-                    </ul>
+                                            <span
+                                                aria-hidden
+                                                className={`mt-0.5 shrink-0 ${
+                                                    n.read ? 'text-content-muted' : 'text-watermelon-500'
+                                                }`}
+                                            >
+                                                {TYPE_ICON[n.type]}
+                                            </span>
+                                            <span className="min-w-0 flex-1">
+                                                <span
+                                                    className={`block text-sm ${
+                                                        n.read
+                                                            ? 'text-content-secondary'
+                                                            : 'font-medium text-content-primary'
+                                                    }`}
+                                                >
+                                                    {notificationLabel(n)}
+                                                </span>
+                                                <span className="mt-1 block text-xs text-content-muted">
+                                                    {formatRelativeTime(n.createdAt)}
+                                                </span>
+                                            </span>
+                                            {!n.read && (
+                                                <span
+                                                    aria-hidden
+                                                    className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-watermelon-500"
+                                                />
+                                            )}
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                        </section>
+                    ))
                 )}
             </main>
         </div>

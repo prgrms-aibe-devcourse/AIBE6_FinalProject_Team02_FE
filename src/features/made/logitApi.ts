@@ -111,6 +111,12 @@ export function deleteRecord(madeDexId: MadeDexId, recordId: number): Promise<vo
     })
 }
 
+export function toggleRecordLike(madeDexId: MadeDexId, recordId: number) {
+    return apiFetch<{ isLike: boolean; likeCount: number }>(`${base(madeDexId)}/records/${recordId}/like`, {
+        method: 'POST',
+    })
+}
+
 function commentsBase(madeDexId: MadeDexId, recordId: number): string {
     return `${base(madeDexId)}/records/${recordId}/comments`
 }

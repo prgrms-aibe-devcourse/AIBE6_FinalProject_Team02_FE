@@ -177,6 +177,8 @@ export interface LogitRecordDetail {
     photos: LogitRecordPhoto[]
     /** 먹은 시각. 적지 않았으면 null */
     loggedAt: string | null
+    likeCount: number
+    likedByMe: boolean
 }
 
 export interface LogitComment {
