@@ -52,6 +52,8 @@ export const ROUTES = {
     myNotifications: '/my/notifications',
 
     friends: '/friends',
+    /** 받은 친구 요청 탭을 펼친 채로 연다 */
+    friendRequests: '/friends?tab=received',
     userProfile: (id: number | 'me') => `/users/${id}`,
 
     admin: '/admin',

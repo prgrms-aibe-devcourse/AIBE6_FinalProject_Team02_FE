@@ -46,7 +46,7 @@ async function resolveChallengeReview(notification: NotificationItem): Promise<s
 export async function resolveNotificationRoute(notification: NotificationItem): Promise<string> {
     switch (notification.type) {
         case 'FRIEND_REQUEST_RECEIVED':
-            return ROUTES.friends
+            return ROUTES.friendRequests
         case 'FRIEND_REQUEST_ACCEPT':
         case 'FRIEND_REQUEST_REJECT':
             return ROUTES.userProfile(notification.actorId)

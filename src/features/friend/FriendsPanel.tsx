@@ -22,11 +22,13 @@ const TABS = ['친구 목록', '받은 요청'] as const
 interface Props {
     onBack: () => void
     onOpenUser: (userId: number) => void
+    /** 알림 클릭 등으로 특정 탭을 펼친 채 들어올 때 쓴다. 기본은 '친구 목록' */
+    initialTab?: (typeof TABS)[number]
 }
 
-export function FriendsPanel({ onBack, onOpenUser }: Props) {
+export function FriendsPanel({ onBack, onOpenUser, initialTab }: Props) {
     const { unreadCount } = useNotifications()
-    const [tab, setTab] = useState<(typeof TABS)[number]>('친구 목록')
+    const [tab, setTab] = useState<(typeof TABS)[number]>(initialTab ?? '친구 목록')
     const [friends, setFriends] = useState<UserBrief[]>([])
     const [requests, setRequests] = useState<ReceivedRequest[]>([])
     // 검색: searchResults가 null이면 탭 목록, 아니면 검색 결과 화면

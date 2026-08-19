@@ -209,12 +209,6 @@ export function NotificationPanel({ notifications, onBack, onOpen, onDelete }: P
                                                         {formatRelativeTime(n.createdAt)}
                                                     </span>
                                                 </span>
-                                                {!n.read && (
-                                                    <span
-                                                        aria-hidden
-                                                        className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-watermelon-500"
-                                                    />
-                                                )}
                                             </button>
                                             <button
                                                 type="button"
