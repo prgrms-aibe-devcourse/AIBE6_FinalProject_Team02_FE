@@ -63,15 +63,7 @@ function notificationLabel(notification: NotificationItem): string {
     const target = notification.targetName?.trim()
     const madeDexName = notification.madeDexName?.trim()
 
-    if (notification.type === 'FOOD_REPORT_REJECT') {
-        const namePart = target ? `'${target}' ` : ''
-        const reasonPart = notification.message?.trim() ? ` — ${notification.message}` : ''
-        return `제보한 음식 ${namePart}거절됐어요${reasonPart}`.trim()
-    }
-    if (notification.type === 'FOOD_REPORT_APPROVE') {
-        const namePart = target ? `'${target}' ` : ''
-        return `제보한 음식 ${namePart}승인됐어요`.trim()
-    }
+    // 제보 승인/반려는 서버가 음식이름·사유를 합쳐 message로 내려준다 → 아래 범용 message 폴백이 그대로 표시
 
     if (notification.message?.trim()) return notification.message
 
