@@ -44,9 +44,7 @@ export function getMyProfile(): Promise<MyProfile> {
  * 지금 내 닉네임은 `available: true`로 온다 — 변경 API가 같은 값을 no-op으로 통과시키기 때문
  */
 export function checkNicknameAvailability(nickname: string): Promise<{ available: boolean }> {
-    return apiFetch<{ available: boolean }>(
-        `/api/v1/my/nickname/availability?nickname=${encodeURIComponent(nickname)}`,
-    )
+    return apiFetch<{ available: boolean }>(`/api/v1/my/nickname/availability?nickname=${encodeURIComponent(nickname)}`)
 }
 
 // PATCH /api/v1/my/nickname — 닉네임 변경 (1개월 1회)

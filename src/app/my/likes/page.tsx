@@ -1,11 +1,6 @@
 'use client'
 
-import {
-    getLikedLogitRecords,
-    getLikedReviews,
-    type LikedLogitRecord,
-    type LikedReview,
-} from '@/features/my/api'
+import { getLikedLogitRecords, getLikedReviews, type LikedLogitRecord, type LikedReview } from '@/features/my/api'
 import { MyLikes, type LikesTab } from '@/features/my/MyLikes'
 import { goBackOr, pushInApp } from '@/shared/lib/backNav'
 import { ROUTES } from '@/shared/lib/routes'

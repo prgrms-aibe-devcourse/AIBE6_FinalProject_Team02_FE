@@ -33,16 +33,7 @@ interface Props {
  *
  * 남의 기록이 대부분일 목록이다. 누가 올린 것인지 없으면 익명 사진 더미가 된다
  */
-export function LikedLogitCard({
-    madeDexName,
-    target,
-    thumbnailUrl,
-    cropX,
-    cropY,
-    author,
-    footnote,
-    onOpen,
-}: Props) {
+export function LikedLogitCard({ madeDexName, target, thumbnailUrl, cropX, cropY, author, footnote, onOpen }: Props) {
     return (
         <button
             type="button"
