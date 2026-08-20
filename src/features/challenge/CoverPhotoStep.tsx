@@ -13,6 +13,8 @@ interface Props {
     onApply: (blob: Blob, previewUrl: string) => void
     /** 사진 제거 */
     onClear: () => void
+    /** AI 일러스트 화면으로. 결과는 이 컴포넌트가 아니라 부모가 받는다 */
+    onIllustrate: () => void
 }
 
 export interface CoverPhotoStepHandle {
@@ -22,7 +24,7 @@ export interface CoverPhotoStepHandle {
 
 /** 챌린지 대표 사진 — 원형으로 위치·확대 조절 후 등록 (공통 `ImageCropper`) */
 export const CoverPhotoStep = forwardRef<CoverPhotoStepHandle, Props>(function CoverPhotoStep(
-    { preview, onApply, onClear },
+    { preview, onApply, onClear, onIllustrate },
     ref,
 ) {
     const [src, setSrc] = useState<string | null>(null)
@@ -102,14 +104,25 @@ export const CoverPhotoStep = forwardRef<CoverPhotoStepHandle, Props>(function C
                     </>
                 ) : (
                     // 선택 전 플레이스홀더
-                    <button
-                        type="button"
-                        onClick={() => fileRef.current?.click()}
-                        className="flex h-60 w-60 flex-col items-center justify-center gap-2 rounded-full border-2 border-dashed border-neutral-200 bg-neutral-50 text-neutral-400"
-                    >
-                        <ImageIcon size={30} aria-hidden />
-                        <span className="text-sm font-medium">앨범에서 선택</span>
-                    </button>
+                    <>
+                        <button
+                            type="button"
+                            onClick={() => fileRef.current?.click()}
+                            className="flex h-60 w-60 flex-col items-center justify-center gap-2 rounded-full border-2 border-dashed border-neutral-200 bg-neutral-50 text-neutral-400"
+                        >
+                            <ImageIcon size={30} aria-hidden />
+                            <span className="text-sm font-medium">앨범에서 선택</span>
+                        </button>
+
+                        {/* 사진을 올리는 길과 나란히 둔다 — AI를 안 쓰는 사람의 흐름이 그대로 남는다 */}
+                        <button
+                            type="button"
+                            onClick={onIllustrate}
+                            className="ai-gradient-border mt-4 min-h-touch rounded-full bg-neutral-100 px-4 text-sm font-bold text-content-primary"
+                        >
+                            AI로 그리기
+                        </button>
+                    </>
                 )}
                 <input
                     ref={fileRef}

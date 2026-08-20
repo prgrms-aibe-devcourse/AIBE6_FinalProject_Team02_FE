@@ -53,7 +53,9 @@ export default function ChallengeCreatePage() {
                         // 목표별 사진을 S3에 올려 key 확보하고 slots.imageKey로 전송
                         const slots = await Promise.all(
                             (challenge.targetRestaurants ?? []).map(async (t) => {
-                                const imageKey = t.file ? (await uploadImageToS3(t.file, t.file.name)).key : null
+                                // AI로 만든 슬롯은 그리는 시점에 이미 올라갔다. 다시 올리지 않는다
+                                const imageKey =
+                                    t.imageKey ?? (t.file ? (await uploadImageToS3(t.file, t.file.name)).key : null)
                                 return {
                                     foodName: t.name,
                                     imageKey,
@@ -75,16 +77,23 @@ export default function ChallengeCreatePage() {
                          */
                         const badge = challenge.rewardBadge
                         let rewardBadgeId: number | null = null
-                        if (badge?.customImage) {
+                        if (badge?.imageKey) {
+                            // AI가 만든 뱃지. customImage는 만료되는 프리사인 URL이라 올릴 수 없다
+                            rewardBadgeId = (
+                                await createRewardBadge({ name: badge.name, imageKey: badge.imageKey })
+                            ).badgeId
+                        } else if (badge?.customImage) {
                             const blob = dataUrlToBlob(badge.customImage)
                             const { key } = await uploadImageToS3(blob, 'reward-badge.png')
                             rewardBadgeId = (await createRewardBadge({ name: badge.name, imageKey: key })).badgeId
                         }
 
-                        // 대표 이미지 업로드(선택)
-                        const imageKey = challenge.coverFile
-                            ? (await uploadImageToS3(challenge.coverFile, 'challenge-cover.jpg')).key
-                            : null
+                        // 대표 이미지 업로드(선택). AI 결과면 이미 올라가 있다
+                        const imageKey =
+                            challenge.coverImageKey ??
+                            (challenge.coverFile
+                                ? (await uploadImageToS3(challenge.coverFile, 'challenge-cover.jpg')).key
+                                : null)
 
                         await createChallenge({
                             name: challenge.title,
@@ -106,6 +115,9 @@ export default function ChallengeCreatePage() {
                 }}
                 onCustomBadge={() => {
                     pushInApp(router, ROUTES.challengeNewBadge)
+                }}
+                onIllustrate={(params) => {
+                    pushInApp(router, ROUTES.illustration({ ...params, returnTo: ROUTES.challengeNew }))
                 }}
             />
             {alertMessage && <Dialog title="개설 실패" message={alertMessage} onClose={() => setAlertMessage(null)} />}

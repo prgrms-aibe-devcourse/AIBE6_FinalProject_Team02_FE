@@ -3,13 +3,18 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { EraserIcon, ImagePlusIcon, PaintbrushIcon, RotateCcwIcon, Sparkles } from 'lucide-react'
 import { Button, ImageCropper, ImageCropperHandle, PageHeader, TextField } from '@/shared/ui'
+import { takeIllustrationHandoff } from '@/features/illustration/handoff'
 import { RewardBadge } from './types'
 
-type BadgeTab = '그림으로 그리기' | '이미지로 만들기'
+type BadgeTab = '직접 그리기' | '이미지로' | 'AI로 그리기'
+
+const TABS: BadgeTab[] = ['직접 그리기', '이미지로', 'AI로 그리기']
 
 interface Props {
     onBack: () => void
     onSave: (badge: RewardBadge) => void
+    /** AI 일러스트 화면으로. 뱃지는 사진 없이 설명만으로도 만들 수 있는 유일한 자리다 */
+    onIllustrate: (description: string) => void
 }
 
 /**
@@ -46,10 +51,10 @@ const ERASER_DEFAULT = 24
 const NAME_MAX = 18
 const DEFAULT_NAME = '나만의 완주 뱃지'
 
-export function BadgeCustom({ onBack, onSave }: Props) {
+export function BadgeCustom({ onBack, onSave, onIllustrate }: Props) {
     const canvasRef = useRef<HTMLCanvasElement | null>(null)
     const drawingRef = useRef(false)
-    const [tab, setTab] = useState<BadgeTab>('그림으로 그리기')
+    const [tab, setTab] = useState<BadgeTab>('직접 그리기')
     const [color, setColor] = useState(COLORS[0])
     const [background, setBackground] = useState(BACKGROUNDS[0])
     /**
@@ -69,6 +74,8 @@ export function BadgeCustom({ onBack, onSave }: Props) {
     const [uploaded, setUploaded] = useState<string | null>(null)
     const [preview, setPreview] = useState<string | null>(null)
     const [name, setName] = useState(DEFAULT_NAME)
+    /** AI가 만든 뱃지. 이미 S3에 있어 dataURL이 아니라 key를 들고 있는다 */
+    const [aiResult, setAiResult] = useState<{ imageKey: string; previewUrl: string } | null>(null)
     const cropper = useRef<ImageCropperHandle>(null)
 
     /**
@@ -91,8 +98,23 @@ export function BadgeCustom({ onBack, onSave }: Props) {
 
     // 배경을 바꾸면 미리보기도 그 색으로 다시 만든다
     useEffect(() => {
-        if (tab === '그림으로 그리기') setPreview(flatten())
+        if (tab === '직접 그리기') setPreview(flatten())
     }, [flatten, tab])
+
+    /*
+     * 일러스트 화면에서 돌아왔는지 본다. 결과가 있으면 그 탭을 펴 준다 —
+     * 그리기 탭이 떠 있으면 방금 만든 그림이 어디 갔는지 알 수 없다.
+     *
+     * **위 효과보다 뒤에 있어야 한다.** 첫 렌더에서는 tab이 아직 '직접 그리기'라
+     * 위가 빈 그림판을 미리보기에 얹는다 — 순서를 바꾸면 그 값이 결과를 덮는다.
+     */
+    useEffect(() => {
+        const handoff = takeIllustrationHandoff('BADGE')
+        if (!handoff) return
+        setAiResult({ imageKey: handoff.imageKey, previewUrl: handoff.previewUrl })
+        setPreview(handoff.previewUrl)
+        setTab('AI로 그리기')
+    }, [])
 
     const position = (event: React.PointerEvent<HTMLCanvasElement>) => {
         const rect = event.currentTarget.getBoundingClientRect()
@@ -170,13 +192,15 @@ export function BadgeCustom({ onBack, onSave }: Props) {
     }
 
     const save = () => {
-        const image = tab === '이미지로 만들기' ? uploaded : flatten()
+        // AI 결과는 이미 S3에 있다. dataURL이 아니라 key를 넘겨야 개설이 다시 올리지 않는다
+        const image = tab === 'AI로 그리기' ? aiResult?.previewUrl : tab === '이미지로' ? uploaded : flatten()
         if (!image) return
         onSave({
             emoji: '✨',
             name: name.trim() || DEFAULT_NAME,
             tone: 'bg-watermelon-100 text-watermelon-700',
             customImage: image,
+            imageKey: tab === 'AI로 그리기' ? (aiResult?.imageKey ?? null) : null,
         })
     }
 
@@ -185,8 +209,8 @@ export function BadgeCustom({ onBack, onSave }: Props) {
             <PageHeader title="커스텀 뱃지 만들기" onBack={onBack} />
 
             <main className="no-scrollbar flex-1 overflow-y-auto px-5 pb-6">
-                <div className="grid grid-cols-2 rounded-2xl bg-neutral-100 p-1">
-                    {(['그림으로 그리기', '이미지로 만들기'] as BadgeTab[]).map((item) => (
+                <div className="grid grid-cols-3 rounded-2xl bg-neutral-100 p-1">
+                    {TABS.map((item) => (
                         <button
                             key={item}
                             type="button"
@@ -234,7 +258,7 @@ export function BadgeCustom({ onBack, onSave }: Props) {
                     />
                 </div>
 
-                {tab === '그림으로 그리기' ? (
+                {tab === '직접 그리기' ? (
                     <>
                         {/*
                          * 그림판은 **사각형**이고 위 미리보기가 원형이다. 예전에는 원형
@@ -376,6 +400,39 @@ export function BadgeCustom({ onBack, onSave }: Props) {
                             />
                         </section>
                     </>
+                ) : tab === 'AI로 그리기' ? (
+                    <section className="mt-5 rounded-2xl bg-white p-4 shadow-soft">
+                        <p className="text-sm font-bold text-content-primary">AI로 그리기</p>
+                        <p className="mt-1 text-xs leading-5 text-content-muted">
+                            사진 한 장이나 설명만으로 크레파스 그림을 만들어요. 뱃지는 사진이 없어도 돼요.
+                        </p>
+
+                        {aiResult && (
+                            <span className="mx-auto mt-4 flex h-40 w-40 items-center justify-center overflow-hidden rounded-full bg-white shadow-card">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                    src={aiResult.previewUrl}
+                                    alt="AI가 그린 뱃지"
+                                    className="h-full w-full object-contain"
+                                />
+                            </span>
+                        )}
+
+                        {/*
+                            뱃지 이름을 설명으로 같이 보낸다 — 이름이 곧 무엇을 그릴지에 대한
+                            가장 짧은 설명이라, 화면에서 한 번 더 묻지 않아도 된다
+                        */}
+                        <Button
+                            fullWidth
+                            variant={aiResult ? 'secondary' : 'primary'}
+                            size="md"
+                            className="mt-4"
+                            icon={<Sparkles size={16} aria-hidden />}
+                            onClick={() => onIllustrate(name.trim() === DEFAULT_NAME ? '' : name.trim())}
+                        >
+                            {aiResult ? '다시 만들기' : 'AI로 그리기'}
+                        </Button>
+                    </section>
                 ) : (
                     <section className="mt-5 rounded-2xl bg-white p-4 shadow-soft">
                         <p className="text-sm font-bold text-content-primary">이미지로 만들기</p>
@@ -417,7 +474,11 @@ export function BadgeCustom({ onBack, onSave }: Props) {
             </main>
 
             <div className="shrink-0 px-5 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-3">
-                <Button fullWidth disabled={tab === '이미지로 만들기' && !uploaded} onClick={save}>
+                <Button
+                    fullWidth
+                    disabled={(tab === '이미지로' && !uploaded) || (tab === 'AI로 그리기' && !aiResult)}
+                    onClick={save}
+                >
                     완료
                 </Button>
             </div>

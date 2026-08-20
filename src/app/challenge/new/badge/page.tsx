@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { BadgeCustom } from '@/features/challenge/BadgeCustom'
 import { useAppState } from '@/shared/store/AppStateProvider'
-import { goBackOr } from '@/shared/lib/backNav'
+import { goBackOr, pushInApp } from '@/shared/lib/backNav'
 import { ROUTES } from '@/shared/lib/routes'
 
 /**
@@ -35,6 +35,17 @@ export default function BadgeCustomPage() {
             onSave={(badge) => {
                 setCustomBadge(badge)
                 backToBadgeStep()
+            }}
+            // 결과를 들고 이 화면으로 되돌아온다. 그림판 상태는 잃지만 AI를 고른 사람의 선택이다
+            onIllustrate={(description) => {
+                pushInApp(
+                    router,
+                    ROUTES.illustration({
+                        purpose: 'BADGE',
+                        description: description || undefined,
+                        returnTo: ROUTES.challengeNewBadge,
+                    }),
+                )
             }}
         />
     )
