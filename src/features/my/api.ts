@@ -35,6 +35,20 @@ export function getMyProfile(): Promise<MyProfile> {
     return apiFetch<MyProfile>('/api/v1/my/profile')
 }
 
+/**
+ * GET /api/v1/my/nickname/availability — 남이 쓰고 있는지만 답한다.
+ *
+ * 형식 검사는 담기지 않는다 — 프론트가 같은 규칙(`NICKNAME_RE`)을 들고 있어 즉시 알려줄 수 있고,
+ * 형식이 어긋난 값을 보내면 서버가 400을 준다. 그래서 **형식을 통과한 값만** 물어봐야 한다.
+ *
+ * 지금 내 닉네임은 `available: true`로 온다 — 변경 API가 같은 값을 no-op으로 통과시키기 때문
+ */
+export function checkNicknameAvailability(nickname: string): Promise<{ available: boolean }> {
+    return apiFetch<{ available: boolean }>(
+        `/api/v1/my/nickname/availability?nickname=${encodeURIComponent(nickname)}`,
+    )
+}
+
 // PATCH /api/v1/my/nickname — 닉네임 변경 (1개월 1회)
 // 너무 이르면 NICKNAME_CHANGE_TOO_SOON, 중복이면 NICKNAME_DUPLICATED 메시지가 던져진다.
 export function patchNickname(nickname: string): Promise<void> {
