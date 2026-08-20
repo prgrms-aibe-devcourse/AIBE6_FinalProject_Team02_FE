@@ -155,7 +155,7 @@ export function MadeDexCreateWizard({ onCreate, onExit, onIllustrate }: Props) {
                                         <button
                                             type="button"
                                             onClick={goIllustrate}
-                                            className="flex min-h-touch items-center rounded-full bg-action-soft px-5 text-sm font-bold text-action-soft-text"
+                                            className="ai-gradient-border min-h-touch rounded-full bg-neutral-100 px-4 text-sm font-bold text-content-primary"
                                         >
                                             AI로 그리기
                                         </button>

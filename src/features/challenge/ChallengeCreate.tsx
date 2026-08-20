@@ -190,6 +190,15 @@ export function ChallengeCreate({
 
     // 보상 뱃지 — 직접 만든 것뿐이다 (프리셋 제거, BADGE 단계 주석 참고)
     const [submitting, setSubmitting] = useState(false)
+
+    /**
+     * 완료 화면에 쓸 값을 개설 시점에 찍어 둔다.
+     *
+     * draft를 그대로 읽으면 '확인'이 `resetChallengeDraft()`를 부르는 순간
+     * **이 화면이 먼저 다시 그려져 "목표 0개"가 스친다** — 이동은 비동기라 한 박자 늦다.
+     * 완료 화면은 이미 만들어진 것을 보여주는 자리라 살아 있는 draft를 볼 이유가 없다.
+     */
+    const [created, setCreated] = useState<{ title: string; targetCount: number } | null>(null)
     /** 뱃지 없이 개설하려 했을 때 뜨는 안내 */
     const [badgeAlert, setBadgeAlert] = useState(false)
     const rewardName = customBadge?.name ?? ''
@@ -228,6 +237,7 @@ export function ChallengeCreate({
                 // 위 가드를 통과했으므로 여기서는 반드시 있다
                 rewardBadge: customBadge,
             })
+            setCreated({ title: title.trim(), targetCount: targets.length })
             go(DONE)
         } finally {
             setSubmitting(false)
@@ -696,7 +706,7 @@ export function ChallengeCreate({
                                     transition={{ delay: 0.3 }}
                                     className="mt-2 text-sm text-neutral-400"
                                 >
-                                    {title} · 목표 {targets.length}개
+                                    {created?.title} · 목표 {created?.targetCount ?? 0}개
                                 </motion.p>
                             </div>
                         )}
