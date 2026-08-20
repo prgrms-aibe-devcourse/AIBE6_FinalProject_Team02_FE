@@ -55,8 +55,10 @@ export const ROUTES = {
     myNickname: '/my/nickname',
     myBadges: '/my/badges',
     myPhoto: '/my/photo',
-    myReviews: '/my/reviews',
-    myLikedReviews: '/my/liked-reviews',
+    /** 내 활동 — 챌린짓 리뷰와 로그잇 댓글을 탭으로 담는다 */
+    myWritten: '/my/written',
+    /** 내 활동 — 챌린짓 리뷰 좋아요와 로그잇 기록 좋아요 */
+    myLikes: '/my/likes',
     myNotifications: '/my/notifications',
 
     friends: '/friends',
