@@ -1,20 +1,33 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { LockIcon } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 
 import { WIZARD_STEP_TRANSITION, wizardStepVariants } from '@/shared/lib/wizardMotion'
 import { Button, Text, WizardHeader } from '@/shared/ui'
+import { takeIllustrationHandoff } from '@/features/illustration/handoff'
 import { madeErrorMessage } from './errors'
 import { MadeDexBasicFields, MadeDexCoverPicker, useCoverPreview } from './MadeDexFormFields'
 import { DEFAULT_MADE_DEX_COVER } from './types'
 
 interface Props {
-    onCreate: (name: string, description: string, image: File | null) => Promise<void>
+    /** `imageKey`가 있으면 이미 S3에 올라간 AI 그림이다 — 다시 올리지 않는다 */
+    onCreate: (name: string, description: string, image: File | null, imageKey: string | null) => Promise<void>
     /** 1단계에서 뒤로 가면 목록으로 나간다 */
     onExit: () => void
+    /** AI 일러스트 화면으로. 적어 둔 이름·소개말은 이 컴포넌트가 지켜 둔다 */
+    onIllustrate: () => void
 }
+
+/**
+ * 일러스트 화면에 다녀오는 동안 적어 둔 것을 지키는 자리.
+ *
+ * 이 위저드의 입력은 전부 로컬 상태라 라우트를 떠나면 사라진다. 챌린짓 개설은
+ * draft가 provider에 있어 살아남지만 여기는 그렇지 않아, 떠나기 직전에 담아 두고
+ * 돌아오면 꺼내 쓴다.
+ */
+const DRAFT_KEY = 'catcheat:made-dex-draft'
 
 /**
  * 로그잇 개설.
@@ -34,7 +47,7 @@ interface Props {
  */
 const STEP_LABEL = ['기본 정보', '확인'] as const
 
-export function MadeDexCreateWizard({ onCreate, onExit }: Props) {
+export function MadeDexCreateWizard({ onCreate, onExit, onIllustrate }: Props) {
     // 방향을 함께 들고 있어야 전환이 좌우로 갈린다 (챌린짓과 같은 방식)
     const [[step, dir], setStepDir] = useState<[number, number]>([0, 1])
     const go = (next: number) => setStepDir([next, next > step ? 1 : -1])
@@ -45,17 +58,48 @@ export function MadeDexCreateWizard({ onCreate, onExit }: Props) {
     const [submitting, setSubmitting] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
-    const imagePreview = useCoverPreview(image)
+    /** AI로 만든 표지. 이미 올라가 있어 File이 아니라 key를 들고 있는다 */
+    const [aiCover, setAiCover] = useState<{ imageKey: string; previewUrl: string } | null>(null)
+
+    const filePreview = useCoverPreview(image)
+    // 둘 다 있을 수는 없다 — 한쪽을 고르면 다른 쪽을 비운다
+    const imagePreview = aiCover?.previewUrl ?? filePreview
     const trimmedName = name.trim()
     const last = step === STEP_LABEL.length - 1
 
+    /* 일러스트 화면에 다녀왔다면 적어 둔 것과 결과를 함께 되살린다 */
+    useEffect(() => {
+        const stashed = window.sessionStorage.getItem(DRAFT_KEY)
+        if (stashed) {
+            window.sessionStorage.removeItem(DRAFT_KEY)
+            try {
+                const draft = JSON.parse(stashed) as { name: string; description: string }
+                setName(draft.name)
+                setDescription(draft.description)
+            } catch {
+                // 못 읽으면 빈 화면으로 시작한다. 되살리기 실패가 개설을 막을 이유는 없다
+            }
+        }
+
+        const handoff = takeIllustrationHandoff('LOGIT_COVER')
+        if (handoff) {
+            setImage(null)
+            setAiCover({ imageKey: handoff.imageKey, previewUrl: handoff.previewUrl })
+        }
+    }, [])
+
     const back = () => (step === 0 ? onExit() : go(step - 1))
+
+    const goIllustrate = () => {
+        window.sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ name, description }))
+        onIllustrate()
+    }
 
     const create = async () => {
         setSubmitting(true)
         setError(null)
         try {
-            await onCreate(trimmedName, description.trim(), image)
+            await onCreate(trimmedName, description.trim(), image, aiCover?.imageKey ?? null)
         } catch (failure) {
             setError(madeErrorMessage(failure, '로그잇을 만들지 못했어요. 잠시 후 다시 시도해 주세요.'))
             setSubmitting(false)
@@ -96,9 +140,26 @@ export function MadeDexCreateWizard({ onCreate, onExit }: Props) {
                                 <div className="pt-6">
                                     <MadeDexCoverPicker
                                         preview={imagePreview}
-                                        onPick={setImage}
-                                        onClear={() => setImage(null)}
+                                        onPick={(picked) => {
+                                            // 사진을 고르면 앞서 만든 AI 그림은 버린다
+                                            setAiCover(null)
+                                            setImage(picked)
+                                        }}
+                                        onClear={() => {
+                                            setAiCover(null)
+                                            setImage(null)
+                                        }}
                                     />
+                                    {/* 사진을 올리는 길과 나란히 둔다 */}
+                                    <div className="mt-3 flex justify-center">
+                                        <button
+                                            type="button"
+                                            onClick={goIllustrate}
+                                            className="flex min-h-touch items-center rounded-full bg-action-soft px-5 text-sm font-bold text-action-soft-text"
+                                        >
+                                            AI로 그리기
+                                        </button>
+                                    </div>
                                 </div>
                                 <div className="mt-8">
                                     <MadeDexBasicFields

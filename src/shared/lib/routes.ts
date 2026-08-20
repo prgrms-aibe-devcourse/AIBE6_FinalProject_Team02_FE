@@ -1,3 +1,4 @@
+import type { IllustrationPurpose } from '@/features/illustration/types'
 import type { MadeDexId } from '@/features/made/types'
 import type { NavTab } from '@/shared/ui'
 
@@ -71,6 +72,26 @@ export const ROUTES = {
     registerRecord: '/register/record',
     registerTags: '/register/tags',
     registerUnlock: '/register/unlock',
+
+    /**
+     * AI 일러스트 생성 화면. 네 자리(표지·대표·슬롯·뱃지)가 같이 쓴다.
+     *
+     * `returnTo`를 들고 가는 이유는 **결과를 받아 갈 화면이 자리마다 다르기** 때문이다.
+     * 결과 자체는 URL이 아니라 sessionStorage로 넘긴다 (`illustrationHandoff`) —
+     * imageKey를 쿼리에 실으면 주소창에 남고 뒤로가기로 되살아난다.
+     */
+    illustration: (params: {
+        purpose: IllustrationPurpose
+        returnTo: string
+        description?: string
+        /** 챌린짓 슬롯처럼 같은 자리가 여러 개일 때, 어느 칸인지 가리는 표식 */
+        ref?: string
+    }) => {
+        const query = new URLSearchParams({ purpose: params.purpose, returnTo: params.returnTo })
+        if (params.description) query.set('description', params.description)
+        if (params.ref) query.set('ref', params.ref)
+        return `/illustration?${query.toString()}`
+    },
 } as const
 
 /** 하단 네비 4탭 → 라우트 */

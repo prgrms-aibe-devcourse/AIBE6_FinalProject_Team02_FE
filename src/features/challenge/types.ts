@@ -6,6 +6,11 @@ export interface RewardBadge {
     /** 뱃지 배경 톤 (Tailwind 클래스) */
     tone: string
     customImage?: string
+    /**
+     * AI로 만든 뱃지. 이미 S3에 올라가 있어 `customImage`를 다시 올리지 않는다.
+     * (`customImage`는 이때 표시용 프리사인 URL이라 업로드할 수 있는 값이 아니다)
+     */
+    imageKey?: string | null
     /** 프리셋 code */
     code?: string
 }
@@ -18,6 +23,12 @@ export interface ChallengeTarget {
     imageUrl?: string
     /** 개설 화면에서만 사용 — 업로드 전 로컬 파일 */
     file?: File | null
+    /**
+     * 이미 S3에 올라가 있는 이미지. AI 일러스트는 서버가 원본을 읽어야 해서
+     * **개설 시점이 아니라 그리는 시점에** 올라간다 — 그 결과가 여기 담긴다.
+     * 값이 있으면 개설에서 다시 올리지 않는다.
+     */
+    imageKey?: string | null
     /** 위치 인증 챌린지 — 목표 장소 */
     placeName?: string | null
     lat?: number | null
@@ -55,4 +66,6 @@ export interface ChallengeData {
     coverUrl?: string | null
     /** 대표 이미지 업로드 파일(개설 마법사 → 개설 처리) */
     coverFile?: Blob | null
+    /** AI로 만든 대표 이미지. 이미 올라가 있어 개설에서 다시 올리지 않는다 */
+    coverImageKey?: string | null
 }

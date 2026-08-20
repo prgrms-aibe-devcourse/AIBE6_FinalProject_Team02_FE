@@ -57,6 +57,10 @@ const config: Config = {
                     border: token('mint-border'),
                     ink: token('mint-ink'),
                 },
+                /* 일러스트 진입 장식 전용 액센트. 의미색이 아니다 */
+                ai: {
+                    accent: token('ai-accent'),
+                },
                 red: {
                     400: token('red-500'),
                     500: token('red-500'),
