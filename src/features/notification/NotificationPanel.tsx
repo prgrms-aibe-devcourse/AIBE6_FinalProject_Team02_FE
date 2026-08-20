@@ -59,11 +59,21 @@ const TYPE_ICON: Record<NotificationType, React.ReactNode> = {
 }
 
 function notificationLabel(notification: NotificationItem): string {
-    if (notification.message?.trim()) return notification.message
-
     const actor = notification.actorNickname?.trim()
     const target = notification.targetName?.trim()
     const madeDexName = notification.madeDexName?.trim()
+
+    if (notification.type === 'FOOD_REPORT_REJECT') {
+        const namePart = target ? `'${target}' ` : ''
+        const reasonPart = notification.message?.trim() ? ` — ${notification.message}` : ''
+        return `제보한 음식 ${namePart}거절됐어요${reasonPart}`.trim()
+    }
+    if (notification.type === 'FOOD_REPORT_APPROVE') {
+        const namePart = target ? `'${target}' ` : ''
+        return `제보한 음식 ${namePart}승인됐어요`.trim()
+    }
+
+    if (notification.message?.trim()) return notification.message
 
     if (notification.type === 'MADE_DEX_JOINED' && actor && madeDexName) {
         return `${madeDexName}에 ${actor}님이 참여했어요`
