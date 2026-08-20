@@ -120,6 +120,59 @@ export function getLikedReviews(): Promise<LikedReview[]> {
     return apiFetch<LikedReview[]>('/api/v1/users/me/liked-reviews')
 }
 
+/**
+ * GET /api/v1/users/me/logit-comments 항목 (BE `MyLogitCommentResponseDTO`와 일치).
+ *
+ * 리뷰와 달리 별점이 없다 — 로그잇 댓글은 평가가 아니라 대화다.
+ * 삭제된 기록·삭제된 로그잇·내가 나간 로그잇의 것은 서버가 걸러 준다
+ */
+export interface MyLogitComment {
+    commentId: number
+    madeDexId: number
+    madeDexName: string
+    recordId: number
+    loggedOn: string // YYYY-MM-DD, 기록의 날짜
+    slotName: string
+    content: string
+    likeCount: number
+    createdAt: string // ISO
+    updatedAt: string | null // 고친 적 없으면 null
+}
+
+// GET /api/v1/users/me/logit-comments — 내가 쓴 로그잇 댓글(최신순)
+export function getMyLogitComments(): Promise<MyLogitComment[]> {
+    return apiFetch<MyLogitComment[]>('/api/v1/users/me/logit-comments')
+}
+
+/**
+ * GET /api/v1/users/me/liked-logit-records 항목 (BE `LikedLogitRecordResponseDTO`와 일치).
+ *
+ * 기록에는 본문 글이 없다 — **사진이 본문**이라 썸네일과 크롭 값이 온다.
+ * 사진 없이 올린 기록은 `thumbnailUrl`이 null이고 크롭은 기본값(50)이 온다.
+ *
+ * 정렬 기준은 `likedAt`(내가 누른 시각)이다
+ */
+export interface LikedLogitRecord {
+    recordId: number
+    madeDexId: number
+    madeDexName: string
+    loggedOn: string // YYYY-MM-DD
+    slotName: string
+    authorId: number
+    authorNickname: string | null
+    authorProfileImageUrl: string | null
+    thumbnailUrl: string | null
+    thumbnailCropX: number // 0~100 (%). object-position에 그대로 넣는다
+    thumbnailCropY: number
+    likeCount: number
+    likedAt: string // 내가 좋아요한 시각 (목록 정렬 기준)
+}
+
+// GET /api/v1/users/me/liked-logit-records — 좋아요한 로그잇 기록(내가 누른 순)
+export function getLikedLogitRecords(): Promise<LikedLogitRecord[]> {
+    return apiFetch<LikedLogitRecord[]>('/api/v1/users/me/liked-logit-records')
+}
+
 // PATCH /api/v1/my/badges/equip — 대표 뱃지 장착/해제 (badgeId=null이면 해제)
 export function equipBadge(badgeId: number | null): Promise<void> {
     return apiFetch<void>('/api/v1/my/badges/equip', {
