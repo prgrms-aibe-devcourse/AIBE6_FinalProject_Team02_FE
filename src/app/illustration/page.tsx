@@ -43,12 +43,11 @@ function IllustrationContent() {
             initialDescription={params.get('description') ?? ''}
             handoffRef={params.get('ref') ?? undefined}
             /*
-             * `replace(returnTo)`가 아니라 `back()`이다.
+             * replace가 아니라 back으로 돌아간다.
              *
-             * returnTo는 **방금 떠나온 그 화면**이라, replace로 덮으면 앞 항목과 같은
-             * URL이 연달아 둘이 된다. 그 뒤 위저드의 '확인'이 back()을 불러도 같은
-             * URL로 옮겨갈 뿐이라 리마운트가 없고, **한 번 더 눌러야 목록으로 나갔다.**
-             * backNav.ts §문제 2가 시트에서 이미 겪은 함정과 같은 것이다
+             * returnTo는 방금 떠나온 화면이라, replace로 덮으면 앞 항목과 같은 URL이
+             * 연달아 둘이 된다. 그러면 이후의 back()이 같은 URL로 옮겨가 리마운트가 없고,
+             * 화면을 벗어나려면 한 번 더 눌러야 한다. backNav.ts의 §문제 2와 같은 경우다
              */
             onDone={() => goBackOr(router, returnTo)}
             onBack={() => goBackOr(router, returnTo)}

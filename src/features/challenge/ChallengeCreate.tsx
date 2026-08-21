@@ -192,11 +192,10 @@ export function ChallengeCreate({
     const [submitting, setSubmitting] = useState(false)
 
     /**
-     * 완료 화면에 쓸 값을 개설 시점에 찍어 둔다.
+     * 완료 화면에 쓸 값을 개설 시점에 담아 둔다.
      *
-     * draft를 그대로 읽으면 '확인'이 `resetChallengeDraft()`를 부르는 순간
-     * **이 화면이 먼저 다시 그려져 "목표 0개"가 스친다** — 이동은 비동기라 한 박자 늦다.
-     * 완료 화면은 이미 만들어진 것을 보여주는 자리라 살아 있는 draft를 볼 이유가 없다.
+     * draft를 그대로 읽으면 '확인'의 `resetChallengeDraft()`가 동기로 반영되면서
+     * 이동(비동기)보다 먼저 다시 그려져 "목표 0개"가 스친다.
      */
     const [created, setCreated] = useState<{ title: string; targetCount: number } | null>(null)
     /** 뱃지 없이 개설하려 했을 때 뜨는 안내 */
@@ -583,12 +582,10 @@ export function ChallengeCreate({
                                                     className="ai-gradient-border flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-content-primary"
                                                 >
                                                     {/*
-                                                        아이콘 대신 크레파스 그림. 이 버튼이 만드는 결과가 곧 크레파스 그림이다.
-
-                                                        **원본 500×500의 절반이 투명 여백이라**(실제 그림은 261×265)
-                                                        20px로 그리면 크레파스가 10px밖에 안 된다. 버튼(36px)보다 크게
-                                                        그려서 그림 자체를 21px로 맞춘다 — 넘치는 부분은 투명이라 보이지 않는다.
-                                                        그림이 캔버스 정중앙이 아니라 살짝 왼쪽 위에 있어 그만큼 되민다
+                                                        캔버스(160×160)의 절반이 투명 여백이라 실제 그림은 53%뿐이다.
+                                                        버튼(36px)보다 크게 그려 그림 자체를 21px로 맞춘다.
+                                                        넘치는 부분은 투명이라 보이지 않는다.
+                                                        그림이 캔버스 정중앙보다 왼쪽 위에 있어 그만큼 되민다
                                                     */}
                                                     <Image
                                                         src="/images/crayon_icon.png"

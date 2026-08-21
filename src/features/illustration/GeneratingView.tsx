@@ -29,7 +29,7 @@ export function GeneratingView({ elapsedSec }: Props) {
                 {overdue ? '조금만 더 기다려 주세요' : '열심히 그리는 중이에요!'}
             </p>
 
-            {/* 숫자 대신 크레용이 나아간다. 멈추지 않았다는 신호는 같지만 초를 약속하지 않는다 */}
+            {/* 경과 초 대신 진행바. 멈추지 않았다는 신호는 같고 남은 시간은 약속하지 않는다 */}
             <div className="mt-4 w-full">
                 <CrayonProgress elapsedSec={elapsedSec} />
             </div>

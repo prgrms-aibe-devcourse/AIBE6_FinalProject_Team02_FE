@@ -229,13 +229,19 @@ function PhotoThumb({ photo, isAnalysis, selectable, onSelect, onRemove, onRetry
                 </span>
             )}
 
+            {/*
+                로그잇 사진 편집기와 같은 모양으로 맞춘다 — 흰 원에 회색 X는 밝은 사진 위에서
+                보이지 않았고, 21px이라 있는 줄도 몰랐다. 검은 반투명 원이라 배경을 타지 않는다.
+                히트 영역은 32px 그대로 둔다(no-touch-expand). 썸네일이 112px이라
+                44px로 넓히면 사진을 탭해 분석 사진을 바꾸는 자리를 잡아먹는다
+            */}
             <button
                 type="button"
                 onClick={onRemove}
                 aria-label={`${photo.file.name} 빼기`}
-                className="absolute right-1 top-1 rounded-full bg-white/90 p-1 text-neutral-400 shadow-soft"
+                className="no-touch-expand absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/45"
             >
-                <XIcon size={13} aria-hidden />
+                <XIcon size={18} aria-hidden className="text-white" />
             </button>
         </div>
     )
