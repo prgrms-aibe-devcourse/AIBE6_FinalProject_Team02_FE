@@ -207,6 +207,10 @@ function ChallengeDetailPageInner() {
                 onDelete={() => setConfirmDelete(true)}
                 onCloseChallenge={() => setConfirmClose(true)}
                 onUnlock={async (slotId, file, coords) => {
+                    if (challenge.ended) {
+                        setAlertMessage('종료된 챌린짓은 인증(해금)할 수 없어요.')
+                        throw new Error('종료된 챌린짓은 인증(해금)할 수 없어요.')
+                    }
                     // 위치·에러 처리는 해금 위저드가 담당. 여기선 업로드 → 해금만 (실패는 throw)
                     const { key } = await uploadImageToS3(file, file.name)
                     const res = await unlockSlot(id, slotId, key, coords?.lat ?? null, coords?.lng ?? null)

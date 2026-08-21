@@ -120,7 +120,10 @@ export function ChallengeDetail({
      * 접는 이유는 두 겹이 겹쳐 있으면 **포커스 가두기가 서로 당기기** 때문이다.
      * 히스토리에는 아무 것도 넣거나 빼지 않으므로 뒤로가기 셈도 그대로다
      */
-    const startCertify = (target: ChallengeTarget) => setCertify(target)
+    const startCertify = (target: ChallengeTarget) => {
+        if (ended) return
+        setCertify(target)
+    }
 
     /**
      * 위저드가 떠 있는데 주소에서 그 음식이 사라졌다면(= 뒤로가기) 위저드도 함께 닫는다.
@@ -477,7 +480,7 @@ export function ChallengeDetail({
                     </div>
                 </BottomSheet>
             )}
-            {certify && onUnlock && (
+            {certify && onUnlock && !ended && (
                 <CertifyWizard
                     name={certify.name}
                     placeName={certify.placeName}
