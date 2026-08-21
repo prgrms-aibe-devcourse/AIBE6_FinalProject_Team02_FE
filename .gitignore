@@ -49,6 +49,8 @@ assets/fonts/*.ttf
 assets/fonts/*.otf
 
 # Android / TWA (Bubblewrap)
+/app/
+/android-twa/
 /.gradle/
 *.keystore
 *.jks
