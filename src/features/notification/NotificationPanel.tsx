@@ -5,6 +5,8 @@ import {
     ArrowLeftIcon,
     BellIcon,
     CheckIcon,
+    ClipboardListIcon,
+    FlagIcon,
     ImagePlusIcon,
     HeartIcon,
     MessageSquareIcon,
@@ -37,6 +39,11 @@ const TYPE_LABEL: Record<NotificationType, string> = {
     FRIEND_REQUEST_REJECT: '친구 요청이 거절됐어요',
     FOOD_REPORT_APPROVE: '제보한 음식이 승인됐어요',
     FOOD_REPORT_REJECT: '제보한 음식이 거절됐어요',
+    FOOD_REGISTRATION_APPROVE: '등록 요청한 음식이 승인됐어요',
+    FOOD_REGISTRATION_REJECT: '등록 요청한 음식이 거절됐어요',
+    // 관리자 전용. 항상 message가 같이 오지만(음식명 포함), 혹시 없을 때를 대비한 기본 문구
+    FOOD_REGISTRATION_REQUEST_RECEIVED: '새 등록 요청이 도착했어요',
+    FOOD_REPORT_RECEIVED: '새 제보가 도착했어요',
 }
 
 const TYPE_ICON: Record<NotificationType, React.ReactNode> = {
@@ -56,6 +63,10 @@ const TYPE_ICON: Record<NotificationType, React.ReactNode> = {
     FRIEND_REQUEST_REJECT: <XIcon size={18} aria-hidden />,
     FOOD_REPORT_APPROVE: <CheckIcon size={18} aria-hidden />,
     FOOD_REPORT_REJECT: <XIcon size={18} aria-hidden />,
+    FOOD_REGISTRATION_APPROVE: <CheckIcon size={18} aria-hidden />,
+    FOOD_REGISTRATION_REJECT: <XIcon size={18} aria-hidden />,
+    FOOD_REGISTRATION_REQUEST_RECEIVED: <ClipboardListIcon size={18} aria-hidden />,
+    FOOD_REPORT_RECEIVED: <FlagIcon size={18} aria-hidden />,
 }
 
 function notificationLabel(notification: NotificationItem): string {

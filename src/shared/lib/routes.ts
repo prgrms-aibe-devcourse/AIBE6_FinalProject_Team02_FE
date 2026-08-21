@@ -68,6 +68,9 @@ export const ROUTES = {
     userProfile: (id: number | 'me') => `/users/${id}`,
 
     admin: '/admin',
+    /** 관리자 콘솔을 등록 요청/제보 탭을 펼친 채로 연다 — 관리자 알림 클릭용 */
+    adminRequests: '/admin?tab=requests',
+    adminReports: '/admin?tab=reports',
 
     register: '/register',
     /**

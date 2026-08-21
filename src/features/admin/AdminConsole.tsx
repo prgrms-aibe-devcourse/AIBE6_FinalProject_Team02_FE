@@ -16,9 +16,14 @@ const REPORT_FILTERS: { value: ReportStatus; label: string }[] = [
     { value: 'REJECTED', label: '반려' },
 ]
 
-export function AdminConsole() {
+interface Props {
+    /** 관리자 알림 클릭 등으로 특정 탭을 펼친 채 들어올 때 쓴다. 기본은 '등록 요청' */
+    initialTab?: Tab
+}
+
+export function AdminConsole({ initialTab }: Props = {}) {
     const router = useRouter()
-    const [tab, setTab] = useState<Tab>('requests')
+    const [tab, setTab] = useState<Tab>(initialTab ?? 'requests')
     const [reportStatus, setReportStatus] = useState<ReportStatus>('PENDING')
     const [reports, setReports] = useState<FoodReport[]>([])
     const [requests, setRequests] = useState<FoodRegistrationRequest[]>([])
