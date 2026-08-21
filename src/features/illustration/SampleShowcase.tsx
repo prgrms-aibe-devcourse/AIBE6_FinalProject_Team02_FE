@@ -5,13 +5,13 @@ import Image from 'next/image'
 /**
  * 진입 화면에서 사진을 고르기 전, 버튼 아래를 채우는 안내 카드.
  *
- * **글자를 그림에 굽지 않았다.** 카드를 통짜 PNG로 넣으면 375px 폭에서 안의 글자가
- * 9~10px로 줄고 확대도 안 되며, 스크린리더가 한 글자도 못 읽는다. 앱이 이미 손글씨
- * 폰트(`font-display` = Dinggul)를 쓰고 있어 **텍스트로 써도 크레파스 느낌이 그대로 난다.**
- * 그림이어야만 하는 것 — 프레임과 샘플 세 장 — 만 이미지다.
+ * 글자는 이미지가 아니라 텍스트다. 카드를 통짜 PNG로 넣으면 375px 폭에서 글자가
+ * 9~10px로 줄고 확대되지 않으며 스크린리더가 읽지 못한다.
+ * `font-display`(Dinggul)가 손글씨라 텍스트로도 같은 느낌이 나므로,
+ * 프레임과 샘플 세 장만 이미지로 둔다.
  *
- * 뱃지 진입에는 띄우지 않는다. 그 화면은 "사진 없이 설명만으로도" 가 주제라
- * "어떤 사진이든" 과 어긋나고, `TextField`가 들어와 자리도 없다.
+ * 뱃지 진입에는 띄우지 않는다. 그 화면은 사진 없이 설명만으로도 만들 수 있어
+ * "어떤 사진이든"과 맞지 않고, `TextField`가 들어와 자리도 없다.
  */
 
 /** 카드를 두르는 노란 크레파스 테두리. 원본 577×433 */
@@ -33,7 +33,7 @@ const SAMPLES: Sample[] = [
     { label: '캐릭터', frame: '/images/green_frame.png', example: '/images/illustration_example_character.png' },
 ]
 
-/** 프레임 안쪽 여백. 크레파스 선이 두꺼워 그림이 선에 닿으면 지저분해진다 */
+/** 프레임 안쪽 여백. 선이 두꺼워 그림이 닿지 않도록 띄운다 */
 const INNER_INSET = 'inset-[13%]'
 
 export function SampleShowcase() {
@@ -82,14 +82,11 @@ function SampleTile({ label, frame, example }: Sample) {
     return (
         <figure className="flex flex-col items-center gap-1.5">
             <div className="relative h-[4.5rem] w-[4.5rem]">
-                {/*
-                    원본이 1024×1024인데 72px로 그린다. `next/image`가 알맞은 크기의 WebP로
-                    줄여 내려보내므로 원본을 그대로 물리지 않는다 — 셋을 합치면 6.4MB다
-                */}
+                {/* 원본 512×512를 72px로 그린다. next/image가 알맞은 크기로 줄여 내려보낸다 */}
                 <div className={`absolute ${INNER_INSET}`}>
                     <Image src={example} alt="" fill sizes="72px" className="object-contain" />
                 </div>
-                {/* 프레임을 그림 **위에** 덮는다. 가운데가 비어 있어 그림을 가리지 않고 선만 얹힌다 */}
+                {/* 프레임을 그림 위에 덮는다. 가운데가 비어 있어 선만 얹힌다 */}
                 {/* eslint-disable-next-line @next/next/no-img-element -- 12KB 장식이라 최적화 왕복이 더 비싸다 */}
                 <img src={frame} alt="" aria-hidden className="absolute inset-0 h-full w-full" />
             </div>

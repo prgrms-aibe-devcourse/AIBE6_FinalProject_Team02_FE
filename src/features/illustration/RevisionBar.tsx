@@ -88,8 +88,7 @@ export function RevisionBar({ presets, remaining, submitting, onSubmit }: Props)
                     aria-label="이대로 다시 그리기"
                     className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-action-primary text-content-on-action disabled:bg-action-disabled-bg disabled:text-action-disabled-text"
                 >
-                    {/* 보낼 것이 생기면 아이콘이 화살표로 바뀐다 — 색만으로 알리면
-                        색을 못 가리는 눈에는 아무 일도 일어나지 않은 화면이 된다 */}
+                    {/* 보낼 것이 생기면 아이콘이 바뀐다. disabled 색만으로는 색각 이상에서 구분되지 않는다 */}
                     {empty ? <SendIcon size={18} aria-hidden /> : <ArrowUpIcon size={20} aria-hidden />}
                 </button>
             </div>

@@ -5,23 +5,21 @@ import Image from 'next/image'
 /**
  * 크레용이 선을 칠하며 나아가는 진행바.
  *
- * **이건 실제 진행률이 아니다.** 서버는 중간 상태를 주지 않는다 — 우리가 아는 건
- * "평균 20초"뿐이다. 그래서 시간으로 그리되 **끝에 닿지 않게** 만든다.
- * 100%에 붙은 채로 결과가 안 나오면 멈춘 화면이 되기 때문이다.
+ * 서버가 중간 상태를 주지 않아 실제 진행률이 아니라 경과 시간으로 그린다.
+ * 끝에 닿지 않게 두는 이유는 100%에 붙은 채로 결과가 안 나오면 멈춘 화면이 되기 때문이다.
  *
- * 아래 좌표들은 눈대중이 아니라 PNG의 알파값을 읽어 잰 값이다.
- * 이미지를 교체하면 다시 재야 한다.
+ * 아래 좌표는 PNG의 알파값을 읽어 잰 값이다. 이미지를 교체하면 다시 재야 한다.
  */
 
 /** 서버 평균. `GeneratingView`·`useIllustrationJob`과 같은 값 */
 const EXPECTED_SEC = 20
 
-/** 20초까지 여기까지만 찬다. 나머지 10%가 "아직 안 끝났다"를 담는 자리다 */
+/** 20초까지 차는 상한. 남은 10%가 예상 시간을 넘긴 구간을 담는다 */
 const PACED_MAX = 90
 
 /**
- * 20초를 넘기면 남은 10%를 아주 느리게 갉아먹는다. 25초마다 남은 거리의 63%.
- * 45초에 95.7%, 90초에 98.8% — **절대 100%에 닿지 않는다.**
+ * 20초를 넘기면 남은 10%를 25초마다 63%씩 좁힌다.
+ * 45초에 95.7%, 90초에 98.8%로 100%에 수렴만 하고 도달하지 않는다.
  */
 const CREEP_TAU = 25
 
@@ -29,8 +27,8 @@ const CREEP_TAU = 25
 const BAR_RATIO = 316 / 788
 
 /**
- * 크레용 그림. 캔버스 1388×1133에 실제 잉크는 629×921 (가로 45% · 세로 81%).
- * 잉크가 오른쪽에 치우쳐 있어(왼 여백 483 · 오른 276) 가운데 정렬로는 맞출 수 없다
+ * 크레용 그림. 캔버스 256×209에 실제 잉크는 가로 45% · 세로 82%.
+ * 잉크가 오른쪽에 치우쳐 있어 가운데 정렬로는 맞지 않는다
  */
 const CRAYON_SRC = '/images/bottom_nav/crayon_bar.png'
 const CRAYON_RATIO = 1133 / 1388
@@ -49,7 +47,7 @@ const TRACK_WIDTH = 240
 /** 이 폭이면 실제 크레용이 29×42px로 그려진다 (트랙 240px의 약 17%) */
 const CRAYON_WIDTH = 64
 
-/** 시간을 0~100 사이 진행률로. 끝에 닿지 않는 것이 핵심이다 */
+/** 경과 시간을 0~100 사이 진행률로 옮긴다 */
 function toPercent(elapsedSec: number) {
     if (elapsedSec <= 0) return 0
     if (elapsedSec <= EXPECTED_SEC) return (elapsedSec / EXPECTED_SEC) * PACED_MAX
@@ -66,17 +64,17 @@ export function CrayonProgress({ elapsedSec }: Props) {
     const overdue = elapsedSec > EXPECTED_SEC
 
     return (
-        // 진행률이 추정치라 스크린리더에는 알리지 않는다. 위쪽 문구가 이미 상태를 말한다
+        // 추정치라 progressbar 역할을 주지 않는다. 상태는 위쪽 문구가 알린다
         <div aria-hidden className="relative mx-auto h-16" style={{ width: TRACK_WIDTH }}>
             {/*
                 선 창. 원본의 95%가 투명 여백이라 그대로 두면 96px을 차지한다.
-                가로만 창에 맞추고(세로는 비율대로) 넘치는 여백을 잘라 낸다
+                가로만 창에 맞추고 세로는 비율대로 둔 뒤 넘치는 여백을 잘라 낸다
             */}
             <div className="absolute inset-x-0 bottom-2 h-3 overflow-hidden">
                 <BarImage src="/images/gray_bar.png" />
                 {/*
                     분홍 선은 같은 자리에 겹쳐 두고 오른쪽에서 잘라 낸다.
-                    폭을 줄이면 그림이 눌리지만 잘라 내면 선이 그대로 남는다
+                    폭을 줄이면 그림이 눌리므로 clip-path로 자른다
                 */}
                 <BarImage
                     src="/images/pink_bar.png"
@@ -87,7 +85,7 @@ export function CrayonProgress({ elapsedSec }: Props) {
                 />
             </div>
 
-            {/* 심 끝이 분홍과 회색의 경계에 오도록 이미지를 통째로 끌어온다 */}
+            {/* 심 끝이 분홍과 회색의 경계에 오도록 이미지 전체를 옮긴다 */}
             <span
                 className="absolute"
                 style={{

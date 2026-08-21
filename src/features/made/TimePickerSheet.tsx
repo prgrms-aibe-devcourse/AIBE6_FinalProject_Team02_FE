@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useId, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { BottomSheet } from '@/shared/ui'
 
 interface Props {
@@ -33,6 +33,20 @@ export function TimePickerSheet({ value, onDone, onClose }: Props) {
     const [meridiem, setMeridiem] = useState<Meridiem>(initial.meridiem)
     const [hour, setHour] = useState(initial.hour)
     const [minute, setMinute] = useState(initial.minute)
+
+    /**
+     * 분 휠이 한 바퀴 돌면 시를 그만큼 옮긴다. 3시 59분에서 더 굴리면 4시 0분이 된다.
+     *
+     * 24시로 바꿔 계산하는 이유는 오전/오후가 같이 넘어가야 하기 때문이다 —
+     * 11시 59분 오전 다음은 12시 0분 **오후**다.
+     */
+    const shiftHour = (carry: number) => {
+        const base = hour % 12
+        const hour24 = meridiem === '오후' ? base + 12 : base
+        const next = (((hour24 + carry) % 24) + 24) % 24
+        setMeridiem(next >= 12 ? '오후' : '오전')
+        setHour(next % 12 === 0 ? 12 : next % 12)
+    }
 
     return (
         <BottomSheet title="언제 먹었나요?" onClose={onClose}>
@@ -71,6 +85,7 @@ export function TimePickerSheet({ value, onDone, onClose }: Props) {
                             onChange={setHour}
                             format={(v) => String(v)}
                             label="시"
+                            loop
                         />
 
                         <span className="relative z-20 shrink-0 font-display text-2xl text-content-primary">:</span>
@@ -81,6 +96,8 @@ export function TimePickerSheet({ value, onDone, onClose }: Props) {
                             onChange={setMinute}
                             format={(v) => String(v).padStart(2, '0')}
                             label="분"
+                            loop
+                            onWrap={shiftHour}
                         />
                     </div>
                 </div>
@@ -109,15 +126,35 @@ const SETTLE_MS = 80
 /** smooth 스크롤이 목표에 닿기까지 기다려 주는 최대 시간. 안 닿아도 휠이 굳지 않게 푼다 */
 const PROGRAMMATIC_MAX_MS = 600
 
+/**
+ * 순환 휠이 들고 있을 칸의 최소 개수.
+ *
+ * 벌 수를 고정하면 짧은 목록이 위험하다 — 시(12칸)는 한 벌이 576px뿐이라
+ * 다섯 벌이어도 한 번 세게 튕기면 끝에 닿는다. 목록 길이에 맞춰 벌 수를 정한다.
+ */
+const LOOP_MIN_ITEMS = 300
+
 interface WheelPickerProps<T extends number> {
     items: T[]
     value: T
     onChange: (value: T) => void
     format: (value: T) => string
     label: string
+    /** 끝에서 멈추지 않고 처음으로 이어진다 */
+    loop?: boolean
+    /** 한 바퀴 넘어갔을 때. +1은 앞으로 한 바퀴, -1은 뒤로 한 바퀴 */
+    onWrap?: (carry: number) => void
 }
 
-function WheelPicker<T extends number>({ items, value, onChange, format, label }: WheelPickerProps<T>) {
+function WheelPicker<T extends number>({
+    items,
+    value,
+    onChange,
+    format,
+    label,
+    loop = false,
+    onWrap,
+}: WheelPickerProps<T>) {
     const listRef = useRef<HTMLDivElement>(null)
     const settling = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -134,6 +171,41 @@ function WheelPicker<T extends number>({ items, value, onChange, format, label }
 
     const padding = Math.floor(VISIBLE_COUNT / 2)
 
+    /** 가운데 벌이 있으려면 홀수여야 한다 */
+    const loopCopies = useMemo(() => {
+        if (!loop) return 1
+        const needed = Math.ceil(LOOP_MIN_ITEMS / items.length)
+        return needed % 2 === 0 ? needed + 1 : needed
+    }, [items.length, loop])
+    const loopMiddle = Math.floor(loopCopies / 2)
+
+    /** 화면에 실제로 까는 목록. 순환이면 같은 목록을 여러 벌 이어 붙인다 */
+    const rendered = useMemo(
+        () => (loop ? Array.from({ length: loopCopies }, () => items).flat() : items),
+        [items, loop, loopCopies],
+    )
+    /** 값 하나가 놓일 기준 자리. 순환이면 가운데 벌의 그 자리다 */
+    const baseIndex = useCallback(
+        (item: T) => (loop ? loopMiddle * items.length : 0) + items.indexOf(item),
+        [items, loop, loopMiddle],
+    )
+
+    /**
+     * 지금 하이라이트 바 안에 있는 **자리**. 값이 아니라 자리로 들고 있어야 한다 —
+     * 순환에서는 같은 숫자가 여러 벌에 있어서, 값으로 고르면 화면 밖 다른 벌이 굵어지고
+     * 정작 바 안의 숫자는 회색으로 남는다.
+     */
+    const [centerIndex, setCenterIndex] = useState(() => baseIndex(value))
+
+    /**
+     * 바퀴 수를 셀 때 기준으로 삼는 벌.
+     *
+     * 이걸 두지 않으면 **같은 자리에서 정착이 두 번 일어날 때 carry가 두 번 셈해진다** —
+     * 스냅 스크롤이 끝난 뒤 이벤트가 한 번 더 오는데, 그때 억제가 풀려 정착이 다시 돈다.
+     * 12시 59분에서 한 칸 굴렸을 뿐인데 2시가 되던 원인이다.
+     */
+    const carryBase = useRef(loopMiddle)
+
     // 휠 두 개(시·분)가 같은 화면에 있어 id가 겹치면 안 된다
     const listId = useId()
     const optionId = (item: T) => `${listId}-${item}`
@@ -144,6 +216,28 @@ function WheelPicker<T extends number>({ items, value, onChange, format, label }
             clearTimeout(targetTimer.current)
             targetTimer.current = null
         }
+    }
+
+    /**
+     * 손을 대는 순간 가운데 벌로 조용히 되돌린다.
+     *
+     * 보이는 그림은 그대로다 — 다른 벌의 같은 숫자로 옮기는 것뿐이라 화면은 변하지 않는다.
+     * 이렇게 해 두면 한 번의 손짓이 어느 쪽으로 얼마나 가든 끝에 닿지 않고,
+     * 몇 바퀴를 돌았는지도 가운데를 기준으로 세면 된다.
+     */
+    const recenter = () => {
+        const list = listRef.current
+        if (!loop || !list) return
+        const top = baseIndex(value) * ITEM_HEIGHT
+        if (Math.abs(list.scrollTop - top) <= 1) return
+        list.scrollTo({ top, behavior: 'instant' })
+        setCenterIndex(baseIndex(value))
+        carryBase.current = loopMiddle
+    }
+
+    const startInteraction = () => {
+        releaseTarget()
+        recenter()
     }
 
     const scrollToIndex = useCallback((index: number, smooth: boolean) => {
@@ -176,8 +270,12 @@ function WheelPicker<T extends number>({ items, value, onChange, format, label }
         emitted.current = null
         if (mine) return
 
-        const index = items.indexOf(value)
-        if (index >= 0) scrollToIndex(index, false)
+        if (items.indexOf(value) < 0) return
+        scrollToIndex(baseIndex(value), false)
+        setCenterIndex(baseIndex(value))
+        carryBase.current = loopMiddle
+        // baseIndex는 items·value에서 바로 나오는 값이라 따로 의존성에 두지 않는다
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [items, value, scrollToIndex])
 
     // 시트를 닫는 순간 타이머가 남아 있으면 사라진 휠에 대고 스크롤을 시킨다
@@ -196,13 +294,22 @@ function WheelPicker<T extends number>({ items, value, onChange, format, label }
         const current = items.indexOf(value)
         if (current < 0) return
 
-        const nextIndex = Math.max(0, Math.min(current + delta, items.length - 1))
+        const raw = current + delta
+        const nextIndex = loop
+            ? ((raw % items.length) + items.length) % items.length
+            : Math.max(0, Math.min(raw, items.length - 1))
         if (nextIndex === current) return
 
         const picked = items[nextIndex]
         emitted.current = picked
         onChange(picked)
-        scrollToIndex(nextIndex, true)
+        if (loop) {
+            const carry = Math.floor(raw / items.length)
+            if (carry !== 0) onWrap?.(carry)
+        }
+        scrollToIndex(baseIndex(picked), true)
+        setCenterIndex(baseIndex(picked))
+        carryBase.current = loopMiddle
     }
 
     /** 휠은 스크롤로만 고를 수 있어서 키보드 사용자는 시간을 못 정한다. 방향키로 같은 일을 하게 한다 */
@@ -238,8 +345,18 @@ function WheelPicker<T extends number>({ items, value, onChange, format, label }
             const settled = listRef.current
             if (!settled) return
             const rawIndex = Math.round(settled.scrollTop / ITEM_HEIGHT)
-            const index = Math.max(0, Math.min(rawIndex, items.length - 1))
-            const picked = items[index]
+            const index = Math.max(0, Math.min(rawIndex, rendered.length - 1))
+            const picked = rendered[index]
+
+            if (loop) {
+                // 마지막으로 센 벌과 견준다. 센 뒤에는 기준을 옮겨, 같은 자리에서
+                // 정착이 다시 일어나도 0이 나오게 한다
+                const copy = Math.floor(index / items.length)
+                const carry = copy - carryBase.current
+                carryBase.current = copy
+                if (carry !== 0) onWrap?.(carry)
+            }
+
             if (picked !== value) {
                 emitted.current = picked
                 onChange(picked)
@@ -247,8 +364,9 @@ function WheelPicker<T extends number>({ items, value, onChange, format, label }
                 emitted.current = null
             }
             scrollToIndex(index, true)
+            setCenterIndex(index)
         }, SETTLE_MS)
-    }, [items, value, onChange, scrollToIndex])
+    }, [items, rendered, loop, onWrap, value, onChange, scrollToIndex])
 
     return (
         <div className="relative" style={{ width: 72 }}>
@@ -267,9 +385,9 @@ function WheelPicker<T extends number>({ items, value, onChange, format, label }
                     ref={listRef}
                     onScroll={handleScroll}
                     // 사용자가 손을 대면 우리가 만들던 스크롤은 포기한다. 그래야 억제가 입력을 삼키지 않는다
-                    onPointerDown={releaseTarget}
-                    onWheel={releaseTarget}
-                    onTouchStart={releaseTarget}
+                    onPointerDown={startInteraction}
+                    onWheel={startInteraction}
+                    onTouchStart={startInteraction}
                     onKeyDown={handleKeyDown}
                     tabIndex={0}
                     className="no-scrollbar h-full snap-y snap-mandatory overflow-y-auto outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-action-primary"
@@ -281,12 +399,14 @@ function WheelPicker<T extends number>({ items, value, onChange, format, label }
                         <div key={`top-${i}`} style={{ height: ITEM_HEIGHT }} aria-hidden />
                     ))}
 
-                    {items.map((item) => {
-                        const selected = item === value
+                    {rendered.map((item, index) => {
+                        const selected = loop ? index === centerIndex : item === value
                         return (
                             <div
-                                key={item}
-                                id={optionId(item)}
+                                key={`${index}-${item}`}
+                                // 같은 숫자가 여러 벌 있으므로 id는 가운데 벌 것만 준다.
+                                // aria-activedescendant가 가리킬 자리가 하나여야 한다
+                                id={selected ? optionId(item) : undefined}
                                 role="option"
                                 aria-selected={selected}
                                 className={`flex snap-center items-center justify-center font-display transition-all duration-150 ${

@@ -173,7 +173,8 @@ export function RecordPhotoPicker({
             {count > 1 && !captionOnly && (
                 <>
                     <ThumbnailStrip photos={photos} activeIndex={index} onTap={scrollToIndex} onMove={handleMove} />
-                    <p className="mt-1.5 text-[11px] text-content-muted">사진을 길게 눌러 순서를 변경할 수 있어요</p>
+                    {/* 스트립의 py-1.5가 이 문구까지의 간격을 이미 만든다 (위 주석 참고) */}
+                    <p className="text-[11px] text-content-muted">사진을 길게 눌러 순서를 변경할 수 있어요</p>
                 </>
             )}
 
@@ -358,7 +359,14 @@ function ThumbnailStrip({ photos, activeIndex, onTap, onMove }: ThumbnailStripPr
     return (
         <div
             ref={stripRef}
-            className="no-scrollbar -mx-5 mt-3 flex gap-2 overflow-x-auto px-5 scroll-px-5"
+            /*
+             * py-1.5는 장식이 아니라 잘림 방지다. 가로 스크롤 상자는 세로도 함께 잘린다 —
+             * 한 축이 `auto`면 다른 축의 `visible`은 CSS 규칙상 `auto`가 된다. 상자 높이가
+             * 썸네일(56px)에 딱 맞아서, 상자 밖에 그려지는 `ring-2`와 끌 때의 `scale-110`
+             * (61.6px)이 위아래로 잘려 나갔다. 위쪽 여백은 mt-3 → mt-1.5로 옮겨 담아
+             * 바깥 간격은 그대로 두고, 아래쪽 6px은 설명 문구의 mt를 뺀 자리로 채운다
+             */
+            className="no-scrollbar -mx-5 mt-1.5 flex gap-2 overflow-x-auto px-5 py-1.5 scroll-px-5"
             onPointerLeave={handlePointerCancel}
         >
             {displayOrder.map((photoIdx) => {
