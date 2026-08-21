@@ -1,13 +1,14 @@
 import { apiFetch } from '@/shared/lib/api'
+import { ACCEPTED_PHOTO_TYPES, MAX_PHOTO_BYTES } from '@/shared/lib/upload'
 
 /** 등록 1건당 사진 1~5장 */
 export const MAX_PHOTOS = 5
-/** 장당 최대 10MB */
-export const MAX_PHOTO_BYTES = 10 * 1024 * 1024
-/** BE S3PresignedUrlService.ALLOWED_CONTENT_TYPES와 같은 목록을 유지해야 한다 */
-export const ACCEPTED_PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/heic', 'image/heif']
 
-export const PHOTO_INPUT_ACCEPT = ACCEPTED_PHOTO_TYPES.join(',')
+/**
+ * 형식·용량 기준은 `shared/lib/upload`가 유일한 출처다.
+ * 예전에는 같은 이름을 여기에도 두어, 한쪽만 고치면 다른 화면이 옛 값을 쓰고 있었다.
+ */
+export { ACCEPTED_PHOTO_TYPES, MAX_PHOTO_BYTES, PHOTO_INPUT_ACCEPT } from '@/shared/lib/upload'
 
 export interface UploadTarget {
     key: string

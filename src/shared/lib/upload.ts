@@ -19,10 +19,22 @@ export const MAX_PHOTOS: Record<UploadPurpose, number> = {
 /** 장당 최대 10MB */
 export const MAX_PHOTO_BYTES = 10 * 1024 * 1024
 
-/** BE S3PresignedUrlService.ALLOWED_CONTENT_TYPES와 같은 목록을 유지해야 한다 */
+/**
+ * 받아 주는 형식. BE S3PresignedUrlService.ALLOWED_CONTENT_TYPES와 같은 목록을 유지해야 한다.
+ *
+ * HEIC가 남아 있는 이유는 Files 앱·에어드롭 경로로 여전히 올라오기 때문이다.
+ * 여기서 튕겨내면 사용자는 왜 막혔는지 모른다. 받아서 서버가 변환한다.
+ */
 export const ACCEPTED_PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/heic', 'image/heif']
 
-export const PHOTO_INPUT_ACCEPT = ACCEPTED_PHOTO_TYPES.join(',')
+/**
+ * `<input accept>`에 넣는 값. **받아 주는 목록과 다르다.**
+ *
+ * iOS Safari는 앨범에서 고른 HEIC를 JPEG로 바꿔 올려 주는데, accept에 image/heic가
+ * 들어 있으면 "변환할 필요 없다"고 보고 원본을 그대로 넘긴다.
+ * 즉 accept는 필터가 아니라 플랫폼에 주는 힌트라, 넓힐수록 안전한 값이 아니다.
+ */
+export const PHOTO_INPUT_ACCEPT = ['image/jpeg', 'image/png'].join(',')
 
 /**
  * 일러스트 원본만 HEIC를 뺀다. 서버가 사진을 **디코딩해서** 크레파스 그림으로 바꾸는데
