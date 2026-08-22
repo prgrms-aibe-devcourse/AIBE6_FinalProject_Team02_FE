@@ -28,50 +28,68 @@ function parseStompFrames(data: string): Array<{ command: string; body: string }
         })
 }
 
+const INITIAL_RETRY_DELAY_MS = 1000
+const MAX_RETRY_DELAY_MS = 30000
+
 export function connectNotificationStream(onNotification: NotificationHandler): () => void {
     let closedByClient = false
-    let socket: WebSocket | null = new WebSocket(wsUrl('/ws'))
+    let socket: WebSocket | null = null
+    let retryTimer: ReturnType<typeof setTimeout> | null = null
+    let retryDelay = INITIAL_RETRY_DELAY_MS
 
-    socket.addEventListener('open', () => {
-        socket?.send(
-            stompFrame('CONNECT', {
-                'accept-version': '1.2',
-                'heart-beat': '10000,10000',
-            }),
-        )
-    })
+    function connect() {
+        socket = new WebSocket(wsUrl('/ws'))
 
-    socket.addEventListener('message', (event) => {
-        if (typeof event.data !== 'string') return
+        socket.addEventListener('open', () => {
+            retryDelay = INITIAL_RETRY_DELAY_MS // 연결에 성공하면 백오프를 리셋한다
+            socket?.send(
+                stompFrame('CONNECT', {
+                    'accept-version': '1.2',
+                    'heart-beat': '10000,10000',
+                }),
+            )
+        })
 
-        for (const frame of parseStompFrames(event.data)) {
-            if (frame.command === 'CONNECTED') {
-                socket?.send(
-                    stompFrame('SUBSCRIBE', {
-                        id: 'notifications',
-                        destination: '/user/queue/notifications',
-                        ack: 'auto',
-                    }),
-                )
-                continue
+        socket.addEventListener('message', (event) => {
+            if (typeof event.data !== 'string') return
+
+            for (const frame of parseStompFrames(event.data)) {
+                if (frame.command === 'CONNECTED') {
+                    socket?.send(
+                        stompFrame('SUBSCRIBE', {
+                            id: 'notifications',
+                            destination: '/user/queue/notifications',
+                            ack: 'auto',
+                        }),
+                    )
+                    continue
+                }
+
+                if (frame.command !== 'MESSAGE' || !frame.body) continue
+
+                try {
+                    onNotification(normalizeNotification(JSON.parse(frame.body) as NotificationItem))
+                } catch {
+                    // 서버가 예기치 않은 프레임을 보내도 연결은 유지한다.
+                }
             }
+        })
 
-            if (frame.command !== 'MESSAGE' || !frame.body) continue
+        // 서버 재시작·네트워크 전환 등으로 예기치 않게 끊기면 백오프를 두고 재연결한다
+        socket.addEventListener('close', () => {
+            socket = null
+            if (closedByClient) return
 
-            try {
-                onNotification(normalizeNotification(JSON.parse(frame.body) as NotificationItem))
-            } catch {
-                // 서버가 예기치 않은 프레임을 보내도 연결은 유지한다.
-            }
-        }
-    })
+            retryTimer = setTimeout(connect, retryDelay)
+            retryDelay = Math.min(retryDelay * 2, MAX_RETRY_DELAY_MS)
+        })
+    }
 
-    socket.addEventListener('close', () => {
-        if (!closedByClient) socket = null
-    })
+    connect()
 
     return () => {
         closedByClient = true
+        if (retryTimer) clearTimeout(retryTimer)
         socket?.close()
         socket = null
     }

@@ -18,6 +18,11 @@ export type NotificationType =
     | 'FRIEND_REQUEST_REJECT'
     | 'FOOD_REPORT_APPROVE'
     | 'FOOD_REPORT_REJECT'
+    | 'FOOD_REGISTRATION_APPROVE'
+    | 'FOOD_REGISTRATION_REJECT'
+    // 관리자에게 가는 알림 — 일반 유저는 절대 받지 않는다
+    | 'FOOD_REGISTRATION_REQUEST_RECEIVED'
+    | 'FOOD_REPORT_RECEIVED'
 
 /** GET /api/v1/notifications 응답 항목 (BE NotificationDTO와 일치) */
 export interface NotificationItem {
@@ -35,6 +40,8 @@ export interface NotificationItem {
     madeDexId?: number | null
     recordId?: number | null
     madeDexName?: string | null
+    // 등록 요청이 거절되면 칸이 안 열려 있어 상세로 못 보낸다 — 대신 이 카테고리 목록으로 보낸다
+    category?: string | null
 }
 
 /** BE가 실제로 내려주는 원본 모양 — 라우팅용 ID들은 payload 안에 들어있다 */
@@ -45,11 +52,13 @@ interface RawNotificationItem extends NotificationItem {
         madeDexId?: number
         recordId?: number
         madeDexName?: string
+        category?: string
+        // 관리자 알림(제보 승인/거절)은 완성된 문구를 여기 실어 보낸다 — 음식명, 거절 사유가 들어있다
         message?: string
     } | null
 }
 
-/** payload에 담겨온 라우팅용 ID를 최상위 필드로 펼친다 (REST/WebSocket 공통 진입점) */
+/** payload에 담겨온 라우팅용 ID, 문구를 최상위 필드로 펼친다 (REST/WebSocket 공통 진입점) */
 export function normalizeNotification(raw: RawNotificationItem): NotificationItem {
     const payload = raw.payload
     if (!payload) return raw
@@ -61,6 +70,7 @@ export function normalizeNotification(raw: RawNotificationItem): NotificationIte
         madeDexId: raw.madeDexId ?? payload.madeDexId ?? null,
         recordId: raw.recordId ?? payload.recordId ?? null,
         madeDexName: raw.madeDexName ?? payload.madeDexName ?? null,
+        category: raw.category ?? payload.category ?? null,
         message: raw.message ?? payload.message ?? null,
     }
 }
