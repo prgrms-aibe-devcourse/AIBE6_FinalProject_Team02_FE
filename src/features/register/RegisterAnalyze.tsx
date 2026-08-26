@@ -23,6 +23,20 @@ interface Props {
 type Phase = 'verifying' | 'done' | 'error' | 'exhausted'
 
 /**
+ * AI가 판정에 실패한 것이 아니라 **사진을 열지도 못한** 경우.
+ *
+ * 두 경우를 같은 화면으로 보여 주면 유저는 "AI가 못 알아봤구나"로 읽고 사진을 바꿔 가며
+ * 재시도한다. 형식·용량 문제는 같은 사진으로 다시 눌러도 결과가 같으므로 길을 갈라 준다.
+ */
+const PHOTO_PROBLEM_CODES = new Set([
+    'PHOTO_FORMAT_NOT_ANALYZABLE',
+    'IMAGE_DECODE_FAILED',
+    'PHOTO_TOO_LARGE',
+    'INVALID_UPLOAD_FILE',
+    'PHOTO_NOT_UPLOADED',
+])
+
+/**
  * AI 검증 결과
  *
  * 후보를 고르는 화면이 아니다 — 음식 이름은 앞 단계에서 유저가 이미 골랐고,
@@ -35,6 +49,7 @@ export function RegisterAnalyze({ onBack, onProceed }: Props) {
     const [phase, setPhase] = useState<Phase>('verifying')
     const [result, setResult] = useState<VerificationResult | null>(null)
     const [errorMessage, setErrorMessage] = useState('')
+    const [errorCode, setErrorCode] = useState<string | null>(null)
     const [slow, setSlow] = useState(false)
 
     // StrictMode의 이펙트 2회 실행이 재시도 횟수를 2번 깎지 않도록 한 번만 보낸다
@@ -63,6 +78,7 @@ export function RegisterAnalyze({ onBack, onProceed }: Props) {
                     setPhase('exhausted')
                     return
                 }
+                setErrorCode(error instanceof ApiError ? error.code : null)
                 setErrorMessage(error instanceof Error ? error.message : '음식 확인에 실패했어요')
                 setPhase('error')
             })
@@ -75,6 +91,7 @@ export function RegisterAnalyze({ onBack, onProceed }: Props) {
     const failed = result?.verdicts.filter((verdict) => !verdict.matched) ?? []
     // 재시도가 남아 있으면 미통과 칸은 아직 등록할 수 없다 — 먼저 다시 확인해야 한다
     const exhausted = result?.retriesLeft === 0
+    const photoProblem = errorCode != null && PHOTO_PROBLEM_CODES.has(errorCode)
 
     /** 기록 화면으로 넘길 칸을 정한다. 상한을 다 썼으면 미통과 칸도 함께 간다(검토 요청) */
     const proceedWith = (slots: SlotVerdict[]) => {
@@ -94,18 +111,28 @@ export function RegisterAnalyze({ onBack, onProceed }: Props) {
 
             {phase === 'verifying' && <Verifying slow={slow} />}
 
-            {phase === 'error' && (
-                <Centered
-                    icon={<AlertTriangleIcon size={40} aria-hidden className="text-feedback-error" />}
-                    title="음식을 확인하지 못했어요"
-                    description={errorMessage}
-                    primary={{
-                        label: '다시 시도',
-                        onClick: () => window.location.reload(),
-                    }}
-                    secondary={{ label: '사진·음식 고치기', onClick: onBack }}
-                />
-            )}
+            {phase === 'error' &&
+                (photoProblem ? (
+                    /* 같은 사진으로 새로고침해도 결과가 같으므로 '다시 시도'를 내지 않는다 */
+                    <Centered
+                        icon={<AlertTriangleIcon size={40} aria-hidden className="text-feedback-error" />}
+                        title="사진을 읽지 못했어요"
+                        description={errorMessage}
+                        primary={{ label: '다른 사진으로 하기', onClick: onBack }}
+                        secondary={{ label: '그만두기', onClick: onBack }}
+                    />
+                ) : (
+                    <Centered
+                        icon={<AlertTriangleIcon size={40} aria-hidden className="text-feedback-error" />}
+                        title="음식을 확인하지 못했어요"
+                        description={errorMessage}
+                        primary={{
+                            label: '다시 시도',
+                            onClick: () => window.location.reload(),
+                        }}
+                        secondary={{ label: '사진·음식 고치기', onClick: onBack }}
+                    />
+                ))}
 
             {/* 서버가 이미 상한 초과로 막은 경우 — 판정 결과 없이 도착한다 */}
             {phase === 'exhausted' && (

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { ArrowLeftIcon, AwardIcon, MapPinIcon, PlusIcon, SearchIcon, SettingsIcon, TrophyIcon } from 'lucide-react'
+import { ArrowLeftIcon, AwardIcon, MapPinIcon, PlusIcon, SearchIcon, SettingsIcon } from 'lucide-react'
 import { GuideTour } from '@/features/onboarding/GuideTour'
 import { useGuide } from '@/features/onboarding/useGuide'
 import { Badge, BottomSheet, Button, FoodCard, HelpIcon, ProgressBar, TabBar, Text } from '@/shared/ui'
@@ -120,7 +120,10 @@ export function ChallengeDetail({
      * 접는 이유는 두 겹이 겹쳐 있으면 **포커스 가두기가 서로 당기기** 때문이다.
      * 히스토리에는 아무 것도 넣거나 빼지 않으므로 뒤로가기 셈도 그대로다
      */
-    const startCertify = (target: ChallengeTarget) => setCertify(target)
+    const startCertify = (target: ChallengeTarget) => {
+        if (ended) return
+        setCertify(target)
+    }
 
     /**
      * 위저드가 떠 있는데 주소에서 그 음식이 사라졌다면(= 뒤로가기) 위저드도 함께 닫는다.
@@ -227,12 +230,28 @@ export function ChallengeDetail({
                     src={challenge.coverUrl || '/images/default_challenge.png'}
                     alt=""
                     className="mt-4 aspect-[16/9] w-full rounded-3xl object-cover shadow-soft"
+                    onError={(e) => {
+                        // 커버 URL이 깨지거나 presigned 만료 시에도 기본 이미지로 대체
+                        const img = e.currentTarget
+                        if (!img.src.endsWith('/images/default_challenge.png')) {
+                            img.src = '/images/default_challenge.png'
+                        }
+                    }}
                 />
                 <section className="mt-4 rounded-3xl bg-white p-4 shadow-soft">
                     <div className="flex items-center gap-3">
-                        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-watermelon-50 text-watermelon-500">
-                            <TrophyIcon size={26} strokeWidth={1.75} aria-hidden />
-                        </span>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                            src={challenge.coverUrl || '/images/default_challenge.png'}
+                            alt=""
+                            className="h-12 w-12 shrink-0 rounded-2xl object-cover"
+                            onError={(e) => {
+                                const img = e.currentTarget
+                                if (!img.src.endsWith('/images/default_challenge.png')) {
+                                    img.src = '/images/default_challenge.png'
+                                }
+                            }}
+                        />
                         <span className="min-w-0 flex-1">
                             <Badge variant="type">{challenge.tag}</Badge>
                             {/* 자르지 않는다 — 챌린짓 이름은 이 화면이 무엇인지를 말하는 유일한 글자다 */}
@@ -461,7 +480,7 @@ export function ChallengeDetail({
                     </div>
                 </BottomSheet>
             )}
-            {certify && onUnlock && (
+            {certify && onUnlock && !ended && (
                 <CertifyWizard
                     name={certify.name}
                     placeName={certify.placeName}

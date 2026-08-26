@@ -1,51 +1,15 @@
 'use client'
 
-import {
-    AlertCircleIcon,
-    ArrowLeftIcon,
-    BookmarkIcon,
-    CheckIcon,
-    ChevronLeftIcon,
-    ChevronRightIcon,
-    ClockIcon,
-} from 'lucide-react'
+import { AlertCircleIcon, ArrowLeftIcon, BookmarkIcon, CheckIcon, ClockIcon } from 'lucide-react'
 import React, { useMemo, useRef, useState } from 'react'
 import { MemoTemplatePanel } from './MemoTemplatePanel'
 import { PlacePicker } from './PlacePicker'
 import { RegisterPhoto, useRegisterFlow } from './RegisterFlowContext'
+import { useGridShiftAnimation } from './useGridShiftAnimation'
+import { usePhotoDragOrder } from './usePhotoDragOrder'
 import { CardInput, LocationInput } from './confirmApi'
 
 const MEMO_MAX = 100
-
-/**
- * 사진 위에 얹는 순서 변경 버튼.
- *
- * 24px이라 최소 터치 타깃(44px)에 못 미치지만, `no-touch-expand`를 붙이지 않아
- * globals.css의 아이콘 버튼 규칙이 히트 영역을 44px로 넓혀 준다. 보이는 크기만 작다
- */
-function OrderButton({
-    label,
-    disabled,
-    onClick,
-    children,
-}: {
-    label: string
-    disabled: boolean
-    onClick: () => void
-    children: React.ReactNode
-}) {
-    return (
-        <button
-            type="button"
-            aria-label={label}
-            disabled={disabled}
-            onClick={onClick}
-            className="flex h-6 w-6 items-center justify-center rounded-full bg-white/90 text-content-primary disabled:opacity-30"
-        >
-            {children}
-        </button>
-    )
-}
 
 interface Props {
     submitting: boolean
@@ -116,15 +80,34 @@ export function RegisterRecord({ submitting, error, onBack, onSubmit }: Props) {
                 : [...draft.photoKeys, key],
         })
 
-    /** 이웃과 자리를 바꾼다. 끝에서 더 밀면 아무 일도 안 한다 */
-    const movePhoto = (key: string, direction: -1 | 1) => {
-        const from = draft.photoKeys.indexOf(key)
-        const to = from + direction
-        if (from < 0 || to < 0 || to >= draft.photoKeys.length) return
+    /**
+     * 끌어 놓은 자리로 옮긴다. 자리를 맞바꾸는 게 아니라 **뽑아서 끼워 넣는다** —
+     * 맞바꾸면 1번을 3번으로 보낼 때 3번이 1번으로 튀어 올라 순서가 두 군데 바뀐다.
+     */
+    const reorderPhoto = (fromOrder: number, toOrder: number) => {
+        if (fromOrder === toOrder) return
         const next = [...draft.photoKeys]
-        ;[next[from], next[to]] = [next[to], next[from]]
+        const [moved] = next.splice(fromOrder, 1)
+        next.splice(toOrder, 0, moved)
         patch({ photoKeys: next })
     }
+
+    const drag = usePhotoDragOrder({ orderedKeys: draft.photoKeys, onReorder: reorderPhoto })
+
+    /**
+     * 격자에 그릴 차례. **넣은 사진이 순서대로 앞에, 뺀 사진이 뒤에** 온다.
+     *
+     * 올린 차례로 그리면 번호가 1, 5, 2처럼 튄다. 자리와 번호가 어긋나면
+     * 끌어서 옮길 때 어디로 가는지 읽히지 않는다.
+     */
+    const pickedPhotos = drag.previewKeys
+        .map((key) => uploaded.find((photo) => photo.key === key))
+        .filter((photo): photo is RegisterPhoto & { key: string } => photo != null)
+    const restPhotos = uploaded.filter((photo) => !draft.photoKeys.includes(photo.key))
+    const displayPhotos = [...pickedPhotos, ...restPhotos]
+
+    // 자리가 바뀐 칸을 옛 위치에서 새 위치로 미끄러뜨린다
+    const gridRef = useGridShiftAnimation(displayPhotos.map((photo) => photo.id).join())
 
     const submit = () => {
         const cards: CardInput[] = recordSlots.map((passed) => {
@@ -175,74 +158,101 @@ export function RegisterRecord({ submitting, error, onBack, onSubmit }: Props) {
                 <section className="mt-5" aria-label="카드 사진 고르기">
                     <p className="text-sm font-medium text-content-secondary">카드에 넣을 사진</p>
                     <p className="mt-0.5 text-xs text-content-secondary">
-                        올린 사진이 모두 들어가요. 뺄 사진은 눌러서 빼고, <strong>1번이 대표 사진</strong>이에요
+                        <strong>1번이 대표 사진</strong>으로 올라가요. 원하는 사진을 선택하고, 길게 눌러서 순서를 바꿀
+                        수 있어요
                     </p>
 
-                    <div className="mt-2.5 grid grid-cols-3 gap-2.5">
-                        {uploaded.map((photo) => {
-                            const order = draft.photoKeys.indexOf(photo.key)
-                            const picked = order >= 0
+                    {/*
+                        손짓은 훅이 document에서 듣는다 — 여기에 걸면 손가락이 격자를 벗어나는
+                        순간(맨 윗줄 위로 끌어 올릴 때) 소식이 끊겨 사진이 얼어붙는다.
+                        relative는 배치 기준을 이 격자로 당겨 둔다 (칸의 offsetParent)
+                    */}
+                    {/* grid-snap-3 — 칸을 정수 픽셀로 맞춘다. 소수 픽셀이면 같은 2px 테두리가
+                        아래쪽만 두꺼워 보인다 (globals.css의 주석 참고) */}
+                    <div ref={gridRef} className="grid-snap-3 relative mt-2.5 grid grid-cols-3 gap-2.5">
+                        {displayPhotos.map((photo, index) => {
+                            const picked = index < pickedPhotos.length
+                            const order = picked ? index : -1
+                            const dragging = drag.draggingKey === photo.key
                             return (
-                                <div key={photo.id} className="relative">
-                                    <button
-                                        type="button"
-                                        onClick={() => togglePhoto(photo.key)}
-                                        aria-pressed={picked}
-                                        aria-label={
-                                            picked
-                                                ? `${order + 1}번째 사진 빼기`
-                                                : `사진 넣기 (맨 뒤 ${draft.photoKeys.length + 1}번)`
-                                        }
-                                        className={`aspect-square w-full overflow-hidden rounded-2xl border-2 ${
-                                            picked ? 'border-edge-active' : 'border-transparent opacity-45 grayscale'
+                                <div
+                                    key={photo.id}
+                                    data-photo-id={photo.id}
+                                    data-dragging={dragging || undefined}
+                                    // 끌고 있는 칸이 어느 자리 위에 왔는지 이 값으로 읽는다.
+                                    // 뺀 사진에는 붙이지 않는다 — 끼울 자리가 아니다
+                                    data-order-index={picked ? index : undefined}
+                                    // 따라다니는 위치는 훅이 이 요소에 직접 쓴다.
+                                    // 손짓마다 state를 바꾸면 격자 전체가 다시 그려져 다른 칸들이 끊긴다
+                                    className={`relative ${
+                                        dragging
+                                            ? // 받으면 elementFromPoint가 자기 자신만 되돌려 대상 칸을 못 고른다
+                                              'pointer-events-none z-10'
+                                            : // 손을 뗐을 때 손가락 자리에서 제 칸으로 미끄러져 들어간다
+                                              'transition-transform duration-200 ease-out'
+                                    }`}
+                                >
+                                    {/* 확대는 이 겹이 맡는다. 순번·분석 뱃지가 사진과 같이 커지도록
+                                        relative를 여기에 둔다 — 바깥에 두면 뱃지만 제자리에 남는다 */}
+                                    <div
+                                        className={`relative transition-transform duration-200 ease-out ${
+                                            dragging ? 'scale-105 drop-shadow-2xl' : ''
                                         }`}
                                     >
-                                        {/* eslint-disable-next-line @next/next/no-img-element -- blob: 미리보기 */}
-                                        <img src={photo.previewUrl} alt="" className="h-full w-full object-cover" />
-                                    </button>
-
-                                    {/* 순번. 대표(1번)만 채운 색이라 어느 것이 표지인지 한눈에 보인다 */}
-                                    {picked && (
-                                        <span
-                                            aria-hidden
-                                            className={`absolute left-1 top-1 flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold tabular-nums ${
-                                                order === 0
-                                                    ? 'bg-action-primary text-content-on-action'
-                                                    : 'bg-white/90 text-content-primary'
+                                        <button
+                                            type="button"
+                                            onPointerDown={(event) => drag.onPointerDown(event, photo.key)}
+                                            onClick={() => {
+                                                // 끌어서 옮긴 직후의 click은 무시한다. 안 그러면 놓자마자 사진이 빠진다
+                                                if (drag.consumeClick()) return
+                                                togglePhoto(photo.key)
+                                            }}
+                                            aria-pressed={picked}
+                                            aria-label={
+                                                picked
+                                                    ? `${order + 1}번째 사진 빼기`
+                                                    : `사진 넣기 (맨 뒤 ${draft.photoKeys.length + 1}번)`
+                                            }
+                                            // touch-none을 걸면 사진 위에서 화면을 굴릴 수 없다.
+                                            // 격자가 폭을 다 쓰니 굴릴 자리가 없어진다는 뜻이라,
+                                            // 스크롤 막기는 훅이 '끌기가 시작된 뒤'로 미룬다
+                                            className={`aspect-square w-full select-none overflow-hidden rounded-2xl border-2 ${
+                                                picked
+                                                    ? 'border-edge-active'
+                                                    : 'border-transparent opacity-45 grayscale'
                                             }`}
                                         >
-                                            {order + 1}
-                                        </span>
-                                    )}
+                                            {/* draggable=false — 데스크톱에서 길게 누르면 브라우저의
+                                                이미지 끌기가 먼저 잡아채 pointer 이벤트가 끊긴다 */}
+                                            {/* eslint-disable-next-line @next/next/no-img-element -- blob: 미리보기 */}
+                                            <img
+                                                src={photo.previewUrl}
+                                                alt=""
+                                                draggable={false}
+                                                className="h-full w-full object-cover"
+                                            />
+                                        </button>
 
-                                    {photo.id === analysisPhoto?.id && (
-                                        <span className="absolute right-1 top-1 rounded-full bg-white/90 px-2 py-0.5 text-xs font-bold text-content-primary">
-                                            분석
-                                        </span>
-                                    )}
+                                        {/* 순번. 대표(1번)만 채운 색이라 어느 것이 표지인지 한눈에 보인다 */}
+                                        {picked && (
+                                            <span
+                                                aria-hidden
+                                                className={`absolute left-1 top-1 flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold tabular-nums ${
+                                                    order === 0
+                                                        ? 'bg-action-primary text-content-on-action'
+                                                        : 'bg-white/90 text-content-primary'
+                                                }`}
+                                            >
+                                                {order + 1}
+                                            </span>
+                                        )}
 
-                                    {/*
-                                        끌어서 옮기는 대신 화살표 두 개로 순서를 바꾼다.
-                                        좁은 3열 격자에서 드래그는 스크롤과 다투고, 키보드로는 아예 못 쓴다
-                                    */}
-                                    {picked && draft.photoKeys.length > 1 && (
-                                        <div className="absolute inset-x-1 bottom-1 flex justify-between">
-                                            <OrderButton
-                                                label={`${order + 1}번째 사진 앞으로`}
-                                                disabled={order === 0}
-                                                onClick={() => movePhoto(photo.key, -1)}
-                                            >
-                                                <ChevronLeftIcon size={14} aria-hidden />
-                                            </OrderButton>
-                                            <OrderButton
-                                                label={`${order + 1}번째 사진 뒤로`}
-                                                disabled={order === draft.photoKeys.length - 1}
-                                                onClick={() => movePhoto(photo.key, 1)}
-                                            >
-                                                <ChevronRightIcon size={14} aria-hidden />
-                                            </OrderButton>
-                                        </div>
-                                    )}
+                                        {photo.id === analysisPhoto?.id && (
+                                            <span className="absolute right-1 top-1 rounded-full bg-white/90 px-2 py-0.5 text-xs font-bold text-content-primary">
+                                                분석
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                             )
                         })}

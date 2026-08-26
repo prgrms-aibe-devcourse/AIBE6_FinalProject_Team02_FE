@@ -67,6 +67,17 @@ export async function resolveNotificationRoute(notification: NotificationItem): 
                 return ROUTES.madeRecord(notification.madeDexId, notification.recordId)
             }
             return ROUTES.made
+        // 승인 — 칸이 열렸으니 그 칸 상세로 바로 보낸다
+        case 'FOOD_REGISTRATION_APPROVE':
+            return notification.slotId ? ROUTES.dexDetail(notification.slotId) : ROUTES.basicDex()
+        // 거절 — 칸이 안 열려 상세로 보낼 게 없다. 그 음식이 속한 카테고리 목록으로 보낸다
+        case 'FOOD_REGISTRATION_REJECT':
+            return ROUTES.basicDex(notification.category ?? undefined)
+        // 관리자 전용 — 항목 하나로 바로 가는 화면이 없어서 해당 탭을 펼친 콘솔로 보낸다
+        case 'FOOD_REGISTRATION_REQUEST_RECEIVED':
+            return ROUTES.adminRequests
+        case 'FOOD_REPORT_RECEIVED':
+            return ROUTES.adminReports
         default:
             return ROUTES.myNotifications
     }

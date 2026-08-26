@@ -1,6 +1,8 @@
 'use client'
 
+import { ChevronLeftIcon, RefreshCwIcon } from 'lucide-react'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
 import { acceptReport, completeRequest, fetchPendingRequests, fetchReports, rejectReport, rejectRequest } from './api'
 import type { FoodRegistrationRequest, FoodReport, ReportStatus } from './types'
@@ -14,8 +16,14 @@ const REPORT_FILTERS: { value: ReportStatus; label: string }[] = [
     { value: 'REJECTED', label: '반려' },
 ]
 
-export function AdminConsole() {
-    const [tab, setTab] = useState<Tab>('requests')
+interface Props {
+    /** 관리자 알림 클릭 등으로 특정 탭을 펼친 채 들어올 때 쓴다. 기본은 '등록 요청' */
+    initialTab?: Tab
+}
+
+export function AdminConsole({ initialTab }: Props = {}) {
+    const router = useRouter()
+    const [tab, setTab] = useState<Tab>(initialTab ?? 'requests')
     const [reportStatus, setReportStatus] = useState<ReportStatus>('PENDING')
     const [reports, setReports] = useState<FoodReport[]>([])
     const [requests, setRequests] = useState<FoodRegistrationRequest[]>([])
@@ -89,8 +97,24 @@ export function AdminConsole() {
 
     return (
         <div className="flex h-full flex-col bg-surface-app">
-            <header className="px-5 py-4">
-                <h1 className="font-display text-xl text-neutral-900">관리자 콘솔</h1>
+            <header className="flex items-center justify-between px-5 py-4">
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => router.back()}
+                        aria-label="뒤로 가기"
+                        className="-ml-2 p-2 text-neutral-900 transition active:scale-95"
+                    >
+                        <ChevronLeftIcon size={24} />
+                    </button>
+                    <h1 className="font-display text-xl text-neutral-900">관리자 콘솔</h1>
+                </div>
+                <button
+                    onClick={load}
+                    aria-label="새로고침"
+                    className="-mr-2 p-2 text-neutral-900 transition active:scale-95"
+                >
+                    <RefreshCwIcon size={20} className={loading ? 'animate-spin text-neutral-400' : ''} />
+                </button>
             </header>
 
             {/* 상단 탭 */}

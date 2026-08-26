@@ -3,13 +3,15 @@
 import { AdminConsole } from '@/features/admin/AdminConsole'
 import { useAuth } from '@/features/auth/AuthContext'
 import { ROUTES } from '@/shared/lib/routes'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect } from 'react'
 
 /** `/admin` 관리자 콘솔. ADMIN 권한만 접근할 수 있다. */
 export default function AdminPageRoute() {
     const router = useRouter()
     const { me, loading } = useAuth()
+    const searchParams = useSearchParams()
+    const initialTab = searchParams.get('tab') === 'reports' ? 'reports' : undefined
 
     const isAdmin = me?.role === 'ADMIN'
 
@@ -27,5 +29,5 @@ export default function AdminPageRoute() {
         )
     }
 
-    return <AdminConsole />
+    return <AdminConsole initialTab={initialTab} />
 }

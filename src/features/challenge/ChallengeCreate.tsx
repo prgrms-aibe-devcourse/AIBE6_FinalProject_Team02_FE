@@ -6,6 +6,7 @@ import { dateOnlyLabel } from '@/shared/lib/dateOnly'
 import { WIZARD_STEP_TRANSITION, wizardStepVariants } from '@/shared/lib/wizardMotion'
 import { Button, Dialog, TextArea, TextField, WizardHeader } from '@/shared/ui'
 import { AnimatePresence, motion } from 'framer-motion'
+import Image from 'next/image'
 import {
     CalendarIcon,
     CameraIcon,
@@ -16,10 +17,12 @@ import {
     TrophyIcon,
     UtensilsIcon,
 } from 'lucide-react'
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { ChallengeData, ChallengeTarget, RewardBadge } from './types'
 import { CoverPhotoStep, CoverPhotoStepHandle } from './CoverPhotoStep'
 import { EndDateSheet } from './EndDateSheet'
+import { takeIllustrationHandoff } from '@/features/illustration/handoff'
+import type { IllustrationPurpose } from '@/features/illustration/types'
 
 interface Props {
     createdThisMonth: number
@@ -27,6 +30,8 @@ interface Props {
     onBack: () => void
     onCreate: (challenge: ChallengeData) => void | Promise<void>
     onCustomBadge: () => void
+    /** AI 일러스트 화면으로 보낸다. 결과는 돌아왔을 때 sessionStorage에서 받는다 */
+    onIllustrate: (params: { purpose: IllustrationPurpose; description?: string; ref?: string }) => void
 }
 
 const MIN_TARGETS = 2
@@ -42,7 +47,14 @@ const BADGE = 4
 const DONE = 5
 const STEP_LABEL = ['제목', '대표 사진', '기한', '음식', '보상']
 
-export function ChallengeCreate({ createdThisMonth, customBadge, onBack, onCreate, onCustomBadge }: Props) {
+export function ChallengeCreate({
+    createdThisMonth,
+    customBadge,
+    onBack,
+    onCreate,
+    onCustomBadge,
+    onIllustrate,
+}: Props) {
     const { challengeDraft, setChallengeDraft } = useAppState()
     const patchDraft = (patch: Partial<typeof challengeDraft>) => setChallengeDraft({ ...challengeDraft, ...patch })
 
@@ -84,6 +96,8 @@ export function ChallengeCreate({ createdThisMonth, customBadge, onBack, onCreat
     const [coverFile, setCoverFile] = useState<Blob | null>(null) // 대표 사진(정사각 크롭 Blob)
     const [coverPreview, setCoverPreview] = useState('')
     const coverStepRef = useRef<CoverPhotoStepHandle>(null)
+    /** AI로 만든 대표 그림. 이미 S3에 있어 개설에서 다시 올리지 않는다 */
+    const [coverImageKey, setCoverImageKey] = useState<string | null>(null)
     const [targetPlace, setTargetPlace] = useState<LocationInput | null>(null)
     const [addressInput, setAddressInput] = useState('')
     const [addressError, setAddressError] = useState('')
@@ -92,6 +106,35 @@ export function ChallengeCreate({ createdThisMonth, customBadge, onBack, onCreat
     const fileRef = useRef<HTMLInputElement>(null)
 
     const placeReady = targetPlace != null && targetPlace.lat != null && targetPlace.lng != null
+
+    /*
+     * 일러스트 화면에서 돌아왔는지 확인한다.
+     *
+     * 들어올 때 한 번만 본다 — 결과는 sessionStorage에서 **꺼내면서 지워지므로**
+     * 두 번 읽을 것이 없고, 다시 읽으면 이미 반영한 그림을 또 얹게 된다.
+     */
+    useEffect(() => {
+        const cover = takeIllustrationHandoff('CHALLENGE_COVER')
+        if (cover) {
+            // 크롭 Blob과 AI 결과가 같이 있으면 어느 쪽을 올릴지 갈린다. 앞의 것을 버린다
+            setCoverFile(null)
+            setCoverImageKey(cover.imageKey)
+            setCoverPreview(cover.previewUrl)
+        }
+
+        const slot = takeIllustrationHandoff('CHALLENGE_SLOT')
+        if (slot?.ref) {
+            setChallengeDraft({
+                ...challengeDraft,
+                targets: challengeDraft.targets.map((t) =>
+                    t.id === slot.ref
+                        ? { ...t, file: null, imageKey: slot.imageKey, imageUrl: slot.previewUrl }
+                        : t,
+                ),
+            })
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
     const onPickFile = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
@@ -129,6 +172,7 @@ export function ChallengeCreate({ createdThisMonth, customBadge, onBack, onCreat
                 storeName: storeName.trim() || null,
                 description: desc.trim() || null,
                 file: targetFile,
+                imageKey: null,
                 imageUrl: targetPreview || '/images/default_food.png',
                 placeName: targetPlace?.name ?? null,
                 lat: targetPlace?.lat ?? null,
@@ -146,6 +190,14 @@ export function ChallengeCreate({ createdThisMonth, customBadge, onBack, onCreat
 
     // 보상 뱃지 — 직접 만든 것뿐이다 (프리셋 제거, BADGE 단계 주석 참고)
     const [submitting, setSubmitting] = useState(false)
+
+    /**
+     * 완료 화면에 쓸 값을 개설 시점에 담아 둔다.
+     *
+     * draft를 그대로 읽으면 '확인'의 `resetChallengeDraft()`가 동기로 반영되면서
+     * 이동(비동기)보다 먼저 다시 그려져 "목표 0개"가 스친다.
+     */
+    const [created, setCreated] = useState<{ title: string; targetCount: number } | null>(null)
     /** 뱃지 없이 개설하려 했을 때 뜨는 안내 */
     const [badgeAlert, setBadgeAlert] = useState(false)
     const rewardName = customBadge?.name ?? ''
@@ -167,6 +219,7 @@ export function ChallengeCreate({ createdThisMonth, customBadge, onBack, onCreat
                 id: `created-${Date.now()}`,
                 title: title.trim(),
                 coverFile,
+                coverImageKey,
                 coverUrl: coverPreview || undefined,
                 emoji: '🏆',
                 tag: '수집형',
@@ -183,6 +236,7 @@ export function ChallengeCreate({ createdThisMonth, customBadge, onBack, onCreat
                 // 위 가드를 통과했으므로 여기서는 반드시 있다
                 rewardBadge: customBadge,
             })
+            setCreated({ title: title.trim(), targetCount: targets.length })
             go(DONE)
         } finally {
             setSubmitting(false)
@@ -258,7 +312,9 @@ export function ChallengeCreate({ createdThisMonth, customBadge, onBack, onCreat
                                 {/* 홈과 동일하게 "남은 개설권" 기준으로 표시 */}
                                 <p
                                     className={`mt-4 rounded-2xl p-3 text-sm ${
-                                        canCreate ? 'bg-neutral-50 text-neutral-500' : 'bg-watermelon-50 text-watermelon-700'
+                                        canCreate
+                                            ? 'bg-neutral-50 text-neutral-500'
+                                            : 'bg-watermelon-50 text-watermelon-700'
                                     }`}
                                 >
                                     {canCreate
@@ -274,12 +330,16 @@ export function ChallengeCreate({ createdThisMonth, customBadge, onBack, onCreat
                                 preview={coverPreview}
                                 onApply={(blob, url) => {
                                     setCoverFile(blob)
+                                    // 사진을 새로 고르면 앞서 만든 AI 그림은 버린다
+                                    setCoverImageKey(null)
                                     setCoverPreview(url)
                                 }}
                                 onClear={() => {
                                     setCoverFile(null)
+                                    setCoverImageKey(null)
                                     setCoverPreview('')
                                 }}
+                                onIllustrate={() => onIllustrate({ purpose: 'CHALLENGE_COVER' })}
                             />
                         )}
 
@@ -504,6 +564,38 @@ export function ChallengeCreate({ createdThisMonth, customBadge, onBack, onCreat
                                                         {t.placeName}
                                                     </small>
                                                 </span>
+                                                {/*
+                                                    AI 버튼을 추가 폼이 아니라 **담긴 목록 쪽에** 둔다.
+                                                    폼의 입력값은 이 컴포넌트의 로컬 상태라 화면을 떠나면
+                                                    사라지지만, 담긴 목록은 draft에 있어 돌아와도 남는다.
+                                                    음식 이름이 이미 정해져 있어 설명도 그대로 넘길 수 있다
+                                                */}
+                                                <button
+                                                    onClick={() =>
+                                                        onIllustrate({
+                                                            purpose: 'CHALLENGE_SLOT',
+                                                            description: t.name,
+                                                            ref: t.id,
+                                                        })
+                                                    }
+                                                    aria-label={`${t.name} AI 그림으로 만들기`}
+                                                    className="ai-gradient-border flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-content-primary"
+                                                >
+                                                    {/*
+                                                        캔버스(160×160)의 절반이 투명 여백이라 실제 그림은 53%뿐이다.
+                                                        버튼(36px)보다 크게 그려 그림 자체를 21px로 맞춘다.
+                                                        넘치는 부분은 투명이라 보이지 않는다.
+                                                        그림이 캔버스 정중앙보다 왼쪽 위에 있어 그만큼 되민다
+                                                    */}
+                                                    <Image
+                                                        src="/images/crayon_icon.png"
+                                                        alt=""
+                                                        aria-hidden
+                                                        width={40}
+                                                        height={40}
+                                                        className="h-10 w-10 max-w-none shrink-0 translate-x-[2.3%] translate-y-[3.5%] object-contain"
+                                                    />
+                                                </button>
                                                 <button
                                                     onClick={() => setTargets((c) => c.filter((x) => x.id !== t.id))}
                                                     aria-label={`${t.name} 삭제`}
@@ -613,7 +705,7 @@ export function ChallengeCreate({ createdThisMonth, customBadge, onBack, onCreat
                                     transition={{ delay: 0.3 }}
                                     className="mt-2 text-sm text-neutral-400"
                                 >
-                                    {title} · 목표 {targets.length}개
+                                    {created?.title} · 목표 {created?.targetCount ?? 0}개
                                 </motion.p>
                             </div>
                         )}

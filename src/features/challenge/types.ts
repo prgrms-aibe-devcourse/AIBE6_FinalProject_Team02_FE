@@ -6,6 +6,11 @@ export interface RewardBadge {
     /** 뱃지 배경 톤 (Tailwind 클래스) */
     tone: string
     customImage?: string
+    /**
+     * AI로 만든 뱃지. 이미 S3에 올라가 있어 `customImage`를 다시 올리지 않는다.
+     * (`customImage`는 이때 표시용 프리사인 URL이라 업로드할 수 있는 값이 아니다)
+     */
+    imageKey?: string | null
     /** 프리셋 code */
     code?: string
 }
@@ -18,6 +23,12 @@ export interface ChallengeTarget {
     imageUrl?: string
     /** 개설 화면에서만 사용 — 업로드 전 로컬 파일 */
     file?: File | null
+    /**
+     * 이미 S3에 올라가 있는 이미지. AI 일러스트는 서버가 원본을 읽어야 해서
+     * **개설 시점이 아니라 그리는 시점에** 올라간다 — 그 결과가 여기 담긴다.
+     * 값이 있으면 개설에서 다시 올리지 않는다.
+     */
+    imageKey?: string | null
     /** 위치 인증 챌린지 — 목표 장소 */
     placeName?: string | null
     lat?: number | null
@@ -51,8 +62,19 @@ export interface ChallengeData {
     targetRestaurants?: ChallengeTarget[]
     completedTargetIds?: string[]
     rewardBadge?: RewardBadge
+    /**
+     * 서버가 준 완주 보상 뱃지 (BE `RewardBadgeDTO` = api.ts `RewardBadgeInfo`와 같은 모양).
+     *
+     * 위 `rewardBadge`와 나눈 이유 — 그쪽은 개설 마법사가 **만드는 중**에 쓰는 형태로
+     * `emoji`·`tone` 같은 화면 전용 값을 들고 있어 서버 응답과 모양이 다르다.
+     * 목록·상세처럼 서버가 준 것을 그리는 자리는 `ServerBadge`에 그대로 넘길 수 있는
+     * 이 형태를 쓴다. 뱃지를 안 걸어 둔 챌린짓은 null
+     */
+    rewardBadgeInfo?: { id: number; name: string; code: string | null; imageUrl: string | null } | null
     /** 대표 이미지(프리사인 URL, 표시용) */
     coverUrl?: string | null
     /** 대표 이미지 업로드 파일(개설 마법사 → 개설 처리) */
     coverFile?: Blob | null
+    /** AI로 만든 대표 이미지. 이미 올라가 있어 개설에서 다시 올리지 않는다 */
+    coverImageKey?: string | null
 }
